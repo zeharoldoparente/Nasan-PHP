@@ -1,0 +1,104 @@
+body {
+   font-family: "Poppins", sans-serif;
+   margin: 0;
+   padding: 0;
+}
+
+.criar-pedido {
+   display: flex;
+}
+
+.criar-pedido .overlap {
+   position: absolute;
+   width: 90px;
+   height: 100vh;
+   top: 0;
+   left: 0;
+   background-color: #4d47c3;
+   transition: width 0.3s ease;
+   display: flex;
+   flex-direction: column;
+   justify-content: flex-start;
+   z-index: 2;
+}
+
+.avatar,
+.menu-list {
+   margin-top: 10px;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}
+
+.person {
+   font-size: 50px;
+   color: white;
+   cursor: pointer;
+}
+
+.menu-list {
+   margin-top: 40px;
+   font-size: 40px;
+   color: white;
+   cursor: pointer;
+}
+
+.menu-list.hide {
+   display: none;
+}
+
+.menu-items {
+   display: none;
+   margin-top: 20px;
+   width: 100%;
+   padding-left: 10px;
+}
+
+.menu-items.active {
+   display: block;
+}
+
+.menu-items ul {
+   list-style: none;
+   padding: 0;
+}
+
+.menu-items ul li {
+   padding: 10px;
+   margin: 10px 0;
+}
+
+.menu-items ul li a {
+   color: white;
+   text-decoration: none;
+   font-size: 18px;
+   display: inline-block;
+   padding: 5px 15px;
+   transition: background-color 0.3s;
+}
+
+.menu-items ul li a:hover {
+   background-color: #3c3a9e;
+}
+
+.overlap.active {
+   width: 250px;
+}
+
+.person {
+   font-size: 50px;
+   color: white;
+   cursor: pointer;
+}
+
+.logout {
+   margin-top: auto;
+   padding: 20px;
+   text-align: center;
+}
+
+.logout img {
+   width: 25px;
+   height: 25px;
+   cursor: pointer;
+}
