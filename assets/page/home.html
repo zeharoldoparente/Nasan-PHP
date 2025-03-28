@@ -13,6 +13,7 @@
          href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
          rel="stylesheet"
       />
+      <link rel="icon" href="../image/logo.png" type="image/x-icon" />
       <link rel="stylesheet" href="../../styles/global.css" />
       <link rel="stylesheet" href="../../styles/home.css" />
       <title>Home</title>
@@ -21,7 +22,7 @@
       <div class="container">
          <nav class="navbar">
             <div class="logo">
-               <img src="../image/logo.png" alt="Logo Nasam" />
+               <a href="#"><img src="../image/logo.png" alt="Logo Nasam" /></a>
                <h2>NASAM</h2>
             </div>
             <div class="links">
@@ -35,11 +36,32 @@
                      <a href="#">Lista de Pedidos</a>
                   </div>
                </div>
-               <a href="#" class="join-link">
-                  <img src="../image/logout.svg" alt="" />
-               </a>
+            </div>
+            <div class="navbar-right">
+               <div class="hamburger-menu" onclick="toggleMenu()">
+                  <i class="bi bi-list"></i>
+               </div>
+               <div class="logout-button">
+                  <a href="#">
+                     <img src="../image/logout.svg" alt="Sair" />
+                  </a>
+               </div>
+            </div>
+            <div class="mobile-menu">
+               <a href="#">Home</a>
+               <a href="#">Administração</a>
+               <div class="dropdown">
+                  <a href="#">Pedidos</a>
+                  <i class="bi bi-arrow-down-short"></i>
+                  <div class="menu">
+                     <a href="#">Criar Pedido</a>
+                     <a href="#">Lista de Pedidos</a>
+                  </div>
+               </div>
             </div>
          </nav>
       </div>
+
+      <script src="./Js/navBar.js"></script>
    </body>
 </html>
