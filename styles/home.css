@@ -42,10 +42,9 @@ body {
    border-radius: 6px;
 }
 
-.logo h2 {
-   font-size: 25px;
-   font-weight: 700;
-   color: #093d0c;
+.h2 img {
+   width: 100px;
+   height: 100px;
 }
 
 .links {
