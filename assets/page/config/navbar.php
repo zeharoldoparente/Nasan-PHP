@@ -1,17 +1,21 @@
 <nav class="navbar">
    <div class="logo">
-      <a href="./home.php"><img src="../image/logo.png" alt="Logo Nasam" /></a>
-      <div class="h2"><img src="../image/nome.png" alt=""></div>
+      <a href="/Nasan-PHP/assets/page/home.php">
+         <img src="/Nasan-PHP/assets/image/logo.png" alt="Logo Nasam" />
+      </a>
+      <div class="h2">
+         <img src="/Nasan-PHP/assets/image/nome.png" alt="">
+      </div>
    </div>
    <div class="links">
-      <a href="../home.php">Home</a>
-      <a href="#">Administração</a>
+      <a href="/Nasan-PHP/assets/page/home.php">Home</a>
+      <a href="/Nasan-PHP/assets/page/administracao.php">Administração</a>
       <div class="dropdown">
          <a href="#">Pedidos</a>
          <i class="bi bi-arrow-down-short"></i>
          <div class="menu">
-            <a href="#">Criar Pedido</a>
-            <a href="#">Lista de Pedidos</a>
+            <a href="/Nasan-PHP/assets/page/createPed.php">Criar Pedido</a>
+            <a href="/Nasan-PHP/assets/page/listPed.php">Lista de Pedidos</a>
          </div>
       </div>
    </div>
@@ -21,22 +25,22 @@
       </div>
       <div class="logout-button">
          <a href="/Nasan-PHP/assets/page/config/logout.php">
-            <img src="../image/logout.svg" alt="Sair" />
+            <img src="/Nasan-PHP/assets/image/logout.svg" alt="Sair" />
          </a>
       </div>
    </div>
    <div class="mobile-menu">
-      <a href="#">Home</a>
-      <a href="#">Administração</a>
+      <a href="/Nasan-PHP/assets/page/home.php">Home</a>
+      <a href="/Nasan-PHP/assets/page/administracao.php">Administração</a>
       <div class="dropdown">
          <a href="#">Pedidos</a>
          <i class="bi bi-arrow-down-short"></i>
          <div class="menu">
-            <a href="#">Criar Pedido</a>
-            <a href="#">Lista de Pedidos</a>
+            <a href="/Nasan-PHP/assets/page/createPed.php">Criar Pedido</a>
+            <a href="/Nasan-PHP/assets/page/listPed.php">Lista de Pedidos</a>
          </div>
       </div>
    </div>
 </nav>
 
-<script src="./Js/navBar.js"></script>
+<script src="/Nasan-PHP/assets/page/JS/navBar.js"></script>

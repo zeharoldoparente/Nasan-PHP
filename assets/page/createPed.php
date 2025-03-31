@@ -22,7 +22,7 @@ if (!isset($_SESSION['usuario'])) {
    <link rel="icon" href="../image/logo.png" type="image/x-icon" />
    <link rel="stylesheet" href="../../styles/global.css" />
    <link rel="stylesheet" href="../../styles/navbar.css" />
-   <title>Home</title>
+   <title>Criar Pedido</title>
 </head>
 
 <body>
