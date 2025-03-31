@@ -7,6 +7,8 @@ body {
    font-family: Poppins, sans-serif;
    background-color: #e7e7e7;
 }
-.container {
-   padding-top: 90px;
+.page-title {
+   padding: 76px 5px 0px 5px;
+   color: #24265d;
+   font-size: 30px;
 }

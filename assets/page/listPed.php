@@ -4,6 +4,7 @@ if (!isset($_SESSION['usuario'])) {
    header("Location: ../../index.php");
    exit();
 }
+ob_start();
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -28,10 +29,11 @@ if (!isset($_SESSION['usuario'])) {
 <body>
    <div class="container">
       <?php include __DIR__ . '/config/navbar.php'; ?>
+      <?php include __DIR__ . '/config/page_header.php'; ?>
 
-      <h1>Conteúdo da página atual</h1>
 
    </div>
 </body>
 
 </html>
+<?php ob_end_flush(); ?>
