@@ -20,7 +20,7 @@
          <i class="bi bi-list"></i>
       </div>
       <div class="logout-button">
-         <a href="../../index.php">
+         <a href="/Nasan-PHP/assets/page/config/logout.php">
             <img src="../image/logout.svg" alt="Sair" />
          </a>
       </div>

@@ -6,7 +6,6 @@
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>Carregando...</title>
    <style>
-      /* Estilo básico para a tela de loading */
       body {
          font-family: Arial, sans-serif;
          display: flex;
@@ -21,7 +20,6 @@
          text-align: center;
       }
 
-      /* Círculo de carregamento */
       .loader {
          border: 8px solid #f3f3f3;
          border-top: 8px solid #3498db;
@@ -32,7 +30,6 @@
          margin: 0 auto;
       }
 
-      /* Animação de rotação do círculo */
       @keyframes spin {
          0% {
             transform: rotate(0deg);
@@ -43,7 +40,6 @@
          }
       }
 
-      /* Estilo da frase de carregamento */
       .loading-text {
          font-size: 18px;
          font-weight: bold;
@@ -54,25 +50,23 @@
 
 <body>
    <div class="loading-container">
-      <div class="loader"></div> <!-- Círculo de carregamento -->
-      <div class="loading-text" id="loading-text">Carregando as informações.</div> <!-- Frase com reticências -->
+      <div class="loader"></div>
+      <div class="loading-text" id="loading-text">Carregando as informações.</div>
    </div>
 
    <script>
-      // Função para adicionar as reticências de forma dinâmica
       let loadingText = document.getElementById("loading-text");
       let dots = 0;
 
       function updateLoadingText() {
-         dots = (dots + 1) % 4; // Adiciona até 3 pontos e volta
+         dots = (dots + 1) % 4;
          loadingText.textContent = "Carregando as informações" + ".".repeat(dots);
       }
 
-      setInterval(updateLoadingText, 500); // Atualiza a cada 500ms
+      setInterval(updateLoadingText, 500);
 
-      // Redireciona após 3 segundos
       setTimeout(function() {
-         window.location.href = '../home.php'; // Redireciona para home após o tempo de loading
+         window.location.href = '../home.php';
       }, 3000);
    </script>
 </body>
