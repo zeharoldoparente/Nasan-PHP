@@ -18,6 +18,7 @@
             <a href="/Nasan-PHP/assets/page/listPed.php">Lista de Pedidos</a>
          </div>
       </div>
+      <a href="/Nasan-PHP/assets/page/cadastros.php">Cadastros</a>
    </div>
    <div class="navbar-right">
       <div class="hamburger-menu" onclick="toggleMenu()">
@@ -40,6 +41,7 @@
             <a href="/Nasan-PHP/assets/page/listPed.php">Lista de Pedidos</a>
          </div>
       </div>
+      <a href="/Nasan-PHP/assets/page/cadastros.php">Cadastros</a>
    </div>
 </nav>
 
