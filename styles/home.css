@@ -1,16 +1,3 @@
-/* Global styles */
-* {
-   margin: 0;
-   padding: 0;
-   box-sizing: border-box;
-}
-
-body {
-   font-family: Poppins, sans-serif;
-   background-color: #f9f9f9;
-}
-
-/* Navbar styles */
 .navbar {
    position: fixed;
    top: 0;
@@ -132,7 +119,6 @@ a.join-link {
    background: #f5f5f5;
 }
 
-/* Hamburger menu for mobile */
 .hamburger-menu {
    display: none;
    cursor: pointer;
@@ -143,7 +129,7 @@ a.join-link {
 }
 
 .logout-button {
-   display: flex; /* Faz o botão aparecer no desktop */
+   display: flex;
    align-items: center;
    justify-content: center;
    cursor: pointer;
@@ -164,7 +150,6 @@ a.join-link {
    border-radius: 15px;
 }
 
-/* Menu mobile */
 .mobile-menu {
    display: none;
    flex-direction: column;
@@ -193,18 +178,16 @@ a.join-link {
    display: flex;
 }
 
-/* Media queries for mobile */
 @media (max-width: 768px) {
    .links {
-      display: none; /* Esconde os links na versão desktop */
+      display: none;
    }
 
    .navbar {
-      flex-direction: row; /* Mantém o logo e nome à esquerda */
+      flex-direction: row;
       justify-content: space-between;
    }
 
-   /* Agrupando o hambúrguer e botão "Sair" em uma div */
    .navbar-right {
       display: flex;
       gap: 10px;
@@ -212,16 +195,16 @@ a.join-link {
    }
 
    .hamburger-menu {
-      display: block; /* Exibe o ícone hambúrguer em telas pequenas */
+      display: block;
       cursor: pointer;
    }
 
    .logout-button {
-      display: block; /* Exibe o botão de logout ao lado do hambúrguer */
+      display: block;
    }
 
    .mobile-menu {
-      display: none; /* Esconde o menu de navegação inicialmente */
+      display: none;
    }
 
    .mobile-menu.open {

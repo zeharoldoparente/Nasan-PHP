@@ -3,7 +3,7 @@
 
 <head>
    <meta charset="UTF-8" />
-   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
    <link rel="preconnect" href="https://fonts.googleapis.com" />
    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
    <link
@@ -22,7 +22,6 @@
          <?php if (isset($_GET['erro'])): ?>
             <p style="color: red; text-align: center;">Usuário ou senha incorretos!</p>
          <?php endif; ?>
-
          <form action="./assets/page/config/testLogin.php" method="POST">
             <input
                class="input"
@@ -43,7 +42,10 @@
                value="Entrar" />
          </form>
       </div>
-      <div class="image-container"></div>
+      <div class="image-mobile">
+         <img src="./assets/image/logo.png" class="logo" alt="Logo">
+         <img src="./assets/image/nome.png" class="nome" alt="Nome">
+      </div>
    </div>
 </body>
 
