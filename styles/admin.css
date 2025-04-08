@@ -13,14 +13,16 @@
 
 /* Ações administrativas - Novo */
 .admin-actions {
-   width: 100%;
+   width: 8%;
    display: flex;
+   align-items: center;
    justify-content: flex-end;
    margin-bottom: 15px;
 }
 
 .btn-action {
-   padding: 10px 15px;
+   height: 20px;
+   padding: 25px 25px;
    border: none;
    border-radius: 5px;
    cursor: pointer;
@@ -358,6 +360,9 @@ input[type="radio"]:checked + .radio-nao {
 
 /* Media query para dispositivos móveis */
 @media screen and (max-width: 768px) {
+   .admin-actions {
+      width: 100%;
+   }
    .admin-container {
       flex-direction: column;
    }
