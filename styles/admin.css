@@ -3,6 +3,7 @@
    padding: 10px;
    background-color: #ffffff;
 }
+
 .admin-container {
    display: flex;
    flex-direction: row;
@@ -10,15 +11,57 @@
    padding: 10px;
 }
 
+/* Ações administrativas - Novo */
+.admin-actions {
+   width: 100%;
+   display: flex;
+   justify-content: flex-end;
+   margin-bottom: 15px;
+}
+
+.btn-action {
+   padding: 10px 15px;
+   border: none;
+   border-radius: 5px;
+   cursor: pointer;
+   font-weight: 500;
+   font-size: 14px;
+   display: flex;
+   align-items: center;
+   gap: 5px;
+   transition: all 0.3s ease;
+}
+
+.btn-novo {
+   background-color: #007bff;
+   color: white;
+}
+
+.btn-novo:hover {
+   background-color: #0056b3;
+}
+
+/* Lista de usuários */
 .user-list {
    width: 40%;
    padding: 20px;
    border-right: 1px solid rgba(223, 219, 219, 0.212);
    overflow-y: auto;
+   max-height: 600px; /* Altura máxima com rolagem */
 }
+
+/* Mensagem quando não há usuários */
+.no-users-message {
+   text-align: center;
+   padding: 30px;
+   color: #777;
+   font-style: italic;
+}
+
 .user-details {
    width: 60%;
 }
+
 .user-card {
    display: flex;
    align-items: center;
@@ -31,15 +74,18 @@
    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
    transition: transform 0.2s;
 }
+
 .user-card:hover {
    transform: scale(1.01);
 }
+
 .user-card img {
    width: 40px;
    height: 40px;
    border-radius: 50%;
    margin-right: 12px;
 }
+
 .user-info {
    flex-grow: 1;
 }
@@ -49,9 +95,14 @@
    margin: 0;
 }
 
-.user-password {
+.user-login {
    font-size: 14px;
    color: #9e9e9e;
+   margin: 2px 0 0;
+}
+
+.user-admin {
+   font-size: 12px;
    margin: 2px 0 0;
 }
 
@@ -81,6 +132,7 @@
 .user-delete:hover {
    color: #dc3545;
 }
+
 .details-user {
    flex: 1;
    padding: 20px;
@@ -100,9 +152,21 @@
 .user-form {
    display: flex;
    flex-direction: column;
-   gap: 10px;
+   gap: 15px;
    width: 100%;
    max-width: 400px;
+}
+
+/* Grupos de formulário - Novo */
+.form-group {
+   display: flex;
+   flex-direction: column;
+   gap: 5px;
+}
+
+.form-group label {
+   font-weight: 500;
+   font-size: 14px;
 }
 
 .user-form input,
@@ -113,8 +177,15 @@
    border-radius: 5px;
 }
 
-.user-form button {
-   margin-top: 10px;
+/* Ações do formulário - Novo */
+.form-actions {
+   display: flex;
+   gap: 10px;
+   margin-top: 15px;
+}
+
+.user-form button,
+.form-actions button {
    padding: 10px;
    font-size: 16px;
    background-color: #007bff;
@@ -122,15 +193,38 @@
    border: none;
    border-radius: 5px;
    cursor: pointer;
+   transition: background-color 0.3s;
 }
 
-.user-form button:hover {
+.user-form button:hover,
+#btn-salvar:hover {
    background-color: #0056b3;
+}
+
+/* Botão cancelar - Novo */
+.btn-cancel {
+   background-color: #f0f0f0 !important;
+   color: #333 !important;
+}
+
+.btn-cancel:hover {
+   background-color: #e0e0e0 !important;
+}
+
+/* Botão excluir - Novo */
+.btn-delete {
+   background-color: #dc3545 !important;
+   color: white !important;
+}
+
+.btn-delete:hover {
+   background-color: #c82333 !important;
 }
 
 .hidden {
    display: none;
 }
+
 .admin-radio-group {
    display: flex;
    gap: 10px;
@@ -172,6 +266,7 @@ input[type="radio"]:checked + .radio-nao {
    background-color: #c62828;
    color: white;
 }
+
 /* Modal para dispositivos móveis */
 .modal {
    display: none;
@@ -198,7 +293,8 @@ input[type="radio"]:checked + .radio-nao {
    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.close-modal {
+.close-modal,
+.close-message-modal {
    position: absolute;
    top: 10px;
    right: 10px;
@@ -207,8 +303,57 @@ input[type="radio"]:checked + .radio-nao {
    color: #555;
 }
 
-.close-modal:hover {
+.close-modal:hover,
+.close-message-modal:hover {
    color: #000;
+}
+
+/* Modal de confirmação - Novo */
+.confirm-modal-content {
+   text-align: center;
+   max-width: 400px;
+}
+
+.confirm-modal-content h3 {
+   margin-top: 0;
+   color: #dc3545;
+}
+
+.confirm-actions {
+   display: flex;
+   gap: 10px;
+   margin-top: 20px;
+   justify-content: center;
+}
+
+/* Modal de mensagens - Novo */
+.message-modal-content {
+   text-align: center;
+   max-width: 400px;
+}
+
+.message {
+   padding: 15px;
+   border-radius: 4px;
+   font-weight: 500;
+}
+
+.message-sucesso {
+   background-color: #e0f7e9;
+   color: #2e7d32;
+}
+
+.message-erro {
+   background-color: #fdecea;
+   color: #c62828;
+}
+
+/* Título do formulário */
+#form-title {
+   margin-top: 0;
+   margin-bottom: 15px;
+   color: #333;
+   text-align: center;
 }
 
 /* Media query para dispositivos móveis */
@@ -221,6 +366,7 @@ input[type="radio"]:checked + .radio-nao {
       width: 100%;
       border-right: none;
       border-bottom: 1px solid rgba(223, 219, 219, 0.212);
+      max-height: 400px;
    }
 
    .user-details {

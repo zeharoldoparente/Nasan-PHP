@@ -1,25 +1,17 @@
 <?php
-include __DIR__ . '/config/config.php';
+// Arquivo: assets/page/administracao.php
 
-if (isset($_GET['acao']) && $_GET['acao'] === 'listar_usuarios') {
-   $sql = "SELECT id, usuario, nome, senha, admin FROM usuarios";
-   $result = $conn->query($sql);
+require_once __DIR__ . '/config/config.php';
 
-   $usuarios = [];
-
-   while ($row = $result->fetch_assoc()) {
-      $usuarios[] = $row;
-   }
-
-   header('Content-Type: application/json');
-   echo json_encode($usuarios);
-   exit;
-}
 session_start();
 if (!isset($_SESSION['usuario'])) {
    header("Location: ../../index.php");
    exit();
 }
+
+// Verificar se o usuário é administrador
+// (você pode implementar essa verificação no futuro)
+
 ob_start();
 ?>
 <!DOCTYPE html>
@@ -50,7 +42,14 @@ ob_start();
          <?php include __DIR__ . '/config/page_header.php'; ?>
       </h2>
       <div class="admin-container">
+         <div class="admin-actions">
+            <button id="btn-novo-usuario" class="btn-action btn-novo">
+               <i class="bi bi-person-plus"></i> Novo Usuário
+            </button>
+         </div>
+
          <div class="user-list"></div>
+
          <div class="user-details">
             <div class="details-user" id="details-user">
                <div class="details-placeholder" id="details-placeholder">
@@ -58,48 +57,84 @@ ob_start();
                </div>
 
                <form id="user-form" class="user-form hidden">
-                  <h3>Detalhes do Usuário</h3>
-
-                  <label for="id">ID:</label>
-                  <input type="text" id="id" name="id" disabled />
-
-                  <label for="usuario">Usuário:</label>
-                  <input type="text" id="usuario" name="usuario" />
-
-                  <label for="nome">Nome:</label>
-                  <input type="text" id="nome" name="nome" />
-
-                  <label for="senha">Senha:</label>
-                  <input type="password" id="senha" name="senha" />
-
-                  <label>Administrador?</label>
-                  <div class="admin-radio-group">
-                     <input
-                        type="radio"
-                        id="admin-nao"
-                        name="admin"
-                        value="0" />
-                     <label for="admin-nao" class="radio-nao">❌ Não</label>
-
-                     <input
-                        type="radio"
-                        id="admin-sim"
-                        name="admin"
-                        value="1" />
-                     <label for="admin-sim" class="radio-sim">✔️ Sim</label>
+                  <h3 id="form-title">Detalhes do Usuário</h3>
+                  <div class="form-group">
+                     <label for="id">ID:</label>
+                     <input type="text" id="id" name="id" disabled />
                   </div>
-                  <button type="submit">Salvar Alterações</button>
+
+                  <div class="form-group">
+                     <label for="usuario">Usuário:</label>
+                     <input type="text" id="usuario" name="usuario" required />
+                  </div>
+
+                  <div class="form-group">
+                     <label for="nome">Nome:</label>
+                     <input type="text" id="nome" name="nome" required />
+                  </div>
+
+                  <div class="form-group">
+                     <label for="senha">Senha:</label>
+                     <input type="password" id="senha" name="senha" placeholder="Deixe em branco para manter a senha atual" />
+                  </div>
+
+                  <div class="form-group">
+                     <label>Administrador?</label>
+                     <div class="admin-radio-group">
+                        <input
+                           type="radio"
+                           id="admin-nao"
+                           name="admin"
+                           value="0" />
+                        <label for="admin-nao" class="radio-nao">❌ Não</label>
+
+                        <input
+                           type="radio"
+                           id="admin-sim"
+                           name="admin"
+                           value="1" />
+                        <label for="admin-sim" class="radio-sim">✔️ Sim</label>
+                     </div>
+                  </div>
+
+                  <div class="form-actions">
+                     <button type="submit" id="btn-salvar">Salvar Alterações</button>
+                     <button type="button" id="btn-cancelar" class="btn-cancel">Cancelar</button>
+                  </div>
                </form>
             </div>
          </div>
       </div>
    </div>
+
+   <!-- Modal para mobile -->
    <div id="user-modal" class="modal">
       <div class="modal-content">
          <span class="close-modal">&times;</span>
          <div id="modal-content"></div>
       </div>
    </div>
+
+   <!-- Modal de confirmação para exclusão -->
+   <div id="confirm-modal" class="modal">
+      <div class="modal-content confirm-modal-content">
+         <h3>Confirmar Exclusão</h3>
+         <p>Tem certeza que deseja excluir este usuário?</p>
+         <div class="confirm-actions">
+            <button id="btn-confirm-delete" class="btn-delete">Sim, Excluir</button>
+            <button id="btn-cancel-delete" class="btn-cancel">Cancelar</button>
+         </div>
+      </div>
+   </div>
+
+   <!-- Modal de mensagens -->
+   <div id="message-modal" class="modal">
+      <div class="modal-content message-modal-content">
+         <span class="close-message-modal">&times;</span>
+         <div id="message-content"></div>
+      </div>
+   </div>
+
    <script src="./Js/admin.js"></script>
 </body>
 
