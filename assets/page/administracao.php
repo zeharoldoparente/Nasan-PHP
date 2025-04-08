@@ -23,16 +23,68 @@ ob_start();
    <link rel="icon" href="../image/logo.png" type="image/x-icon" />
    <link rel="stylesheet" href="../../styles/global.css" />
    <link rel="stylesheet" href="../../styles/navbar.css" />
+   <link rel="stylesheet" href="../../styles/admin.css" />
    <title>Administração</title>
 </head>
 
 <body>
+   <?php include __DIR__ . '/config/navbar.php'; ?>
    <div class="container">
-      <?php include __DIR__ . '/config/navbar.php'; ?>
-      <?php include __DIR__ . '/config/page_header.php'; ?>
+      <h2>
+         <?php include __DIR__ . '/config/page_header.php'; ?>
+      </h2>
+      <div class="admin-container">
+         <div class="user-list"></div>
+         <div class="user-details">
+            <div class="details-user" id="details-user">
+               <div class="details-placeholder" id="details-placeholder">
+                  <p>Clique em um usuário para obter os detalhes</p>
+               </div>
 
+               <form id="user-form" class="user-form hidden">
+                  <h3>Detalhes do Usuário</h3>
 
+                  <label for="id">ID:</label>
+                  <input type="text" id="id" name="id" disabled />
+
+                  <label for="usuario">Usuário:</label>
+                  <input type="text" id="usuario" name="usuario" />
+
+                  <label for="nome">Nome:</label>
+                  <input type="text" id="nome" name="nome" />
+
+                  <label for="senha">Senha:</label>
+                  <input type="password" id="senha" name="senha" />
+
+                  <label>Administrador?</label>
+                  <div class="admin-radio-group">
+                     <input
+                        type="radio"
+                        id="admin-nao"
+                        name="admin"
+                        value="0" />
+                     <label for="admin-nao" class="radio-nao">❌ Não</label>
+
+                     <input
+                        type="radio"
+                        id="admin-sim"
+                        name="admin"
+                        value="1" />
+                     <label for="admin-sim" class="radio-sim">✔️ Sim</label>
+                  </div>
+                  <button type="submit">Salvar Alterações</button>
+               </form>
+            </div>
+         </div>
+      </div>
    </div>
+   <div id="user-modal" class="modal">
+      <div class="modal-content">
+         <span class="close-modal">&times;</span>
+         <div id="modal-content"></div>
+      </div>
+   </div>
+   <script src="./Js/admin.js"></script>
 </body>
 
 </html>
