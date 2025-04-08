@@ -1,26 +1,14 @@
-const usuarios = [
-   {
-      id: 1,
-      usuario: "joaosilva",
-      nome: "João Silva",
-      senha: "123456",
-      admin: "1",
-   },
-   {
-      id: 2,
-      usuario: "josearoldo",
-      nome: "José Aroldo",
-      senha: "senha123",
-      admin: "0",
-   },
-   {
-      id: 3,
-      usuario: "neutonfragoso",
-      nome: "Neuton Fragoso",
-      senha: "admin123",
-      admin: "1",
-   },
-];
+let usuarios = [];
+
+async function carregarUsuarios() {
+   try {
+      const resposta = await fetch("administracao.php?acao=listar_usuarios");
+      usuarios = await resposta.json();
+      renderUserCards(); // renderiza com os dados do banco
+   } catch (erro) {
+      console.error("Erro ao carregar usuários:", erro);
+   }
+}
 
 // Seletores do DOM
 const userList = document.querySelector(".user-list");
@@ -123,7 +111,7 @@ window.addEventListener("resize", () => {
 });
 
 // Inicializa a lista
-renderUserCards();
+carregarUsuarios();
 
 // Eventos para o formulário principal
 userForm.addEventListener("submit", function (e) {

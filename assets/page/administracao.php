@@ -1,4 +1,20 @@
 <?php
+include __DIR__ . '/config/config.php';
+
+if (isset($_GET['acao']) && $_GET['acao'] === 'listar_usuarios') {
+   $sql = "SELECT id, usuario, nome, senha, admin FROM usuarios";
+   $result = $conn->query($sql);
+
+   $usuarios = [];
+
+   while ($row = $result->fetch_assoc()) {
+      $usuarios[] = $row;
+   }
+
+   header('Content-Type: application/json');
+   echo json_encode($usuarios);
+   exit;
+}
 session_start();
 if (!isset($_SESSION['usuario'])) {
    header("Location: ../../index.php");
