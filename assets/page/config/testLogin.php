@@ -22,6 +22,9 @@ if (isset($_POST["submit"]) && !empty($_POST["usuario"]) && !empty($_POST["senha
          // Senha correta, inicia sessão
          $_SESSION['usuario'] = $usuario;
 
+         // Armazenar status de administrador na sessão
+         $_SESSION['admin'] = $user['admin'] ?? 0;
+
          // Verificar se existe a coluna 'nome' na tabela e se tem valor
          if (isset($user['nome']) && !empty($user['nome'])) {
             $_SESSION['nome'] = $user['nome'];

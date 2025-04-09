@@ -1,16 +1,16 @@
 <?php
 // Arquivo: assets/page/administracao.php
 
+
 require_once __DIR__ . '/config/config.php';
 
 session_start();
-if (!isset($_SESSION['usuario'])) {
-   header("Location: ../../index.php");
-   exit();
+// Verificar se o usuário está logado e é admin
+if (!isset($_SESSION['admin']) || $_SESSION['admin'] != 1) {
+   // Redirecionar para a página inicial ou exibir erro
+   header('Location: home.php');
+   exit;
 }
-
-// Verificar se o usuário é administrador
-// (você pode implementar essa verificação no futuro)
 
 ob_start();
 ?>

@@ -13,6 +13,9 @@ if (isset($_SESSION['nome'])) {
    $nomeUsuario = $_SESSION['nome']; // Se houver um nome definido na sessão
 }
 
+// Verificar se o usuário é administrador
+$isAdmin = isset($_SESSION['admin']) && $_SESSION['admin'] == 1;
+
 // Para depuração - imprimir informações da sessão
 $debug = false; // Altere para true para ativar a depuração
 if ($debug) {
@@ -34,7 +37,9 @@ if ($debug) {
    </div>
    <div class="links">
       <a href="/Nasan-PHP/assets/page/home.php">Home</a>
-      <a href="/Nasan-PHP/assets/page/administracao.php">Administração</a>
+      <?php if ($isAdmin): ?>
+         <a href="/Nasan-PHP/assets/page/administracao.php">Administração</a>
+      <?php endif; ?>
       <div class="dropdown">
          <a href="#">Pedidos</a>
          <i class="bi bi-arrow-down-short"></i>
@@ -67,7 +72,9 @@ if ($debug) {
    </div>
    <div class="mobile-menu">
       <a href="/Nasan-PHP/assets/page/home.php">Home</a>
-      <a href="/Nasan-PHP/assets/page/administracao.php">Administração</a>
+      <?php if ($isAdmin): ?>
+         <a href="/Nasan-PHP/assets/page/administracao.php">Administração</a>
+      <?php endif; ?>
       <div class="dropdown">
          <a href="#">Pedidos</a>
          <i class="bi bi-arrow-down-short"></i>
