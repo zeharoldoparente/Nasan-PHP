@@ -19,8 +19,9 @@ if (isset($_POST["submit"]) && !empty($_POST["usuario"]) && !empty($_POST["senha
 
       // Verificar a senha usando password_verify
       if (password_verify($senha, $user['senha'])) {
-         // Senha correta, inicia sessão e redireciona para página de loading
+         // Após verificar a senha
          $_SESSION['usuario'] = $usuario;
+         $_SESSION['nome'] = $user['nome']; // Adicione esta linha
          header('Location: loading.php'); // Página de loading
          exit();
       }

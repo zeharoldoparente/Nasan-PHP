@@ -1,3 +1,18 @@
+<?php
+// Iniciar a sessão apenas se ainda não estiver ativa
+if (session_status() == PHP_SESSION_NONE) {
+   session_start();
+}
+// Verificar se o usuário está logado
+$usuarioLogado = isset($_SESSION['usuario']) ? $_SESSION['usuario'] : 'Visitante';
+
+// Obter o nome completo do usuário do banco de dados (se necessário)
+$nomeUsuario = $usuarioLogado; // Por padrão, usamos o nome de usuário
+if (isset($_SESSION['nome'])) {
+   $nomeUsuario = $_SESSION['nome']; // Se houver um nome definido na sessão
+}
+?>
+
 <nav class="navbar">
    <div class="logo">
       <a href="/Nasan-PHP/assets/page/home.php">
@@ -23,10 +38,21 @@
       <div class="hamburger-menu" onclick="toggleMenu()">
          <i class="bi bi-list"></i>
       </div>
-      <div class="logout-button">
-         <a href="/Nasan-PHP/assets/page/config/logout.php">
-            <img src="/Nasan-PHP/assets/image/logout.svg" alt="Sair" />
-         </a>
+      <!-- Avatar com o dropdown -->
+      <div class="avatar-dropdown">
+         <img src="/Nasan-PHP/assets/image/avatar.png" alt="Avatar" class="avatar" onclick="toggleUserMenu()" />
+         <div class="user-menu" id="user-menu">
+            <div class="user-info">
+               <p id="user-name"><?php echo $nomeUsuario; ?></p>
+               <span class="user-email"><?php echo $usuarioLogado; ?></span>
+            </div>
+            <button class="edit-button" onclick="openEditModal()">Editar perfil</button>
+            <hr />
+            <div class="logout">
+               <img src="/Nasan-PHP/assets/image/logout.svg" alt="Sair" />
+               <a href="/Nasan-PHP/assets/page/config/logout.php">Sair</a>
+            </div>
+         </div>
       </div>
    </div>
    <div class="mobile-menu">
@@ -42,5 +68,20 @@
       </div>
    </div>
 </nav>
+
+<!-- Modal para editar perfil -->
+<div id="edit-modal" class="modal">
+   <div class="modal-content">
+      <span class="close" onclick="closeEditModal()">&times;</span>
+      <h2>Editar Perfil</h2>
+      <form id="edit-form" action="/Nasan-PHP/assets/page/config/update_user.php" method="post">
+         <div class="form-group">
+            <label for="edit-name">Nome:</label>
+            <input type="text" id="edit-name" name="nome" value="<?php echo $nomeUsuario; ?>" required>
+         </div>
+         <button type="submit" class="save-button">Salvar</button>
+      </form>
+   </div>
+</div>
 
 <script src="/Nasan-PHP/assets/page/JS/navBar.js"></script>

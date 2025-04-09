@@ -11,6 +11,8 @@
    padding: 0 20px;
    color: #24265d;
    background-color: #ffffff;
+   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+   z-index: 1000;
 }
 
 .logo,
@@ -128,6 +130,12 @@ a.join-link {
    font-size: 30px;
 }
 
+.navbar-right {
+   display: flex;
+   align-items: center;
+   gap: 15px;
+}
+
 .logout-button {
    display: flex;
    align-items: center;
@@ -161,6 +169,7 @@ a.join-link {
    right: 0;
    width: 200px;
    box-shadow: 0 40px 40px rgb(0 0 0 / 6%);
+   z-index: 1000;
 }
 
 .mobile-menu a {
@@ -176,6 +185,187 @@ a.join-link {
 
 .mobile-menu.open {
    display: flex;
+}
+
+/* Avatar Dropdown Styling */
+.avatar-dropdown {
+   position: relative;
+}
+
+.avatar {
+   width: 40px;
+   height: 40px;
+   border-radius: 50%;
+   cursor: pointer;
+   border: 2px solid #f0f0f0;
+   transition: border-color 0.3s ease;
+}
+
+.avatar:hover {
+   border-color: rgb(206, 83, 83);
+}
+
+.user-menu {
+   position: absolute;
+   top: 50px;
+   right: 0;
+   background-color: #fff;
+   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+   padding: 15px;
+   border-radius: 8px;
+   width: 220px;
+   display: none;
+   z-index: 1001;
+   border: 1px solid #e1e1e1;
+}
+
+.user-menu::before {
+   content: "";
+   background: inherit;
+   border-top: 1px solid #e1e1e1;
+   border-right: 1px solid #e1e1e1;
+   position: absolute;
+   top: -7px;
+   right: 15px;
+   width: 12px;
+   height: 12px;
+   rotate: -45deg;
+}
+
+.user-info {
+   text-align: center;
+   margin-bottom: 10px;
+}
+
+.user-menu p {
+   font-size: 16px;
+   font-weight: 600;
+   margin: 0 0 5px 0;
+   color: #24265d;
+}
+
+.user-email {
+   font-size: 14px;
+   color: #666;
+   display: block;
+}
+
+.edit-button {
+   width: 100%;
+   padding: 8px;
+   margin: 10px 0;
+   background-color: #f0f0f0;
+   border: none;
+   border-radius: 5px;
+   cursor: pointer;
+   font-weight: 500;
+   transition: background-color 0.3s ease;
+}
+
+.edit-button:hover {
+   background-color: #e0e0e0;
+}
+
+.logout {
+   display: flex;
+   align-items: center;
+   padding: 8px 0;
+   margin-top: 5px;
+}
+
+.logout img {
+   width: 20px;
+   height: 20px;
+   margin-right: 10px;
+}
+
+.logout a {
+   text-decoration: none;
+   color: rgb(206, 83, 83);
+   font-weight: 500;
+   transition: color 0.3s ease;
+}
+
+.logout a:hover {
+   color: #c52121;
+}
+
+/* Modal Styling */
+.modal {
+   display: none;
+   position: fixed;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100%;
+   background-color: rgba(0, 0, 0, 0.5);
+   z-index: 2000;
+   justify-content: center;
+   align-items: center;
+}
+
+.modal-content {
+   background-color: white;
+   padding: 25px;
+   border-radius: 10px;
+   width: 400px;
+   max-width: 90%;
+   position: relative;
+   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.close {
+   position: absolute;
+   top: 15px;
+   right: 20px;
+   font-size: 24px;
+   cursor: pointer;
+   color: #999;
+}
+
+.close:hover {
+   color: #555;
+}
+
+.modal h2 {
+   margin-top: 0;
+   color: #24265d;
+   margin-bottom: 20px;
+}
+
+.form-group {
+   margin-bottom: 20px;
+}
+
+.form-group label {
+   display: block;
+   margin-bottom: 5px;
+   font-weight: 500;
+   color: #555;
+}
+
+.form-group input {
+   width: 100%;
+   padding: 10px;
+   border: 1px solid #ddd;
+   border-radius: 5px;
+   font-size: 16px;
+}
+
+.save-button {
+   background-color: rgb(206, 83, 83);
+   color: white;
+   border: none;
+   padding: 10px 15px;
+   border-radius: 5px;
+   font-weight: 500;
+   cursor: pointer;
+   width: 100%;
+   transition: background-color 0.3s ease;
+}
+
+.save-button:hover {
+   background-color: #c52121;
 }
 
 @media (max-width: 768px) {
