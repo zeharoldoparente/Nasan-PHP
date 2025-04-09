@@ -1,5 +1,5 @@
 <?php
-// Arquivo para processar a atualização do nome do usuário
+// Iniciar sessão
 session_start();
 
 // Verificar se o usuário está logado
@@ -16,38 +16,45 @@ if (!isset($_POST['nome']) || empty($_POST['nome'])) {
    exit;
 }
 
-// Obter o nome do formulário
-$nome = $_POST['nome'];
-$usuario = $_SESSION['usuario'];
+// Obter dados
+$usuarioLogado = $_SESSION['usuario'];
+$novoNome = $_POST['nome'];
 
-// Incluir o arquivo de configuração do banco de dados
-include_once(__DIR__ . "/config.php");
+// Conexão com banco de dados
+$servidor = "localhost";
+$usuario = "root";
+$senha = "";
+$banco = "nasam";
 
-// Atualizar o nome do usuário no banco de dados
-// Nota: Você precisará ajustar esta consulta conforme a estrutura do seu banco de dados
-try {
-   // Verificar se a tabela tem uma coluna 'nome'
-   // Se não tiver, você pode precisar adicionar essa coluna ao seu banco de dados
-   $sql = "UPDATE usuarios SET nome = ? WHERE usuario = ?";
-   $stmt = $conn->prepare($sql);
-   $stmt->bind_param("ss", $nome, $usuario);
-   $result = $stmt->execute();
+$conn = new mysqli($servidor, $usuario, $senha, $banco);
 
-   if ($result) {
-      // Atualizar o nome na sessão
-      $_SESSION['nome'] = $nome;
-
-      header('Content-Type: application/json');
-      echo json_encode(['success' => true]);
-   } else {
-      header('Content-Type: application/json');
-      echo json_encode(['success' => false, 'message' => 'Erro ao atualizar no banco de dados']);
-   }
-
-   $stmt->close();
-} catch (Exception $e) {
+if ($conn->connect_error) {
    header('Content-Type: application/json');
-   echo json_encode(['success' => false, 'message' => 'Erro: ' . $e->getMessage()]);
+   echo json_encode(['success' => false, 'message' => 'Erro de conexão com o banco de dados']);
+   exit;
 }
 
+// Executar UPDATE
+$sql = "UPDATE usuarios SET nome = ? WHERE usuario = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ss", $novoNome, $usuarioLogado);
+$result = $stmt->execute();
+$linhasAfetadas = $stmt->affected_rows;
+
+// Atualizar a sessão se o banco foi atualizado
+if ($result) {
+   $_SESSION['nome'] = $novoNome;
+}
+
+// Fechar conexões
+$stmt->close();
 $conn->close();
+
+// Responder ao cliente
+if ($result && $linhasAfetadas > 0) {
+   header('Content-Type: application/json');
+   echo json_encode(['success' => true, 'message' => 'Nome atualizado com sucesso']);
+} else {
+   header('Content-Type: application/json');
+   echo json_encode(['success' => false, 'message' => 'Nenhuma alteração realizada. Verifique se o usuário existe.']);
+}

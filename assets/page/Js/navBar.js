@@ -8,12 +8,12 @@ function toggleMenu() {
 document.addEventListener("click", function (e) {
    const menu = document.querySelector(".mobile-menu");
    const hamburgerMenu = document.querySelector(".hamburger-menu");
-   const logoutButton = document.querySelector(".logout-button");
 
    if (
+      menu &&
+      hamburgerMenu &&
       !menu.contains(e.target) &&
-      !hamburgerMenu.contains(e.target) &&
-      !logoutButton.contains(e.target)
+      !hamburgerMenu.contains(e.target)
    ) {
       menu.classList.remove("open");
    }
@@ -21,13 +21,20 @@ document.addEventListener("click", function (e) {
 
 // Funções para o menu do usuário
 function toggleUserMenu() {
+   console.log("toggleUserMenu chamado");
    const userMenu = document.getElementById("user-menu");
 
-   // Alterna a visibilidade do menu
-   if (userMenu.style.display === "none" || userMenu.style.display === "") {
-      userMenu.style.display = "block";
+   if (userMenu) {
+      // Alterna a visibilidade do menu
+      if (userMenu.style.display === "none" || userMenu.style.display === "") {
+         userMenu.style.display = "block";
+         console.log("Menu aberto");
+      } else {
+         userMenu.style.display = "none";
+         console.log("Menu fechado");
+      }
    } else {
-      userMenu.style.display = "none";
+      console.error("Elemento user-menu não encontrado");
    }
 }
 
@@ -36,74 +43,130 @@ document.addEventListener("click", function (e) {
    const userMenu = document.getElementById("user-menu");
    const avatar = document.querySelector(".avatar");
 
-   if (userMenu && !userMenu.contains(e.target) && e.target !== avatar) {
+   if (
+      userMenu &&
+      avatar &&
+      !userMenu.contains(e.target) &&
+      e.target !== avatar
+   ) {
       userMenu.style.display = "none";
    }
 });
 
 // Funções para o modal de editar perfil
 function openEditModal() {
+   console.log("openEditModal chamado");
    const modal = document.getElementById("edit-modal");
-   modal.style.display = "flex";
 
-   // Fechar o menu do usuário quando abrir o modal
-   const userMenu = document.getElementById("user-menu");
-   userMenu.style.display = "none";
+   if (modal) {
+      modal.style.display = "flex";
+      console.log("Modal aberto");
+
+      // Fechar o menu do usuário quando abrir o modal
+      const userMenu = document.getElementById("user-menu");
+      if (userMenu) {
+         userMenu.style.display = "none";
+      }
+   } else {
+      console.error("Elemento edit-modal não encontrado");
+   }
 }
 
 function closeEditModal() {
+   console.log("closeEditModal chamado");
    const modal = document.getElementById("edit-modal");
-   modal.style.display = "none";
+
+   if (modal) {
+      modal.style.display = "none";
+      console.log("Modal fechado");
+   }
 }
 
 // Fechar o modal quando clicar fora dele
 document.addEventListener("click", function (e) {
    const modal = document.getElementById("edit-modal");
-   const modalContent = document.querySelector(".modal-content");
+   const modalContent = modal ? modal.querySelector(".modal-content") : null;
 
-   if (modal && e.target === modal && !modalContent.contains(e.target)) {
+   if (
+      modal &&
+      modalContent &&
+      e.target === modal &&
+      !modalContent.contains(e.target)
+   ) {
       modal.style.display = "none";
    }
 });
 
-// Submeter o formulário de edição via AJAX
+// Submeter o formulário de edição
 document.addEventListener("DOMContentLoaded", function () {
+   console.log("DOMContentLoaded - Inicializando scripts");
+
    const editForm = document.getElementById("edit-form");
 
    if (editForm) {
+      console.log(
+         "Formulário de edição encontrado, configurando evento submit"
+      );
+
       editForm.addEventListener("submit", function (e) {
          e.preventDefault();
+         console.log("Formulário submetido");
 
          const nome = document.getElementById("edit-name").value;
+         console.log("Nome a ser atualizado:", nome);
 
-         // Criar um objeto FormData para enviar os dados
-         const formData = new FormData();
-         formData.append("nome", nome);
+         // Enviar o formulário via XMLHttpRequest para melhor compatibilidade
+         const xhr = new XMLHttpRequest();
+         const formData = new FormData(editForm);
 
-         // Enviar via fetch API
-         fetch(editForm.action, {
-            method: "POST",
-            body: formData,
-         })
-            .then((response) => response.json())
-            .then((data) => {
-               if (data.success) {
-                  // Atualizar o nome na interface
-                  document.getElementById("user-name").textContent = nome;
+         xhr.open("POST", editForm.action, true);
+         xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+               console.log("Status da resposta:", xhr.status);
+               console.log("Resposta completa:", xhr.responseText);
 
-                  // Fechar o modal
-                  closeEditModal();
+               if (xhr.status === 200) {
+                  try {
+                     const data = JSON.parse(xhr.responseText);
+                     console.log("Dados parseados:", data);
 
-                  // Opcional: mostrar mensagem de sucesso
-                  alert("Nome atualizado com sucesso!");
+                     if (data.success) {
+                        // Atualizar o nome na interface
+                        const userNameElement =
+                           document.getElementById("user-name");
+                        if (userNameElement) {
+                           userNameElement.textContent = nome;
+                           console.log("Nome atualizado na interface");
+                        }
+
+                        // Fechar o modal
+                        closeEditModal();
+
+                        // Mostrar mensagem de sucesso
+                        alert("Nome atualizado com sucesso!");
+                     } else {
+                        console.error(
+                           "Erro retornado pelo servidor:",
+                           data.message
+                        );
+                        alert("Erro ao atualizar: " + data.message);
+                     }
+                  } catch (error) {
+                     console.error("Erro ao parsear resposta JSON:", error);
+                     console.error("Resposta recebida:", xhr.responseText);
+                     alert("Erro ao processar resposta do servidor.");
+                  }
                } else {
-                  alert("Erro ao atualizar: " + data.message);
+                  console.error("Erro HTTP:", xhr.status);
+                  alert("Erro de comunicação com o servidor.");
                }
-            })
-            .catch((error) => {
-               console.error("Erro:", error);
-               alert("Ocorreu um erro ao processar sua solicitação.");
-            });
+            }
+         };
+
+         console.log("Enviando requisição...");
+         xhr.send(formData);
       });
+   } else {
+      console.warn("Formulário de edição não encontrado");
    }
 });
