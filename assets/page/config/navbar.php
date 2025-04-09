@@ -40,6 +40,8 @@ if ($debug) {
       <?php if ($isAdmin): ?>
          <a href="/Nasan-PHP/assets/page/administracao.php">Administração</a>
       <?php endif; ?>
+      <a href="/Nasan-PHP/assets/page/cadastros.php">Cadastros</a>
+
       <div class="dropdown">
          <a href="#">Pedidos</a>
          <i class="bi bi-arrow-down-short"></i>
@@ -75,6 +77,8 @@ if ($debug) {
       <?php if ($isAdmin): ?>
          <a href="/Nasan-PHP/assets/page/administracao.php">Administração</a>
       <?php endif; ?>
+      <a href="/Nasan-PHP/assets/page/cadastros.php">Cadastros</a>
+
       <div class="dropdown">
          <a href="#">Pedidos</a>
          <i class="bi bi-arrow-down-short"></i>

@@ -12,3 +12,8 @@ body {
    color: #24265d;
    font-size: 30px;
 }
+.container {
+   margin-top: 70px;
+   padding: 10px;
+   background-color: #ffffff;
+}
