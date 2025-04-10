@@ -8,6 +8,128 @@ document.addEventListener("DOMContentLoaded", function () {
    const modalTitle = document.getElementById("modal-title");
    const btnCloseModal = document.querySelector(".btn-close-modal");
 
+   // Elementos de lista
+   const listaClientes = document.getElementById("lista-clientes");
+   const listaProdutos = document.getElementById("lista-produtos");
+
+   // Carregar clientes
+   function carregarClientes() {
+      fetch("../get_clientes.php")
+         .then((response) => {
+            if (!response.ok) {
+               throw new Error("Erro na resposta do servidor");
+            }
+            return response.json();
+         })
+         .then((clientes) => {
+            listaClientes.innerHTML = ""; // Limpa lista atual
+
+            // Verifica se clientes é um array
+            if (Array.isArray(clientes)) {
+               clientes.forEach((cliente) => {
+                  const itemCliente = criarItemCliente(cliente);
+                  listaClientes.appendChild(itemCliente);
+               });
+
+               // Reaplica setup de eventos nos novos itens
+               setupListItems(
+                  ".cliente-item",
+                  "form-cliente-panel",
+                  "clienteForm",
+                  "Cliente"
+               );
+            } else {
+               console.error("Resposta inválida:", clientes);
+               listaClientes.innerHTML = "<p>Nenhum cliente encontrado</p>";
+            }
+         })
+         .catch((error) => {
+            console.error("Erro ao carregar clientes:", error);
+            listaClientes.innerHTML = `
+               <div style="color: red; text-align: center; padding: 20px;">
+                  Erro ao carregar clientes. 
+                  <br>Detalhes: ${error.message}
+                  <br><button onclick="carregarClientes()">Tentar Novamente</button>
+               </div>
+            `;
+         });
+   }
+
+   // Carregar produtos
+   function carregarProdutos() {
+      fetch("../get_produtos.php")
+         .then((response) => {
+            if (!response.ok) {
+               throw new Error("Erro na resposta do servidor");
+            }
+            return response.json();
+         })
+         .then((produtos) => {
+            listaProdutos.innerHTML = ""; // Limpa lista atual
+
+            // Verifica se produtos é um array
+            if (Array.isArray(produtos)) {
+               produtos.forEach((produto) => {
+                  const itemProduto = criarItemProduto(produto);
+                  listaProdutos.appendChild(itemProduto);
+               });
+
+               // Reaplica setup de eventos nos novos itens
+               setupListItems(
+                  ".produto-item",
+                  "form-produto-panel",
+                  "produtoForm",
+                  "Produto"
+               );
+            } else {
+               console.error("Resposta inválida:", produtos);
+               listaProdutos.innerHTML = "<p>Nenhum produto encontrado</p>";
+            }
+         })
+         .catch((error) => {
+            console.error("Erro ao carregar produtos:", error);
+            listaProdutos.innerHTML = `
+               <div style="color: red; text-align: center; padding: 20px;">
+                  Erro ao carregar produtos. 
+                  <br>Detalhes: ${error.message}
+                  <br><button onclick="carregarProdutos()">Tentar Novamente</button>
+               </div>
+            `;
+         });
+   }
+
+   // Criar item de cliente para a lista
+   function criarItemCliente(cliente) {
+      const div = document.createElement("div");
+      div.classList.add("list-item", "cliente-item");
+      div.setAttribute("data-id", cliente.id);
+
+      div.innerHTML = `
+         <div class="list-item-content">
+            <h4>${cliente.razao_social}</h4>
+            <p>${cliente.telefone}</p>
+         </div>
+      `;
+
+      return div;
+   }
+
+   // Criar item de produto para a lista
+   function criarItemProduto(produto) {
+      const div = document.createElement("div");
+      div.classList.add("list-item", "produto-item");
+      div.setAttribute("data-id", produto.id);
+
+      div.innerHTML = `
+         <div class="list-item-content">
+            <h4>${produto.nome}</h4>
+            <p>R$ ${parseFloat(produto.preco_venda).toFixed(2)}</p>
+         </div>
+      `;
+
+      return div;
+   }
+
    // Funções para manipular o modal
    function openModal(title, content) {
       modalTitle.textContent = title;
@@ -55,6 +177,13 @@ document.addEventListener("DOMContentLoaded", function () {
       // Adiciona classe active ao botão clicado e à tab correspondente
       document.querySelector(`[data-tab="${tabId}"]`).classList.add("active");
       document.getElementById(`${tabId}-tab`).classList.add("active");
+
+      // Carrega dados correspondentes
+      if (tabId === "clientes") {
+         carregarClientes();
+      } else if (tabId === "produtos") {
+         carregarProdutos();
+      }
    }
 
    // Adiciona eventos de clique nas abas
@@ -64,6 +193,9 @@ document.addEventListener("DOMContentLoaded", function () {
          switchTab(tabId);
       });
    });
+
+   // Carrega clientes na primeira inicialização
+   carregarClientes();
 
    // Funções para manipular os itens da lista
    function setupListItems(itemSelector, formPanelId, formId, itemType) {
@@ -84,60 +216,89 @@ document.addEventListener("DOMContentLoaded", function () {
             const itemId = this.getAttribute("data-id");
             const itemTitle = this.querySelector("h4").textContent;
 
-            if (isMobile) {
-               // Em dispositivos móveis, exibe no modal
-               const formClone = form.cloneNode(true);
-               const modalFormId = `${formId}-modal`;
-               formClone.id = modalFormId;
+            // Busca dados do item selecionado via AJAX
+            const endpoint =
+               itemType === "Cliente"
+                  ? "../page/get_cliente.php"
+                  : "../page/get_produto.php";
 
-               // Atualiza os IDs dos campos no clone para evitar duplicidade
-               formClone.querySelectorAll("[id]").forEach((el) => {
-                  const oldId = el.id;
-                  const newId = `${oldId}-modal`;
-                  el.id = newId;
+            fetch(`${endpoint}?id=${itemId}`)
+               .then((response) => response.json())
+               .then((dados) => {
+                  // Preenche o formulário com os dados
+                  preencherFormulario(form, dados, itemType);
+
+                  if (isMobile) {
+                     // Em dispositivos móveis, exibe no modal
+                     const formClone = form.cloneNode(true);
+                     const modalFormId = `${formId}-modal`;
+                     formClone.id = modalFormId;
+
+                     // Atualiza os IDs dos campos no clone para evitar duplicidade
+                     formClone.querySelectorAll("[id]").forEach((el) => {
+                        const oldId = el.id;
+                        const newId = `${oldId}-modal`;
+                        el.id = newId;
+                     });
+
+                     // Define título e exibe o modal
+                     let modalFormTitle = `Editar ${itemType}`;
+                     openModal(modalFormTitle, formClone);
+
+                     // Configura a validação e envio do formulário clonado
+                     setupFormSubmit(modalFormId, closeModal);
+
+                     // Configura botões de ação no modal
+                     setupModalButtons(formClone);
+                  } else {
+                     // Em desktops, exibe no painel lateral
+                     // Atualiza o ID no formulário
+                     if (formId === "clienteForm") {
+                        document.getElementById("cliente-id").textContent =
+                           itemId;
+                     } else if (formId === "produtoForm") {
+                        document.getElementById("produto-id").textContent =
+                           itemId;
+                     }
+
+                     // Exibe o formulário no painel
+                     formPanel.style.display = "block";
+                  }
+               })
+               .catch((error) => {
+                  console.error(
+                     `Erro ao buscar ${itemType.toLowerCase()}:`,
+                     error
+                  );
+                  alert(`Erro ao carregar dados do ${itemType.toLowerCase()}`);
                });
-
-               // Define título e exibe o modal
-               let modalFormTitle = `Editar ${itemType}`;
-               openModal(modalFormTitle, formClone);
-
-               // Configura a validação e envio do formulário clonado
-               setupFormSubmit(modalFormId, closeModal);
-
-               // Configura botões de ação no modal
-               setupModalButtons(formClone);
-            } else {
-               // Em desktops, exibe no painel lateral
-
-               // Atualiza o ID no formulário
-               if (formId === "clienteForm") {
-                  document.getElementById("cliente-id").textContent = itemId;
-               } else if (formId === "produtoForm") {
-                  document.getElementById("produto-id").textContent = itemId;
-               }
-
-               // Exibe o formulário no painel
-               formPanel.style.display = "block";
-            }
          });
       });
    }
 
-   // Configuração para Clientes
-   setupListItems(
-      ".cliente-item",
-      "form-cliente-panel",
-      "clienteForm",
-      "Cliente"
-   );
-
-   // Configuração para Produtos
-   setupListItems(
-      ".produto-item",
-      "form-produto-panel",
-      "produtoForm",
-      "Produto"
-   );
+   // Preencher formulário com dados
+   function preencherFormulario(form, dados, tipo) {
+      if (tipo === "Cliente") {
+         form.querySelector("#empresa").value = dados.razao_social;
+         form.querySelector("#cnpj").value = dados.cpf_cnpj;
+         form.querySelector("#ie").value = dados.inscricao_estadual || "";
+         form.querySelector("#email").value = dados.email || "";
+         form.querySelector("#telefone").value = dados.telefone;
+         form.querySelector("#cep").value = dados.cep;
+         form.querySelector("#rua").value = dados.rua;
+         form.querySelector("#numero").value = dados.numero;
+         form.querySelector("#bairro").value = dados.bairro;
+         form.querySelector("#complemento").value = dados.complemento || "";
+         form.querySelector("#cidade").value = dados.cidade;
+         form.querySelector("#estado").value = dados.estado;
+         form.querySelector("#observacoes").value = dados.observacoes || "";
+      } else if (tipo === "Produto") {
+         form.querySelector("#codigo-barras").value = dados.codigo_barras || "";
+         form.querySelector("#nome-produto").value = dados.nome;
+         form.querySelector("#unidade").value = dados.unidade;
+         form.querySelector("#preco-venda").value = dados.preco_venda;
+      }
+   }
 
    // Botões "Novo Cliente" e "Novo Produto"
    function setupAddButtons(btnId, formId, formPanelId, itemType) {
@@ -154,6 +315,9 @@ document.addEventListener("DOMContentLoaded", function () {
                .querySelectorAll(itemSelector)
                .forEach((i) => i.classList.remove("active"));
 
+            // Reset do formulário
+            form.reset();
+
             if (isMobile) {
                // Em dispositivos móveis, exibe no modal
                const formClone = form.cloneNode(true);
@@ -167,9 +331,6 @@ document.addEventListener("DOMContentLoaded", function () {
                   el.id = newId;
                });
 
-               // Reset ao formulário
-               formClone.reset();
-
                // Define título e exibe o modal
                let modalFormTitle = `Novo ${itemType}`;
                openModal(modalFormTitle, formClone);
@@ -181,8 +342,6 @@ document.addEventListener("DOMContentLoaded", function () {
                setupModalButtons(formClone);
             } else {
                // Em desktops, exibe no painel lateral
-               form.reset();
-
                // Resetar o ID do formulário
                if (formId === "clienteForm") {
                   document.getElementById("cliente-id").textContent =
@@ -220,6 +379,58 @@ document.addEventListener("DOMContentLoaded", function () {
             form.reset();
          });
       }
+
+      // Adicionar botão de exclusão
+      const btnExcluir = document.createElement("button");
+      btnExcluir.type = "button";
+      btnExcluir.textContent = "Excluir";
+      btnExcluir.classList.add("btn-cancel");
+
+      btnExcluir.addEventListener("click", function () {
+         const itemId = form.querySelector('[name="id"]')?.value;
+         const itemType = form.id.includes("cliente") ? "cliente" : "produto";
+
+         if (itemId) {
+            if (confirm(`Tem certeza que deseja excluir este ${itemType}?`)) {
+               const excluirEndpoint =
+                  itemType === "cliente"
+                     ? "../page/excluir_cliente.php"
+                     : "../page/excluir_produto.php";
+
+               fetch(excluirEndpoint, {
+                  method: "POST",
+                  headers: {
+                     "Content-Type": "application/x-www-form-urlencoded",
+                  },
+                  body: `id=${itemId}`,
+               })
+                  .then((response) => response.json())
+                  .then((resultado) => {
+                     if (resultado.sucesso) {
+                        alert(resultado.mensagem);
+                        closeModal();
+                        // Recarrega a lista
+                        if (itemType === "cliente") {
+                           carregarClientes();
+                        } else {
+                           carregarProdutos();
+                        }
+                     } else {
+                        alert("Erro: " + resultado.erros.join(", "));
+                     }
+                  })
+                  .catch((error) => {
+                     console.error("Erro:", error);
+                     alert("Erro ao excluir item");
+                  });
+            }
+         }
+      });
+
+      const formActions = form.querySelector(".form-actions");
+      if (formActions && itemId) {
+         formActions.insertBefore(btnExcluir, formActions.firstChild);
+      }
    }
 
    // Configura envio do formulário
@@ -229,17 +440,55 @@ document.addEventListener("DOMContentLoaded", function () {
          form.addEventListener("submit", function (e) {
             e.preventDefault();
 
-            // Aqui você faria o envio dos dados para o servidor
-            // Simulação de processamento
-            alert("Formulário enviado com sucesso!");
+            // Determina o tipo de formulário e endpoint
+            const isCliente = formId.includes("cliente");
+            const endpoint = isCliente
+               ? "../page/processa_cliente.php"
+               : "../page/processa_produto.php";
 
-            // Fecha o modal após enviar (se estiver no mobile)
-            if (isMobile && callback) {
-               callback();
+            // Prepara os dados do formulário
+            const formData = new FormData(form);
+
+            // Adiciona ID se estiver editando
+            const itemId = form.querySelector('[name="id"]')?.value;
+            if (itemId) {
+               formData.append("id", itemId);
             }
 
-            // Reset ao formulário
-            form.reset();
+            // Envia os dados via fetch
+            fetch(endpoint, {
+               method: "POST",
+               body: formData,
+            })
+               .then((response) => response.json())
+               .then((resultado) => {
+                  if (resultado.sucesso) {
+                     alert(resultado.mensagem);
+
+                     // Fecha o modal se estiver no mobile
+                     if (callback) {
+                        callback();
+                     }
+
+                     // Recarrega a lista
+                     if (isCliente) {
+                        carregarClientes();
+                     } else {
+                        carregarProdutos();
+                     }
+
+                     // Limpa o formulário
+                     form.reset();
+                  } else {
+                     // Exibe erros
+                     const errosTexto = resultado.erros.join("\n");
+                     alert("Erro ao salvar:\n" + errosTexto);
+                  }
+               })
+               .catch((error) => {
+                  console.error("Erro:", error);
+                  alert("Erro ao processar formulário");
+               });
          });
       }
    }
