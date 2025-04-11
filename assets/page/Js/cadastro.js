@@ -663,7 +663,7 @@ function loadProdutos() {
 
             produtoItem.innerHTML = `
                <div class="list-item-content">
-                   <h4>${produto.nome}</h4>
+                   <h4>${codigoBarras} - ${produto.nome}</h4>
                    <p>${preco}</p>
                </div>
            `;
