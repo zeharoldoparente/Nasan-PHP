@@ -11,12 +11,6 @@ const formTitle = document.getElementById("form-title");
 const userModal = document.getElementById("user-modal");
 const modalContent = document.getElementById("modal-content");
 const closeModal = document.querySelector(".close-modal");
-const confirmModal = document.getElementById("confirm-modal");
-const btnConfirmDelete = document.getElementById("btn-confirm-delete");
-const btnCancelDelete = document.getElementById("btn-cancel-delete");
-const messageModal = document.getElementById("message-modal");
-const messageContent = document.getElementById("message-content");
-const closeMessageModal = document.querySelector(".close-message-modal");
 const btnNovoUsuario = document.getElementById("btn-novo-usuario");
 const btnCancelar = document.getElementById("btn-cancelar");
 
@@ -56,39 +50,15 @@ document.addEventListener("DOMContentLoaded", function () {
       }
    });
 
-   // Evento para confirmar exclusão
-   btnConfirmDelete.addEventListener("click", async () => {
-      await excluirUsuario(usuarioIdParaExcluir);
-      confirmModal.style.display = "none";
-      usuarioIdParaExcluir = null;
-   });
-
-   // Evento para cancelar exclusão
-   btnCancelDelete.addEventListener("click", () => {
-      confirmModal.style.display = "none";
-      usuarioIdParaExcluir = null;
-   });
-
    // Fecha o modal quando clica no X
    closeModal.addEventListener("click", () => {
       userModal.style.display = "none";
-   });
-
-   // Fecha o modal de mensagem quando clica no X
-   closeMessageModal.addEventListener("click", () => {
-      messageModal.style.display = "none";
    });
 
    // Fecha o modal quando clica fora do conteúdo
    window.addEventListener("click", (e) => {
       if (e.target === userModal) {
          userModal.style.display = "none";
-      }
-      if (e.target === messageModal) {
-         messageModal.style.display = "none";
-      }
-      if (e.target === confirmModal) {
-         confirmModal.style.display = "none";
       }
    });
 
@@ -113,9 +83,8 @@ async function carregarUsuarios() {
       renderUserCards();
    } catch (erro) {
       console.error("Erro ao carregar usuários:", erro);
-      mostrarMensagem(
-         "Erro ao carregar usuários. Tente novamente mais tarde.",
-         "erro"
+      customModal.error(
+         "Erro ao carregar usuários. Tente novamente mais tarde."
       );
    }
 }
@@ -123,23 +92,6 @@ async function carregarUsuarios() {
 // Função para verificar se é um dispositivo móvel
 function isMobile() {
    return window.innerWidth <= 768;
-}
-
-// Função para exibir mensagens
-function mostrarMensagem(mensagem, tipo = "sucesso") {
-   messageContent.innerHTML = "";
-
-   const msgElement = document.createElement("div");
-   msgElement.classList.add("message", `message-${tipo}`);
-   msgElement.textContent = mensagem;
-
-   messageContent.appendChild(msgElement);
-   messageModal.style.display = "flex";
-
-   // Fechar a mensagem automaticamente após 3 segundos
-   setTimeout(() => {
-      messageModal.style.display = "none";
-   }, 3000);
 }
 
 // Função para limpar o formulário
@@ -235,7 +187,7 @@ async function exibirDetalhesUsuario(userId) {
       mostrarFormulario("edicao", userData);
    } catch (erro) {
       console.error("Erro ao obter detalhes do usuário:", erro);
-      mostrarMensagem("Erro ao obter detalhes do usuário.", "erro");
+      customModal.error("Erro ao obter detalhes do usuário.");
    }
 }
 
@@ -260,7 +212,7 @@ async function criarUsuario(formData) {
          throw new Error(resultado.erro);
       }
 
-      mostrarMensagem(resultado.mensagem || "Usuário criado com sucesso!");
+      customModal.success(resultado.mensagem || "Usuário criado com sucesso!");
       await carregarUsuarios(); // Recarregar a lista
       limparFormulario();
 
@@ -269,7 +221,7 @@ async function criarUsuario(formData) {
       placeholder.classList.remove("hidden");
    } catch (erro) {
       console.error("Erro ao criar usuário:", erro);
-      mostrarMensagem("Erro ao criar usuário: " + erro.message, "erro");
+      customModal.error("Erro ao criar usuário: " + erro.message);
    }
 }
 
@@ -294,7 +246,9 @@ async function atualizarUsuario(formData) {
          throw new Error(resultado.erro);
       }
 
-      mostrarMensagem(resultado.mensagem || "Usuário atualizado com sucesso!");
+      customModal.success(
+         resultado.mensagem || "Usuário atualizado com sucesso!"
+      );
       await carregarUsuarios(); // Recarregar a lista
       limparFormulario();
 
@@ -303,7 +257,7 @@ async function atualizarUsuario(formData) {
       placeholder.classList.remove("hidden");
    } catch (erro) {
       console.error("Erro ao atualizar usuário:", erro);
-      mostrarMensagem("Erro ao atualizar usuário: " + erro.message, "erro");
+      customModal.error("Erro ao atualizar usuário: " + erro.message);
    }
 }
 
@@ -324,7 +278,9 @@ async function excluirUsuario(userId) {
          throw new Error(resultado.erro);
       }
 
-      mostrarMensagem(resultado.mensagem || "Usuário excluído com sucesso!");
+      customModal.success(
+         resultado.mensagem || "Usuário excluído com sucesso!"
+      );
       await carregarUsuarios(); // Recarregar a lista
 
       // Esconder o formulário e mostrar o placeholder se estiver em modo desktop
@@ -334,14 +290,23 @@ async function excluirUsuario(userId) {
       }
    } catch (erro) {
       console.error("Erro ao excluir usuário:", erro);
-      mostrarMensagem("Erro ao excluir usuário: " + erro.message, "erro");
+      customModal.error("Erro ao excluir usuário: " + erro.message);
    }
 }
 
 // Função para confirmar exclusão de usuário
 function confirmarExclusao(userId) {
-   usuarioIdParaExcluir = userId;
-   confirmModal.style.display = "flex";
+   customModal
+      .confirm(
+         "Tem certeza que deseja excluir este usuário?",
+         "Confirmar Exclusão",
+         "warning"
+      )
+      .then((confirmado) => {
+         if (confirmado) {
+            excluirUsuario(userId);
+         }
+      });
 }
 
 // Função para criar e exibir os cards de usuários

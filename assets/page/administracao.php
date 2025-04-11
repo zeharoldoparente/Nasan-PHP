@@ -32,6 +32,7 @@ ob_start();
    <link rel="stylesheet" href="../../styles/global.css" />
    <link rel="stylesheet" href="../../styles/navbar.css" />
    <link rel="stylesheet" href="../../styles/admin.css" />
+   <link rel="stylesheet" href="../../styles/modal-custom.css" />
    <title>Administração</title>
 </head>
 
@@ -115,27 +116,11 @@ ob_start();
       </div>
    </div>
 
-   <!-- Modal de confirmação para exclusão -->
-   <div id="confirm-modal" class="modal">
-      <div class="modal-content confirm-modal-content">
-         <h3>Confirmar Exclusão</h3>
-         <p>Tem certeza que deseja excluir este usuário?</p>
-         <div class="confirm-actions">
-            <button id="btn-confirm-delete" class="btn-delete">Sim, Excluir</button>
-            <button id="btn-cancel-delete" class="btn-cancel">Cancelar</button>
-         </div>
-      </div>
-   </div>
-
-   <!-- Modal de mensagens -->
-   <div id="message-modal" class="modal">
-      <div class="modal-content message-modal-content">
-         <span class="close-message-modal">&times;</span>
-         <div id="message-content"></div>
-      </div>
-   </div>
+   <!-- Removemos os modais antigos (confirm-modal e message-modal) -->
+   <!-- Não precisamos deles, pois serão substituídos pelo modal-custom -->
 
    <script src="./Js/admin.js"></script>
+   <script src="./Js/modal-custom.js"></script>
 </body>
 
 </html>
