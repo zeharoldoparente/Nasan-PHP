@@ -20,7 +20,7 @@
       <div class="login-container">
          <h2>Entrar</h2>
          <?php if (isset($_GET['erro'])): ?>
-            <p style="color: red; text-align: center;">Usuário ou senha incorretos!</p>
+            <p style="color: red; text-align: center; margin-bottom: 10px;">Usuário ou senha incorretos!</p>
          <?php endif; ?>
          <form action="./assets/page/config/testLogin.php" method="POST">
             <input
@@ -28,13 +28,15 @@
                type="text"
                name="usuario"
                id="usuario"
-               placeholder="Usuário" />
+               placeholder="Usuário"
+               required />
             <input
                class="input"
                type="password"
                name="senha"
                id="senha"
-               placeholder="Senha" />
+               placeholder="Senha"
+               required />
             <input
                class="inputSubmit"
                type="submit"

@@ -1,12 +1,20 @@
+/* Estilos específicos para a página de login */
 .container {
    display: flex;
    align-items: center;
    justify-content: center;
    height: 100vh;
+   margin-top: 0; /* Sobrescrever o margin-top do global.css */
    position: relative;
-   background-image: url(../assets/image/_0017_2.svg);
-   background-position: 54% -20%;
-   background-size: 39% 69%;
+   background-color: transparent; /* Remover o background-color branco do global.css */
+   padding: 0; /* Remover o padding do global.css */
+}
+
+body {
+   /* Aplicar o background no body ao invés do container */
+   background-image: url("../assets/image/_0017_2.svg");
+   background-position: center;
+   background-size: contain;
    background-repeat: no-repeat;
 }
 
@@ -27,6 +35,11 @@
 .login-container h2 {
    font-size: 30px;
    color: #24265d;
+   margin-bottom: 10px;
+}
+
+.login-container form {
+   width: 100%;
 }
 
 .login-container .input {
@@ -42,7 +55,7 @@
 .inputSubmit {
    margin-top: 20px;
    width: 100%;
-   padding: 20px;
+   padding: 15px;
    border: none;
    background-color: #24265d;
    color: white;
@@ -70,38 +83,31 @@
    z-index: 1;
 }
 
+.image-mobile .logo {
+   width: 70px;
+   margin-bottom: 20px;
+}
+
+.image-mobile .nome {
+   width: 120px;
+}
+
+/* Responsividade */
 @media (max-width: 768px) {
+   body {
+      background-image: url("../assets/image/_0017.svg");
+      background-position: center top;
+      background-size: 90% auto;
+      height: 100vh;
+      overflow: hidden;
+   }
+
    .login-container {
-      margin-bottom: 180px;
-   }
-
-   .container {
-      background-image: url(../assets/image/_0017.svg);
-      background-position: 40% -23%;
-      background-size: 90% 70%;
-   }
-
-   .image-container {
-      display: none;
+      margin-bottom: 150px;
    }
 
    .image-mobile {
       display: block;
       margin-bottom: 70px;
-   }
-
-   .logo {
-      width: 70px;
-      margin-bottom: 20px;
-   }
-
-   .nome {
-      width: 120px;
-   }
-
-   body,
-   html {
-      height: 100%;
-      overflow: hidden;
    }
 }
