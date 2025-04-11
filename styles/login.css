@@ -1,21 +1,25 @@
 /* Estilos específicos para a página de login */
+body {
+   margin: 0;
+   padding: 0;
+   background-image: url("../assets/image/_0017_2.svg");
+   background-position: center;
+   background-size: cover;
+   background-repeat: no-repeat;
+   height: 100vh;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
 .container {
    display: flex;
    align-items: center;
    justify-content: center;
-   height: 100vh;
-   margin-top: 0; /* Sobrescrever o margin-top do global.css */
-   position: relative;
-   background-color: transparent; /* Remover o background-color branco do global.css */
-   padding: 0; /* Remover o padding do global.css */
-}
-
-body {
-   /* Aplicar o background no body ao invés do container */
-   background-image: url("../assets/image/_0017_2.svg");
-   background-position: center;
-   background-size: contain;
-   background-repeat: no-repeat;
+   width: 100%;
+   margin-top: 0;
+   padding: 0;
+   background-color: transparent;
 }
 
 .login-container {
@@ -27,7 +31,7 @@ body {
    gap: 20px;
    border-radius: 10px;
    padding: 35px;
-   width: 300px;
+   width: 350px;
    position: relative;
    z-index: 1;
 }
@@ -97,17 +101,16 @@ body {
    body {
       background-image: url("../assets/image/_0017.svg");
       background-position: center top;
-      background-size: 90% auto;
-      height: 100vh;
-      overflow: hidden;
+      background-size: contain;
    }
 
    .login-container {
       margin-bottom: 150px;
+      width: 300px;
    }
 
    .image-mobile {
       display: block;
-      margin-bottom: 70px;
+      margin-bottom: 50px;
    }
 }
