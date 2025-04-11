@@ -27,8 +27,8 @@ ob_start();
 </head>
 
 <body>
+   <?php include __DIR__ . '/config/navbar.php'; ?>
    <div class="container">
-      <?php include __DIR__ . '/config/navbar.php'; ?>
       <?php include __DIR__ . '/config/page_header.php'; ?>
 
 

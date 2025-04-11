@@ -24,6 +24,7 @@ ob_start();
    <link rel="stylesheet" href="../../styles/global.css" />
    <link rel="stylesheet" href="../../styles/navbar.css" />
    <link rel="stylesheet" href="../../styles/cadastros.css" />
+   <link rel="stylesheet" href="../../styles/modal-custom.css" />
    <title>Cadastros</title>
 </head>
 
@@ -403,6 +404,7 @@ ob_start();
       </div>
    </div>
    <script src="./Js/cadastro.js"></script>
+   <script src="./Js/modal-custom.js"></script>
 </body>
 
 </html>

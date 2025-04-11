@@ -1,3 +1,220 @@
+// Sistema de modais personalizados
+class ModalCustom {
+   constructor() {
+      this.init();
+   }
+
+   init() {
+      // Criar elementos do modal
+      this.createModalElements();
+
+      // Adicionar event listeners
+      this.setupEventListeners();
+   }
+
+   createModalElements() {
+      // Criar o overlay do modal
+      this.overlay = document.createElement("div");
+      this.overlay.className = "modal-custom-overlay";
+
+      // Criar o container do modal
+      this.container = document.createElement("div");
+      this.container.className = "modal-custom-container";
+
+      // Criar o cabeçalho do modal
+      this.header = document.createElement("div");
+      this.header.className = "modal-custom-header";
+
+      // Criar o título
+      this.title = document.createElement("h3");
+      this.title.textContent = "Aviso";
+
+      // Criar o botão de fechar
+      this.closeButton = document.createElement("button");
+      this.closeButton.className = "btn-close-modal-custom";
+      this.closeButton.innerHTML = '<i class="bi bi-x-lg"></i>';
+
+      // Montar o cabeçalho
+      this.header.appendChild(this.title);
+      this.header.appendChild(this.closeButton);
+
+      // Criar o conteúdo do modal
+      this.content = document.createElement("div");
+      this.content.className = "modal-custom-content";
+
+      // Criar o ícone
+      this.icon = document.createElement("div");
+      this.icon.className = "modal-custom-icon";
+
+      // Criar a mensagem
+      this.message = document.createElement("div");
+      this.message.className = "modal-custom-message";
+
+      // Criar a área de botões
+      this.actions = document.createElement("div");
+      this.actions.className = "modal-custom-actions";
+
+      // Montar o conteúdo
+      this.content.appendChild(this.icon);
+      this.content.appendChild(this.message);
+      this.content.appendChild(this.actions);
+
+      // Montar o modal
+      this.container.appendChild(this.header);
+      this.container.appendChild(this.content);
+      this.overlay.appendChild(this.container);
+
+      // Adicionar ao body
+      document.body.appendChild(this.overlay);
+   }
+
+   setupEventListeners() {
+      // Fechar ao clicar no X
+      this.closeButton.addEventListener("click", () => this.close());
+
+      // Fechar ao clicar no overlay (fora do modal)
+      this.overlay.addEventListener("click", (e) => {
+         if (e.target === this.overlay) {
+            this.close();
+         }
+      });
+
+      // Fechar com a tecla ESC
+      document.addEventListener("keydown", (e) => {
+         if (e.key === "Escape" && this.overlay.classList.contains("active")) {
+            this.close();
+         }
+      });
+   }
+
+   // Métodos públicos
+   alert(message, title = "Aviso", type = "info") {
+      return new Promise((resolve) => {
+         // Configurar o modal
+         this.title.textContent = title;
+         this.message.textContent = message;
+
+         // Limpar ações anteriores
+         this.actions.innerHTML = "";
+
+         // Configurar o ícone
+         this.setIcon(type);
+
+         // Adicionar botão de OK
+         const okButton = document.createElement("button");
+         okButton.className = "btn-modal-custom btn-modal-confirm";
+         okButton.textContent = "OK";
+         okButton.addEventListener("click", () => {
+            this.close();
+            resolve(true);
+         });
+
+         this.actions.appendChild(okButton);
+
+         // Abrir o modal
+         this.open();
+
+         // Focar no botão OK
+         setTimeout(() => okButton.focus(), 100);
+      });
+   }
+
+   confirm(message, title = "Confirmação", type = "warning") {
+      return new Promise((resolve) => {
+         // Configurar o modal
+         this.title.textContent = title;
+         this.message.textContent = message;
+
+         // Limpar ações anteriores
+         this.actions.innerHTML = "";
+
+         // Configurar o ícone
+         this.setIcon(type);
+
+         // Adicionar botão de Não
+         const noButton = document.createElement("button");
+         noButton.className = "btn-modal-custom btn-modal-cancel";
+         noButton.textContent = "Não";
+         noButton.addEventListener("click", () => {
+            this.close();
+            resolve(false);
+         });
+
+         // Adicionar botão de Sim
+         const yesButton = document.createElement("button");
+         yesButton.className = "btn-modal-custom btn-modal-danger";
+         yesButton.textContent = "Sim";
+         yesButton.addEventListener("click", () => {
+            this.close();
+            resolve(true);
+         });
+
+         this.actions.appendChild(noButton);
+         this.actions.appendChild(yesButton);
+
+         // Abrir o modal
+         this.open();
+
+         // Focar no botão Não por segurança
+         setTimeout(() => noButton.focus(), 100);
+      });
+   }
+
+   success(message, title = "Sucesso") {
+      return this.alert(message, title, "success");
+   }
+
+   error(message, title = "Erro") {
+      return this.alert(message, title, "error");
+   }
+
+   setIcon(type) {
+      this.icon.className = "modal-custom-icon " + type;
+
+      switch (type) {
+         case "success":
+            this.icon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+            break;
+         case "error":
+            this.icon.innerHTML = '<i class="bi bi-x-circle-fill"></i>';
+            break;
+         case "warning":
+            this.icon.innerHTML =
+               '<i class="bi bi-exclamation-triangle-fill"></i>';
+            break;
+         case "info":
+         default:
+            this.icon.innerHTML = '<i class="bi bi-info-circle-fill"></i>';
+            break;
+      }
+   }
+
+   open() {
+      this.overlay.classList.add("active");
+      document.body.style.overflow = "hidden"; // Bloquear scroll
+   }
+
+   close() {
+      this.overlay.classList.remove("active");
+      document.body.style.overflow = ""; // Restaurar scroll
+   }
+}
+
+// Inicializar o sistema de modais
+const customModal = new ModalCustom();
+
+// Sobrescrever os métodos nativos alert e confirm
+window.originalAlert = window.alert;
+window.originalConfirm = window.confirm;
+
+window.alert = function (message) {
+   return customModal.alert(message);
+};
+
+window.confirm = function (message) {
+   return customModal.confirm(message);
+};
+
 document.addEventListener("DOMContentLoaded", function () {
    // ===== TAB SWITCHING =====
    const tabButtons = document.querySelectorAll(".tab-button");
@@ -31,29 +248,51 @@ document.addEventListener("DOMContentLoaded", function () {
 // ===== CLIENTE FUNCTIONS =====
 
 function loadClientes() {
+   // Adicionar um indicador de carregamento
+   const listaClientes = document.getElementById("lista-clientes");
+   listaClientes.innerHTML =
+      '<div class="loading-indicator">Carregando clientes...</div>';
+
    fetch("get_clientes.php")
-      .then((response) => response.json())
+      .then((response) => {
+         if (!response.ok) {
+            throw new Error("Erro na resposta da rede ao carregar clientes");
+         }
+         return response.json();
+      })
       .then((clientes) => {
-         const listaClientes = document.getElementById("lista-clientes");
          listaClientes.innerHTML = "";
+
+         if (clientes.length === 0) {
+            listaClientes.innerHTML =
+               '<div class="empty-list">Nenhum cliente encontrado</div>';
+            return;
+         }
 
          clientes.forEach((cliente) => {
             const clienteItem = document.createElement("div");
             clienteItem.className = "list-item cliente-item";
             clienteItem.setAttribute("data-id", cliente.id);
             clienteItem.innerHTML = `
-                   <div class="list-item-content">
-                       <h4>${cliente.razao_social}</h4>
-                       <p>${cliente.telefone}</p>
-                   </div>
-               `;
+               <div class="list-item-content">
+                   <h4>${cliente.razao_social}</h4>
+                   <p>${cliente.telefone}</p>
+               </div>
+           `;
             listaClientes.appendChild(clienteItem);
          });
 
          // Adiciona event listeners aos novos itens
          attachClienteItemListeners();
       })
-      .catch((error) => console.error("Erro ao carregar clientes:", error));
+      .catch((error) => {
+         console.error("Erro ao carregar clientes:", error);
+         listaClientes.innerHTML =
+            '<div class="error-message">Erro ao carregar clientes. Tente novamente.</div>';
+         customModal.error(
+            "Erro ao carregar a lista de clientes. Verifique a conexão com o banco de dados."
+         );
+      });
 }
 
 function setupClienteListeners() {
@@ -119,60 +358,58 @@ function setupClienteListeners() {
       }
    });
 
-   // Event listeners para formulário de cliente
+   // Event listeners para formulário de cliente - ATUALIZADO PARA USAR MODAIS
    const clienteForm = document.getElementById("clienteForm");
-   clienteForm.addEventListener("submit", function (e) {
-      e.preventDefault();
+   if (clienteForm) {
+      clienteForm.addEventListener("submit", function (e) {
+         e.preventDefault();
 
-      const formData = new FormData(clienteForm);
-      const clienteId = document.getElementById("cliente-id").textContent;
+         const formData = new FormData(clienteForm);
+         const clienteId = document.getElementById("cliente-id").textContent;
 
-      if (clienteId !== "Automático") {
-         formData.append("id", clienteId);
-      }
+         if (clienteId !== "Automático") {
+            formData.append("id", clienteId);
+         }
 
-      fetch("processa_cliente.php", {
-         method: "POST",
-         body: formData,
-      })
-         .then((response) => response.json())
-         .then((data) => {
-            if (data.status === "success") {
-               const statusMsg = document.getElementById("status-cliente");
-               statusMsg.innerHTML = data.message;
-               statusMsg.className = "status-message success";
-
-               // Atualiza a lista de clientes
-               loadClientes();
-
-               // Se for um novo cliente, limpa o formulário
-               if (clienteId === "Automático") {
-                  resetClienteForm();
-               }
-
-               // Fecha o modal em dispositivos móveis
-               if (window.innerWidth <= 768) {
-                  closeFormModal();
-               }
-
-               // Limpa a mensagem após 3 segundos
-               setTimeout(() => {
-                  statusMsg.innerHTML = "";
-                  statusMsg.className = "status-message";
-               }, 3000);
-            } else {
-               const statusMsg = document.getElementById("status-cliente");
-               statusMsg.innerHTML = data.message;
-               statusMsg.className = "status-message error";
-            }
+         fetch("processa_cliente.php", {
+            method: "POST",
+            body: formData,
          })
-         .catch((error) => {
-            console.error("Erro ao salvar cliente:", error);
-            const statusMsg = document.getElementById("status-cliente");
-            statusMsg.innerHTML = "Erro ao salvar cliente. Tente novamente.";
-            statusMsg.className = "status-message error";
-         });
-   });
+            .then((response) => {
+               if (!response.ok) {
+                  throw new Error(
+                     "Erro na resposta da rede ao processar cliente"
+                  );
+               }
+               return response.json();
+            })
+            .then((data) => {
+               if (data.status === "success") {
+                  // Atualiza a lista de clientes
+                  loadClientes();
+
+                  // Se for um novo cliente, limpa o formulário
+                  if (clienteId === "Automático") {
+                     resetClienteForm();
+                  }
+
+                  // Fecha o modal em dispositivos móveis
+                  if (window.innerWidth <= 768) {
+                     closeFormModal();
+                  }
+
+                  // Mostra mensagem de sucesso
+                  customModal.success(data.message);
+               } else {
+                  customModal.error(data.message);
+               }
+            })
+            .catch((error) => {
+               console.error("Erro ao salvar cliente:", error);
+               customModal.error("Erro ao salvar cliente. Tente novamente.");
+            });
+      });
+   }
 
    // Botão cancelar/limpar
    const cancelarBtns = document.querySelectorAll("#clienteForm .btn-cancel");
@@ -187,14 +424,14 @@ function setupClienteListeners() {
 
    // Event listener para botão excluir cliente
    const deleteClienteBtn = document.getElementById("btn-delete-cliente");
-   deleteClienteBtn.addEventListener("click", function () {
-      const clienteId = document.getElementById("cliente-id").textContent;
-      if (clienteId !== "Automático") {
-         if (confirm("Tem certeza que deseja excluir este cliente?")) {
+   if (deleteClienteBtn) {
+      deleteClienteBtn.addEventListener("click", function () {
+         const clienteId = document.getElementById("cliente-id").textContent;
+         if (clienteId !== "Automático") {
             deleteCliente(clienteId);
          }
-      }
-   });
+      });
+   }
 }
 
 function attachClienteItemListeners() {
@@ -226,7 +463,12 @@ function loadClienteDetailsForMobile(clienteId) {
    modalOverlay.classList.add("active");
 
    fetch(`get_cliente.php?id=${clienteId}`)
-      .then((response) => response.json())
+      .then((response) => {
+         if (!response.ok) {
+            throw new Error("Erro na resposta da rede ao carregar cliente");
+         }
+         return response.json();
+      })
       .then((data) => {
          if (data.status === "success") {
             const cliente = data.data;
@@ -255,19 +497,26 @@ function loadClienteDetailsForMobile(clienteId) {
             openFormModal("cliente", true);
          } else {
             closeFormModal();
-            alert("Erro ao carregar dados do cliente: " + data.message);
+            customModal.error(
+               "Erro ao carregar dados do cliente: " + data.message
+            );
          }
       })
       .catch((error) => {
          closeFormModal();
          console.error("Erro ao carregar cliente:", error);
-         alert("Erro ao carregar cliente. Tente novamente.");
+         customModal.error("Erro ao carregar cliente. Tente novamente.");
       });
 }
 
 function loadClienteDetails(clienteId) {
    fetch(`get_cliente.php?id=${clienteId}`)
-      .then((response) => response.json())
+      .then((response) => {
+         if (!response.ok) {
+            throw new Error("Erro na resposta da rede ao carregar cliente");
+         }
+         return response.json();
+      })
       .then((data) => {
          if (data.status === "success") {
             const cliente = data.data;
@@ -293,48 +542,71 @@ function loadClienteDetails(clienteId) {
                "block";
          } else {
             console.error("Erro ao carregar dados do cliente:", data.message);
+            customModal.error(
+               "Erro ao carregar dados do cliente: " + data.message
+            );
          }
       })
-      .catch((error) => console.error("Erro ao carregar cliente:", error));
+      .catch((error) => {
+         console.error("Erro ao carregar cliente:", error);
+         customModal.error("Erro ao carregar cliente. Tente novamente.");
+      });
 }
 
+// FUNÇÃO ATUALIZADA para usar modais personalizados
 function deleteCliente(clienteId) {
-   const formData = new FormData();
-   formData.append("id", clienteId);
+   customModal
+      .confirm(
+         "Tem certeza que deseja excluir este cliente?",
+         "Confirmar exclusão",
+         "warning"
+      )
+      .then((confirmed) => {
+         if (confirmed) {
+            const formData = new FormData();
+            formData.append("id", clienteId);
 
-   fetch("delete_cliente.php", {
-      method: "POST",
-      body: formData,
-   })
-      .then((response) => response.json())
-      .then((data) => {
-         if (data.status === "success") {
-            // Atualiza a lista de clientes
-            loadClientes();
+            fetch("delete_cliente.php", {
+               method: "POST",
+               body: formData,
+            })
+               .then((response) => {
+                  if (!response.ok) {
+                     throw new Error(
+                        "Erro na resposta da rede ao excluir cliente"
+                     );
+                  }
+                  return response.json();
+               })
+               .then((data) => {
+                  if (data.status === "success") {
+                     // Atualiza a lista de clientes
+                     loadClientes();
 
-            // Reseta o formulário pois o cliente foi excluído
-            resetClienteForm();
+                     // Reseta o formulário pois o cliente foi excluído
+                     resetClienteForm();
 
-            // Fecha o modal em dispositivos móveis
-            if (window.innerWidth <= 768) {
-               closeFormModal();
-            }
+                     // Fecha o modal em dispositivos móveis
+                     if (window.innerWidth <= 768) {
+                        closeFormModal();
+                     }
 
-            // Mostra mensagem de sucesso
-            const statusMsg = document.getElementById("status-cliente");
-            statusMsg.innerHTML = "Cliente excluído com sucesso!";
-            statusMsg.className = "status-message success";
-
-            // Limpa a mensagem após 3 segundos
-            setTimeout(() => {
-               statusMsg.innerHTML = "";
-               statusMsg.className = "status-message";
-            }, 3000);
-         } else {
-            alert("Erro ao excluir cliente: " + data.message);
+                     // Mostra mensagem de sucesso
+                     customModal.success("Cliente excluído com sucesso!");
+                  } else {
+                     customModal.error(
+                        "Erro ao excluir cliente: " + data.message
+                     );
+                  }
+               })
+               .catch((error) => {
+                  console.error("Erro ao excluir cliente:", error);
+                  customModal.error(
+                     "Erro ao excluir cliente. Tente novamente."
+                  );
+               });
          }
-      })
-      .catch((error) => console.error("Erro ao excluir cliente:", error));
+      });
 }
 
 function resetClienteForm() {
@@ -351,11 +623,26 @@ function resetClienteForm() {
 // ===== PRODUTO FUNCTIONS =====
 
 function loadProdutos() {
+   // Adicionar um indicador de carregamento
+   const listaProdutos = document.getElementById("lista-produtos");
+   listaProdutos.innerHTML =
+      '<div class="loading-indicator">Carregando produtos...</div>';
+
    fetch("get_produtos.php")
-      .then((response) => response.json())
+      .then((response) => {
+         if (!response.ok) {
+            throw new Error("Erro na resposta da rede ao carregar produtos");
+         }
+         return response.json();
+      })
       .then((produtos) => {
-         const listaProdutos = document.getElementById("lista-produtos");
          listaProdutos.innerHTML = "";
+
+         if (produtos.length === 0) {
+            listaProdutos.innerHTML =
+               '<div class="empty-list">Nenhum produto encontrado</div>';
+            return;
+         }
 
          produtos.forEach((produto) => {
             const produtoItem = document.createElement("div");
@@ -375,18 +662,25 @@ function loadProdutos() {
             const codigoBarras = produto.codigo_barras || "Sem código";
 
             produtoItem.innerHTML = `
-                   <div class="list-item-content">
-                       <h4>${codigoBarras} - ${produto.nome}</h4>
-                       <p>${preco}</p>
-                   </div>
-               `;
+               <div class="list-item-content">
+                   <h4>${produto.nome}</h4>
+                   <p>${preco}</p>
+               </div>
+           `;
             listaProdutos.appendChild(produtoItem);
          });
 
          // Adiciona event listeners aos novos itens
          attachProdutoItemListeners();
       })
-      .catch((error) => console.error("Erro ao carregar produtos:", error));
+      .catch((error) => {
+         console.error("Erro ao carregar produtos:", error);
+         listaProdutos.innerHTML =
+            '<div class="error-message">Erro ao carregar produtos. Tente novamente.</div>';
+         customModal.error(
+            "Erro ao carregar a lista de produtos. Verifique a conexão com o banco de dados."
+         );
+      });
 }
 
 function setupProdutoListeners() {
@@ -422,60 +716,58 @@ function setupProdutoListeners() {
       }
    });
 
-   // Event listeners para formulário de produto
+   // Event listeners para formulário de produto - ATUALIZADO PARA USAR MODAIS
    const produtoForm = document.getElementById("produtoForm");
-   produtoForm.addEventListener("submit", function (e) {
-      e.preventDefault();
+   if (produtoForm) {
+      produtoForm.addEventListener("submit", function (e) {
+         e.preventDefault();
 
-      const formData = new FormData(produtoForm);
-      const produtoId = document.getElementById("produto-id").textContent;
+         const formData = new FormData(produtoForm);
+         const produtoId = document.getElementById("produto-id").textContent;
 
-      if (produtoId !== "Automático") {
-         formData.append("id", produtoId);
-      }
+         if (produtoId !== "Automático") {
+            formData.append("id", produtoId);
+         }
 
-      fetch("processa_produto.php", {
-         method: "POST",
-         body: formData,
-      })
-         .then((response) => response.json())
-         .then((data) => {
-            if (data.status === "success") {
-               const statusMsg = document.getElementById("status-produto");
-               statusMsg.innerHTML = data.message;
-               statusMsg.className = "status-message success";
-
-               // Atualiza a lista de produtos
-               loadProdutos();
-
-               // Se for um novo produto, limpa o formulário
-               if (produtoId === "Automático") {
-                  resetProdutoForm();
-               }
-
-               // Fecha o modal em dispositivos móveis
-               if (window.innerWidth <= 768) {
-                  closeFormModal();
-               }
-
-               // Limpa a mensagem após 3 segundos
-               setTimeout(() => {
-                  statusMsg.innerHTML = "";
-                  statusMsg.className = "status-message";
-               }, 3000);
-            } else {
-               const statusMsg = document.getElementById("status-produto");
-               statusMsg.innerHTML = data.message;
-               statusMsg.className = "status-message error";
-            }
+         fetch("processa_produto.php", {
+            method: "POST",
+            body: formData,
          })
-         .catch((error) => {
-            console.error("Erro ao salvar produto:", error);
-            const statusMsg = document.getElementById("status-produto");
-            statusMsg.innerHTML = "Erro ao salvar produto. Tente novamente.";
-            statusMsg.className = "status-message error";
-         });
-   });
+            .then((response) => {
+               if (!response.ok) {
+                  throw new Error(
+                     "Erro na resposta da rede ao processar produto"
+                  );
+               }
+               return response.json();
+            })
+            .then((data) => {
+               if (data.status === "success") {
+                  // Atualiza a lista de produtos
+                  loadProdutos();
+
+                  // Se for um novo produto, limpa o formulário
+                  if (produtoId === "Automático") {
+                     resetProdutoForm();
+                  }
+
+                  // Fecha o modal em dispositivos móveis
+                  if (window.innerWidth <= 768) {
+                     closeFormModal();
+                  }
+
+                  // Mostra mensagem de sucesso
+                  customModal.success(data.message);
+               } else {
+                  customModal.error(data.message);
+               }
+            })
+            .catch((error) => {
+               console.error("Erro ao salvar produto:", error);
+               customModal.error("Erro ao salvar produto. Tente novamente.");
+            });
+      });
+   }
 
    // Botão cancelar/limpar
    const cancelarBtns = document.querySelectorAll("#produtoForm .btn-cancel");
@@ -490,14 +782,14 @@ function setupProdutoListeners() {
 
    // Event listener para botão excluir produto
    const deleteProdutoBtn = document.getElementById("btn-delete-produto");
-   deleteProdutoBtn.addEventListener("click", function () {
-      const produtoId = document.getElementById("produto-id").textContent;
-      if (produtoId !== "Automático") {
-         if (confirm("Tem certeza que deseja excluir este produto?")) {
+   if (deleteProdutoBtn) {
+      deleteProdutoBtn.addEventListener("click", function () {
+         const produtoId = document.getElementById("produto-id").textContent;
+         if (produtoId !== "Automático") {
             deleteProduto(produtoId);
          }
-      }
-   });
+      });
+   }
 }
 
 function attachProdutoItemListeners() {
@@ -529,7 +821,12 @@ function loadProdutoDetailsForMobile(produtoId) {
    modalOverlay.classList.add("active");
 
    fetch(`get_produto.php?id=${produtoId}`)
-      .then((response) => response.json())
+      .then((response) => {
+         if (!response.ok) {
+            throw new Error("Erro na resposta da rede ao carregar produto");
+         }
+         return response.json();
+      })
       .then((data) => {
          if (data.status === "success") {
             const produto = data.data;
@@ -550,19 +847,26 @@ function loadProdutoDetailsForMobile(produtoId) {
             openFormModal("produto", true);
          } else {
             closeFormModal();
-            alert("Erro ao carregar dados do produto: " + data.message);
+            customModal.error(
+               "Erro ao carregar dados do produto: " + data.message
+            );
          }
       })
       .catch((error) => {
          closeFormModal();
          console.error("Erro ao carregar produto:", error);
-         alert("Erro ao carregar produto. Tente novamente.");
+         customModal.error("Erro ao carregar produto. Tente novamente.");
       });
 }
 
 function loadProdutoDetails(produtoId) {
    fetch(`get_produto.php?id=${produtoId}`)
-      .then((response) => response.json())
+      .then((response) => {
+         if (!response.ok) {
+            throw new Error("Erro na resposta da rede ao carregar produto");
+         }
+         return response.json();
+      })
       .then((data) => {
          if (data.status === "success") {
             const produto = data.data;
@@ -580,48 +884,71 @@ function loadProdutoDetails(produtoId) {
                "block";
          } else {
             console.error("Erro ao carregar dados do produto:", data.message);
+            customModal.error(
+               "Erro ao carregar dados do produto: " + data.message
+            );
          }
       })
-      .catch((error) => console.error("Erro ao carregar produto:", error));
+      .catch((error) => {
+         console.error("Erro ao carregar produto:", error);
+         customModal.error("Erro ao carregar produto. Tente novamente.");
+      });
 }
 
+// FUNÇÃO ATUALIZADA para usar modais personalizados
 function deleteProduto(produtoId) {
-   const formData = new FormData();
-   formData.append("id", produtoId);
+   customModal
+      .confirm(
+         "Tem certeza que deseja excluir este produto?",
+         "Confirmar exclusão",
+         "warning"
+      )
+      .then((confirmed) => {
+         if (confirmed) {
+            const formData = new FormData();
+            formData.append("id", produtoId);
 
-   fetch("delete_produto.php", {
-      method: "POST",
-      body: formData,
-   })
-      .then((response) => response.json())
-      .then((data) => {
-         if (data.status === "success") {
-            // Atualiza a lista de produtos
-            loadProdutos();
+            fetch("delete_produto.php", {
+               method: "POST",
+               body: formData,
+            })
+               .then((response) => {
+                  if (!response.ok) {
+                     throw new Error(
+                        "Erro na resposta da rede ao excluir produto"
+                     );
+                  }
+                  return response.json();
+               })
+               .then((data) => {
+                  if (data.status === "success") {
+                     // Atualiza a lista de produtos
+                     loadProdutos();
 
-            // Reseta o formulário pois o produto foi excluído
-            resetProdutoForm();
+                     // Reseta o formulário pois o produto foi excluído
+                     resetProdutoForm();
 
-            // Fecha o modal em dispositivos móveis
-            if (window.innerWidth <= 768) {
-               closeFormModal();
-            }
+                     // Fecha o modal em dispositivos móveis
+                     if (window.innerWidth <= 768) {
+                        closeFormModal();
+                     }
 
-            // Mostra mensagem de sucesso
-            const statusMsg = document.getElementById("status-produto");
-            statusMsg.innerHTML = "Produto excluído com sucesso!";
-            statusMsg.className = "status-message success";
-
-            // Limpa a mensagem após 3 segundos
-            setTimeout(() => {
-               statusMsg.innerHTML = "";
-               statusMsg.className = "status-message";
-            }, 3000);
-         } else {
-            alert("Erro ao excluir produto: " + data.message);
+                     // Mostra mensagem de sucesso
+                     customModal.success("Produto excluído com sucesso!");
+                  } else {
+                     customModal.error(
+                        "Erro ao excluir produto: " + data.message
+                     );
+                  }
+               })
+               .catch((error) => {
+                  console.error("Erro ao excluir produto:", error);
+                  customModal.error(
+                     "Erro ao excluir produto. Tente novamente."
+                  );
+               });
          }
-      })
-      .catch((error) => console.error("Erro ao excluir produto:", error));
+      });
 }
 
 function resetProdutoForm() {
@@ -732,12 +1059,10 @@ function openFormModal(type, skipDataLoading = false) {
       // Adiciona event listener para o botão excluir no modal
       deleteBtn.addEventListener("click", function () {
          if (currentId !== "Automático") {
-            if (confirm(`Tem certeza que deseja excluir este ${type}?`)) {
-               if (type === "cliente") {
-                  deleteCliente(currentId);
-               } else {
-                  deleteProduto(currentId);
-               }
+            if (type === "cliente") {
+               deleteCliente(currentId);
+            } else {
+               deleteProduto(currentId);
             }
          }
       });
@@ -762,11 +1087,15 @@ function openFormModal(type, skipDataLoading = false) {
                if (data.status === "success") {
                   loadClientes();
                   closeFormModal();
+                  customModal.success(data.message);
                } else {
-                  alert("Erro ao salvar cliente: " + data.message);
+                  customModal.error("Erro ao salvar cliente: " + data.message);
                }
             })
-            .catch((error) => console.error("Erro ao salvar cliente:", error));
+            .catch((error) => {
+               console.error("Erro ao salvar cliente:", error);
+               customModal.error("Erro ao salvar cliente. Tente novamente.");
+            });
       });
    } else {
       form.addEventListener("submit", function (e) {
@@ -786,11 +1115,15 @@ function openFormModal(type, skipDataLoading = false) {
                if (data.status === "success") {
                   loadProdutos();
                   closeFormModal();
+                  customModal.success(data.message);
                } else {
-                  alert("Erro ao salvar produto: " + data.message);
+                  customModal.error("Erro ao salvar produto: " + data.message);
                }
             })
-            .catch((error) => console.error("Erro ao salvar produto:", error));
+            .catch((error) => {
+               console.error("Erro ao salvar produto:", error);
+               customModal.error("Erro ao salvar produto. Tente novamente.");
+            });
       });
    }
 
@@ -809,17 +1142,37 @@ function closeFormModal() {
    modalOverlay.classList.remove("active");
 }
 
-// Adiciona estilo para o indicador de carregamento
+// Adiciona estilo para o indicador de carregamento e mensagens de status
 const style = document.createElement("style");
 style.textContent = `
 .loading-indicator {
-   display: flex;
-   justify-content: center;
-   align-items: center;
-   height: 200px;
-   font-size: 16px;
-   color: #24265d;
-   text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 16px;
+  color: #24265d;
+  text-align: center;
+}
+
+.empty-list {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 150px;
+  font-size: 14px;
+  color: #64748b;
+  text-align: center;
+}
+
+.error-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  font-size: 14px;
+  color: #dc2626;
+  text-align: center;
 }
 `;
 document.head.appendChild(style);
