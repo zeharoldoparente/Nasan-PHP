@@ -261,6 +261,9 @@ ob_start();
                               <button type="submit" class="btn-save">
                                  Salvar Cliente
                               </button>
+                              <button type="button" id="btn-delete-cliente" class="btn-delete" style="display: none;">
+                                 Excluir
+                              </button>
                            </div>
                         </form>
                      </div>
@@ -371,6 +374,9 @@ ob_start();
                               </button>
                               <button type="submit" class="btn-save">
                                  Salvar Produto
+                              </button>
+                              <button type="button" id="btn-delete-produto" class="btn-delete" style="display: none;">
+                                 Excluir
                               </button>
                            </div>
                         </form>

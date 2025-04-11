@@ -158,6 +158,9 @@
    cursor: pointer;
    border: 1px solid #e2e8f0;
    transition: all 0.2s;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
 }
 
 .list-item:hover {
@@ -168,6 +171,10 @@
 .list-item.active {
    background-color: #f0f4ff;
    border-color: #a4bcfd;
+}
+
+.list-item-content {
+   flex: 1;
 }
 
 .list-item-content h4 {
@@ -349,15 +356,11 @@ textarea {
    height: 18px;
 }
 
-.field-status.loading {
-   color: #0ea5e9;
-}
-
-.field-status.success {
+.field-status.valid {
    color: #16a34a;
 }
 
-.field-status.error {
+.field-status.invalid {
    color: #dc2626;
 }
 
@@ -370,7 +373,8 @@ textarea {
 
 .btn-cancel,
 .btn-save,
-.btn-submit {
+.btn-submit,
+.btn-delete {
    padding: 10px 16px;
    border-radius: 6px;
    font-family: "Poppins", sans-serif;
@@ -393,6 +397,12 @@ textarea {
    border: none;
 }
 
+.btn-delete {
+   background-color: #dc2626;
+   color: white;
+   border: none;
+}
+
 .btn-submit {
    background-color: #16a34a;
 }
@@ -405,6 +415,10 @@ textarea {
    background-color: #1e2050;
 }
 
+.btn-delete:hover {
+   background-color: #b91c1c;
+}
+
 .btn-submit:hover {
    background-color: #15803d;
 }
@@ -414,19 +428,20 @@ textarea {
    padding: 12px;
    border-radius: 6px;
    font-size: 14px;
-   display: none;
 }
 
-.status-success {
+.status-message.success {
    background-color: #dcfce7;
    color: #166534;
    border: 1px solid #bbf7d0;
+   display: block;
 }
 
-.status-error {
+.status-message.error {
    background-color: #fee2e2;
    color: #b91c1c;
    border: 1px solid #fecaca;
+   display: block;
 }
 
 /* Modal para Mobile */
@@ -598,15 +613,29 @@ textarea {
 
    /* Botões no formulário mobile */
    .modal-content .form-actions {
-      flex-direction: column-reverse;
+      flex-direction: column;
       gap: 10px;
    }
 
    .modal-content .btn-cancel,
    .modal-content .btn-save,
-   .modal-content .btn-submit {
+   .modal-content .btn-submit,
+   .modal-content .btn-delete {
       width: 100%;
       padding: 12px;
+   }
+
+   /* Coloca o botão excluir por último no mobile */
+   .modal-content .btn-delete {
+      order: 3;
+   }
+
+   .modal-content .btn-save {
+      order: 1;
+   }
+
+   .modal-content .btn-cancel {
+      order: 2;
    }
 
    /* Ajustes no tamanho do modal */

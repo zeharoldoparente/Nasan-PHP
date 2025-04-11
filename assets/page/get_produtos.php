@@ -7,7 +7,8 @@ if (!isset($_SESSION['usuario'])) {
 
 include_once(__DIR__ . '/config/config.php');
 
-$sql = "SELECT id, nome, preco_venda FROM produtos ORDER BY nome";
+// Modificado para incluir o código de barras na consulta
+$sql = "SELECT id, nome, preco_venda, codigo_barras FROM produtos ORDER BY nome";
 $result = $conn->query($sql);
 
 $produtos = [];

@@ -46,11 +46,6 @@ function loadClientes() {
                        <h4>${cliente.razao_social}</h4>
                        <p>${cliente.telefone}</p>
                    </div>
-                   <div class="list-item-actions">
-                       <button class="btn-action btn-delete" data-id="${cliente.id}">
-                           <i class="bi bi-trash"></i>
-                       </button>
-                   </div>
                `;
             listaClientes.appendChild(clienteItem);
          });
@@ -84,9 +79,13 @@ function setupClienteListeners() {
       resetClienteForm();
       document.getElementById("cliente-id").textContent = "Automático";
 
+      // Esconder o botão de excluir
+      document.getElementById("btn-delete-cliente").style.display = "none";
+
       // Para mobile, abre o modal
       if (window.innerWidth <= 768) {
-         openFormModal("cliente");
+         // Para novo cadastro, não precisa esperar dados, abre o modal diretamente
+         openFormModal("cliente", true);
       }
    });
 
@@ -185,38 +184,85 @@ function setupClienteListeners() {
          }
       });
    });
+
+   // Event listener para botão excluir cliente
+   const deleteClienteBtn = document.getElementById("btn-delete-cliente");
+   deleteClienteBtn.addEventListener("click", function () {
+      const clienteId = document.getElementById("cliente-id").textContent;
+      if (clienteId !== "Automático") {
+         if (confirm("Tem certeza que deseja excluir este cliente?")) {
+            deleteCliente(clienteId);
+         }
+      }
+   });
 }
 
 function attachClienteItemListeners() {
    // Click em um cliente da lista
    const clienteItems = document.querySelectorAll(".cliente-item");
    clienteItems.forEach((item) => {
-      item.addEventListener("click", function (e) {
-         // Ignora o clique se foi no botão excluir
-         if (e.target.closest(".btn-delete")) return;
-
+      item.addEventListener("click", function () {
          const clienteId = this.getAttribute("data-id");
-         loadClienteDetails(clienteId);
 
-         // Para mobile, abre o modal
+         // Para mobile, carrega os dados ANTES de abrir o modal
          if (window.innerWidth <= 768) {
-            openFormModal("cliente");
+            // Primeiro carrega os dados, depois abre o modal quando estiver pronto
+            loadClienteDetailsForMobile(clienteId);
+         } else {
+            // Em desktop, carrega normalmente
+            loadClienteDetails(clienteId);
          }
       });
    });
+}
 
-   // Botões de excluir cliente
-   const deleteBtns = document.querySelectorAll(".cliente-item .btn-delete");
-   deleteBtns.forEach((btn) => {
-      btn.addEventListener("click", function (e) {
-         e.stopPropagation(); // Evita a propagação para o item da lista
+// Função específica para carregar dados de cliente no mobile
+function loadClienteDetailsForMobile(clienteId) {
+   // Mostra um indicador de carregamento
+   const modalOverlay = document.getElementById("form-modal");
+   const modalContent = document.getElementById("modal-content");
+   modalContent.innerHTML =
+      '<div class="loading-indicator">Carregando...</div>';
+   modalOverlay.classList.add("active");
 
-         const clienteId = this.getAttribute("data-id");
-         if (confirm("Tem certeza que deseja excluir este cliente?")) {
-            deleteCliente(clienteId);
+   fetch(`get_cliente.php?id=${clienteId}`)
+      .then((response) => response.json())
+      .then((data) => {
+         if (data.status === "success") {
+            const cliente = data.data;
+
+            // Primeiro atualiza o formulário principal com os dados
+            document.getElementById("cliente-id").textContent = cliente.id;
+            document.getElementById("empresa").value = cliente.razao_social;
+            document.getElementById("cnpj").value = cliente.cpf_cnpj;
+            document.getElementById("ie").value = cliente.inscricao_estadual;
+            document.getElementById("email").value = cliente.email;
+            document.getElementById("telefone").value = cliente.telefone;
+            document.getElementById("cep").value = cliente.cep;
+            document.getElementById("rua").value = cliente.rua;
+            document.getElementById("numero").value = cliente.numero;
+            document.getElementById("bairro").value = cliente.bairro;
+            document.getElementById("complemento").value = cliente.complemento;
+            document.getElementById("cidade").value = cliente.cidade;
+            document.getElementById("estado").value = cliente.estado;
+            document.getElementById("observacoes").value = cliente.observacoes;
+
+            // Mostra o botão de excluir
+            document.getElementById("btn-delete-cliente").style.display =
+               "block";
+
+            // Só abre o modal depois que os dados forem carregados
+            openFormModal("cliente", true);
+         } else {
+            closeFormModal();
+            alert("Erro ao carregar dados do cliente: " + data.message);
          }
+      })
+      .catch((error) => {
+         closeFormModal();
+         console.error("Erro ao carregar cliente:", error);
+         alert("Erro ao carregar cliente. Tente novamente.");
       });
-   });
 }
 
 function loadClienteDetails(clienteId) {
@@ -241,6 +287,10 @@ function loadClienteDetails(clienteId) {
             document.getElementById("cidade").value = cliente.cidade;
             document.getElementById("estado").value = cliente.estado;
             document.getElementById("observacoes").value = cliente.observacoes;
+
+            // Mostra o botão de excluir
+            document.getElementById("btn-delete-cliente").style.display =
+               "block";
          } else {
             console.error("Erro ao carregar dados do cliente:", data.message);
          }
@@ -262,12 +312,24 @@ function deleteCliente(clienteId) {
             // Atualiza a lista de clientes
             loadClientes();
 
-            // Se o cliente que está sendo excluído está aberto no formulário, reseta o formulário
-            const currentClienteId =
-               document.getElementById("cliente-id").textContent;
-            if (currentClienteId === clienteId) {
-               resetClienteForm();
+            // Reseta o formulário pois o cliente foi excluído
+            resetClienteForm();
+
+            // Fecha o modal em dispositivos móveis
+            if (window.innerWidth <= 768) {
+               closeFormModal();
             }
+
+            // Mostra mensagem de sucesso
+            const statusMsg = document.getElementById("status-cliente");
+            statusMsg.innerHTML = "Cliente excluído com sucesso!";
+            statusMsg.className = "status-message success";
+
+            // Limpa a mensagem após 3 segundos
+            setTimeout(() => {
+               statusMsg.innerHTML = "";
+               statusMsg.className = "status-message";
+            }, 3000);
          } else {
             alert("Erro ao excluir cliente: " + data.message);
          }
@@ -282,6 +344,8 @@ function resetClienteForm() {
    document.getElementById("cep-status").className = "field-status";
    document.getElementById("status-cliente").innerHTML = "";
    document.getElementById("status-cliente").className = "status-message";
+   // Esconde o botão de excluir
+   document.getElementById("btn-delete-cliente").style.display = "none";
 }
 
 // ===== PRODUTO FUNCTIONS =====
@@ -307,15 +371,13 @@ function loadProdutos() {
                }
             );
 
+            // Mostrar código de barras e nome do produto
+            const codigoBarras = produto.codigo_barras || "Sem código";
+
             produtoItem.innerHTML = `
                    <div class="list-item-content">
-                       <h4>${produto.nome}</h4>
+                       <h4>${codigoBarras} - ${produto.nome}</h4>
                        <p>${preco}</p>
-                   </div>
-                   <div class="list-item-actions">
-                       <button class="btn-action btn-delete" data-id="${produto.id}">
-                           <i class="bi bi-trash"></i>
-                       </button>
                    </div>
                `;
             listaProdutos.appendChild(produtoItem);
@@ -350,9 +412,13 @@ function setupProdutoListeners() {
       resetProdutoForm();
       document.getElementById("produto-id").textContent = "Automático";
 
+      // Esconder o botão de excluir
+      document.getElementById("btn-delete-produto").style.display = "none";
+
       // Para mobile, abre o modal
       if (window.innerWidth <= 768) {
-         openFormModal("produto");
+         // Para novo cadastro, não precisa esperar dados, abre o modal diretamente
+         openFormModal("produto", true);
       }
    });
 
@@ -421,38 +487,77 @@ function setupProdutoListeners() {
          }
       });
    });
+
+   // Event listener para botão excluir produto
+   const deleteProdutoBtn = document.getElementById("btn-delete-produto");
+   deleteProdutoBtn.addEventListener("click", function () {
+      const produtoId = document.getElementById("produto-id").textContent;
+      if (produtoId !== "Automático") {
+         if (confirm("Tem certeza que deseja excluir este produto?")) {
+            deleteProduto(produtoId);
+         }
+      }
+   });
 }
 
 function attachProdutoItemListeners() {
    // Click em um produto da lista
    const produtoItems = document.querySelectorAll(".produto-item");
    produtoItems.forEach((item) => {
-      item.addEventListener("click", function (e) {
-         // Ignora o clique se foi no botão excluir
-         if (e.target.closest(".btn-delete")) return;
-
+      item.addEventListener("click", function () {
          const produtoId = this.getAttribute("data-id");
-         loadProdutoDetails(produtoId);
 
-         // Para mobile, abre o modal
+         // Para mobile, carrega os dados ANTES de abrir o modal
          if (window.innerWidth <= 768) {
-            openFormModal("produto");
+            // Primeiro carrega os dados, depois abre o modal quando estiver pronto
+            loadProdutoDetailsForMobile(produtoId);
+         } else {
+            // Em desktop, carrega normalmente
+            loadProdutoDetails(produtoId);
          }
       });
    });
+}
 
-   // Botões de excluir produto
-   const deleteBtns = document.querySelectorAll(".produto-item .btn-delete");
-   deleteBtns.forEach((btn) => {
-      btn.addEventListener("click", function (e) {
-         e.stopPropagation(); // Evita a propagação para o item da lista
+// Função específica para carregar dados de produto no mobile
+function loadProdutoDetailsForMobile(produtoId) {
+   // Mostra um indicador de carregamento
+   const modalOverlay = document.getElementById("form-modal");
+   const modalContent = document.getElementById("modal-content");
+   modalContent.innerHTML =
+      '<div class="loading-indicator">Carregando...</div>';
+   modalOverlay.classList.add("active");
 
-         const produtoId = this.getAttribute("data-id");
-         if (confirm("Tem certeza que deseja excluir este produto?")) {
-            deleteProduto(produtoId);
+   fetch(`get_produto.php?id=${produtoId}`)
+      .then((response) => response.json())
+      .then((data) => {
+         if (data.status === "success") {
+            const produto = data.data;
+
+            // Primeiro atualiza o formulário principal com os dados
+            document.getElementById("produto-id").textContent = produto.id;
+            document.getElementById("codigo-barras").value =
+               produto.codigo_barras;
+            document.getElementById("nome-produto").value = produto.nome;
+            document.getElementById("unidade").value = produto.unidade;
+            document.getElementById("preco-venda").value = produto.preco_venda;
+
+            // Mostra o botão de excluir
+            document.getElementById("btn-delete-produto").style.display =
+               "block";
+
+            // Só abre o modal depois que os dados forem carregados
+            openFormModal("produto", true);
+         } else {
+            closeFormModal();
+            alert("Erro ao carregar dados do produto: " + data.message);
          }
+      })
+      .catch((error) => {
+         closeFormModal();
+         console.error("Erro ao carregar produto:", error);
+         alert("Erro ao carregar produto. Tente novamente.");
       });
-   });
 }
 
 function loadProdutoDetails(produtoId) {
@@ -469,6 +574,10 @@ function loadProdutoDetails(produtoId) {
             document.getElementById("nome-produto").value = produto.nome;
             document.getElementById("unidade").value = produto.unidade;
             document.getElementById("preco-venda").value = produto.preco_venda;
+
+            // Mostra o botão de excluir
+            document.getElementById("btn-delete-produto").style.display =
+               "block";
          } else {
             console.error("Erro ao carregar dados do produto:", data.message);
          }
@@ -490,12 +599,24 @@ function deleteProduto(produtoId) {
             // Atualiza a lista de produtos
             loadProdutos();
 
-            // Se o produto que está sendo excluído está aberto no formulário, reseta o formulário
-            const currentProdutoId =
-               document.getElementById("produto-id").textContent;
-            if (currentProdutoId === produtoId) {
-               resetProdutoForm();
+            // Reseta o formulário pois o produto foi excluído
+            resetProdutoForm();
+
+            // Fecha o modal em dispositivos móveis
+            if (window.innerWidth <= 768) {
+               closeFormModal();
             }
+
+            // Mostra mensagem de sucesso
+            const statusMsg = document.getElementById("status-produto");
+            statusMsg.innerHTML = "Produto excluído com sucesso!";
+            statusMsg.className = "status-message success";
+
+            // Limpa a mensagem após 3 segundos
+            setTimeout(() => {
+               statusMsg.innerHTML = "";
+               statusMsg.className = "status-message";
+            }, 3000);
          } else {
             alert("Erro ao excluir produto: " + data.message);
          }
@@ -508,6 +629,8 @@ function resetProdutoForm() {
    document.getElementById("produto-id").textContent = "Automático";
    document.getElementById("status-produto").innerHTML = "";
    document.getElementById("status-produto").className = "status-message";
+   // Esconde o botão de excluir
+   document.getElementById("btn-delete-produto").style.display = "none";
 }
 
 // ===== MODAL HANDLING FOR MOBILE =====
@@ -527,7 +650,7 @@ function setupModalHandlers() {
    });
 }
 
-function openFormModal(type) {
+function openFormModal(type, skipDataLoading = false) {
    const modalOverlay = document.getElementById("form-modal");
    const modalContent = document.getElementById("modal-content");
    const modalTitle = document.getElementById("modal-title");
@@ -535,6 +658,11 @@ function openFormModal(type) {
    // Define o título do modal
    modalTitle.textContent =
       type === "cliente" ? "Detalhes do Cliente" : "Detalhes do Produto";
+
+   // Se skipDataLoading for false, não faça nada (isso significa que esse modal já está mostrando um indicador de carregamento)
+   if (!skipDataLoading) {
+      return;
+   }
 
    // Clona o formulário para o modal
    const form =
@@ -546,16 +674,83 @@ function openFormModal(type) {
    modalContent.innerHTML = "";
    modalContent.appendChild(form);
 
+   // Adiciona o ID atual ao formulário do modal
+   const currentId =
+      type === "cliente"
+         ? document.getElementById("cliente-id").textContent
+         : document.getElementById("produto-id").textContent;
+
+   const modalIdElement = form.querySelector(".id-value");
+   if (modalIdElement) {
+      modalIdElement.textContent = currentId;
+   }
+
+   // Preenche os valores do formulário
+   if (type === "cliente") {
+      form.querySelector("#empresa").value =
+         document.getElementById("empresa").value;
+      form.querySelector("#cnpj").value = document.getElementById("cnpj").value;
+      form.querySelector("#ie").value = document.getElementById("ie").value;
+      form.querySelector("#email").value =
+         document.getElementById("email").value;
+      form.querySelector("#telefone").value =
+         document.getElementById("telefone").value;
+      form.querySelector("#cep").value = document.getElementById("cep").value;
+      form.querySelector("#rua").value = document.getElementById("rua").value;
+      form.querySelector("#numero").value =
+         document.getElementById("numero").value;
+      form.querySelector("#bairro").value =
+         document.getElementById("bairro").value;
+      form.querySelector("#complemento").value =
+         document.getElementById("complemento").value;
+      form.querySelector("#cidade").value =
+         document.getElementById("cidade").value;
+      form.querySelector("#estado").value =
+         document.getElementById("estado").value;
+      form.querySelector("#observacoes").value =
+         document.getElementById("observacoes").value;
+   } else {
+      form.querySelector("#codigo-barras").value =
+         document.getElementById("codigo-barras").value;
+      form.querySelector("#nome-produto").value =
+         document.getElementById("nome-produto").value;
+      form.querySelector("#unidade").value =
+         document.getElementById("unidade").value;
+      form.querySelector("#preco-venda").value =
+         document.getElementById("preco-venda").value;
+   }
+
+   // Mostra ou esconde o botão de excluir no modal com base no ID
+   const deleteBtn =
+      type === "cliente"
+         ? form.querySelector("#btn-delete-cliente")
+         : form.querySelector("#btn-delete-produto");
+
+   if (deleteBtn) {
+      deleteBtn.style.display = currentId !== "Automático" ? "block" : "none";
+
+      // Adiciona event listener para o botão excluir no modal
+      deleteBtn.addEventListener("click", function () {
+         if (currentId !== "Automático") {
+            if (confirm(`Tem certeza que deseja excluir este ${type}?`)) {
+               if (type === "cliente") {
+                  deleteCliente(currentId);
+               } else {
+                  deleteProduto(currentId);
+               }
+            }
+         }
+      });
+   }
+
    // Adiciona os event listeners ao formulário clonado
    if (type === "cliente") {
       form.addEventListener("submit", function (e) {
          e.preventDefault();
 
          const formData = new FormData(form);
-         const clienteId = document.getElementById("cliente-id").textContent;
-
-         if (clienteId !== "Automático") {
-            formData.append("id", clienteId);
+         if (currentId !== "Automático") {
+            formData.append("id", currentId);
          }
 
          fetch("processa_cliente.php", {
@@ -578,10 +773,8 @@ function openFormModal(type) {
          e.preventDefault();
 
          const formData = new FormData(form);
-         const produtoId = document.getElementById("produto-id").textContent;
-
-         if (produtoId !== "Automático") {
-            formData.append("id", produtoId);
+         if (currentId !== "Automático") {
+            formData.append("id", currentId);
          }
 
          fetch("processa_produto.php", {
@@ -603,7 +796,9 @@ function openFormModal(type) {
 
    // Adiciona event listener para o botão cancelar
    const cancelBtn = form.querySelector(".btn-cancel");
-   cancelBtn.addEventListener("click", closeFormModal);
+   if (cancelBtn) {
+      cancelBtn.addEventListener("click", closeFormModal);
+   }
 
    // Mostra o modal
    modalOverlay.classList.add("active");
@@ -613,3 +808,18 @@ function closeFormModal() {
    const modalOverlay = document.getElementById("form-modal");
    modalOverlay.classList.remove("active");
 }
+
+// Adiciona estilo para o indicador de carregamento
+const style = document.createElement("style");
+style.textContent = `
+.loading-indicator {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   height: 200px;
+   font-size: 16px;
+   color: #24265d;
+   text-align: center;
+}
+`;
+document.head.appendChild(style);
