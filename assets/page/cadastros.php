@@ -98,6 +98,8 @@ ob_start();
                            class="pedido-form"
                            method="post"
                            action="processa_cliente.php">
+                           <input type="hidden" name="form_token" value="<?php echo md5(uniqid(mt_rand(), true));
+                                                                           $_SESSION['form_token'] = md5(uniqid(mt_rand(), true)); ?>" />
                            <section class="form-section">
                               <h3 class="form-title">Dados da Empresa</h3>
                               <div class="form-group">

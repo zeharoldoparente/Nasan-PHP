@@ -7,6 +7,39 @@ if (!isset($_SESSION['usuario'])) {
 
 include_once(__DIR__ . '/config/config.php');
 
+// Prevenção contra envios duplicados usando tokens
+if (!isset($_SESSION['form_token']) || !isset($_POST['form_token']) || $_SESSION['form_token'] !== $_POST['form_token']) {
+   // Gerar um novo token
+   $_SESSION['form_token'] = md5(uniqid(mt_rand(), true));
+} else {
+   // Este é um envio duplicado, responda com um erro
+   $response = ['status' => 'error', 'message' => 'Envio duplicado detectado'];
+   header('Content-Type: application/json');
+   echo json_encode($response);
+   exit();
+}
+
+// Resetar o token após o processamento
+$_SESSION['form_token'] = md5(uniqid(mt_rand(), true));
+
+// Verificar se o CNPJ já existe para novos cadastros
+if (!isset($_POST['id']) && isset($_POST['cnpj'])) {
+   $cnpj = $_POST['cnpj'];
+   $checkSql = "SELECT id FROM clientes WHERE cpf_cnpj = ?";
+   $checkStmt = $conn->prepare($checkSql);
+   $checkStmt->bind_param("s", $cnpj);
+   $checkStmt->execute();
+   $checkResult = $checkStmt->get_result();
+
+   if ($checkResult->num_rows > 0) {
+      $response = ['status' => 'error', 'message' => 'CNPJ já cadastrado no sistema'];
+      header('Content-Type: application/json');
+      echo json_encode($response);
+      $checkStmt->close();
+      exit();
+   }
+   $checkStmt->close();
+}
 // Verifica se é uma edição ou novo cadastro
 if (isset($_POST['id']) && !empty($_POST['id'])) {
    // EDIÇÃO

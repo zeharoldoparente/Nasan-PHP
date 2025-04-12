@@ -203,12 +203,9 @@ class ModalCustom {
 // Inicializar o sistema de modais
 const customModal = new ModalCustom();
 
-// NÃO sobrescrever os métodos nativos do navegador
-// Apenas disponibilizar as funções como alternativa
-
+// Event listeners para botões de exclusão apenas - NÃO MODIFICAR O COMPORTAMENTO DOS FORMULÁRIOS
 document.addEventListener("DOMContentLoaded", function () {
-   // Sobrescrever o comportamento dos botões de exclusão
-   // Cliente
+   // Cliente Delete Button
    const deleteClienteBtn = document.getElementById("btn-delete-cliente");
    if (deleteClienteBtn) {
       deleteClienteBtn.addEventListener("click", function (e) {
@@ -239,7 +236,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         .then((data) => {
                            if (data.status === "success") {
                               // Recarregar a lista de clientes
-                              loadClientes();
+                              if (typeof loadClientes === "function")
+                                 loadClientes();
 
                               // Limpar formulário
                               document.getElementById("clienteForm").reset();
@@ -251,7 +249,10 @@ document.addEventListener("DOMContentLoaded", function () {
                               ).style.display = "none";
 
                               // Fechar o modal em dispositivos móveis
-                              if (window.innerWidth <= 768) {
+                              if (
+                                 window.innerWidth <= 768 &&
+                                 typeof closeFormModal === "function"
+                              ) {
                                  closeFormModal();
                               }
 
@@ -277,7 +278,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
    }
 
-   // Produto
+   // Produto Delete Button
    const deleteProdutoBtn = document.getElementById("btn-delete-produto");
    if (deleteProdutoBtn) {
       deleteProdutoBtn.addEventListener("click", function (e) {
@@ -308,7 +309,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         .then((data) => {
                            if (data.status === "success") {
                               // Recarregar a lista de produtos
-                              loadProdutos();
+                              if (typeof loadProdutos === "function")
+                                 loadProdutos();
 
                               // Limpar formulário
                               document.getElementById("produtoForm").reset();
@@ -320,7 +322,10 @@ document.addEventListener("DOMContentLoaded", function () {
                               ).style.display = "none";
 
                               // Fechar o modal em dispositivos móveis
-                              if (window.innerWidth <= 768) {
+                              if (
+                                 window.innerWidth <= 768 &&
+                                 typeof closeFormModal === "function"
+                              ) {
                                  closeFormModal();
                               }
 
@@ -547,127 +552,4 @@ document.addEventListener("DOMContentLoaded", function () {
    }
    `;
    document.head.appendChild(style);
-
-   // Adicionar listeners para formulários de cliente e produto
-   setupFormListeners();
 });
-
-function setupFormListeners() {
-   // Cliente Form Submit
-   const clienteForm = document.getElementById("clienteForm");
-   if (clienteForm) {
-      const originalSubmit = clienteForm.onsubmit;
-      clienteForm.onsubmit = function (e) {
-         e.preventDefault();
-
-         const formData = new FormData(clienteForm);
-         const clienteId = document.getElementById("cliente-id").textContent;
-
-         if (clienteId !== "Automático") {
-            formData.append("id", clienteId);
-         }
-
-         fetch("processa_cliente.php", {
-            method: "POST",
-            body: formData,
-         })
-            .then((response) => response.json())
-            .then((data) => {
-               if (data.status === "success") {
-                  // Recarregar a lista
-                  loadClientes();
-
-                  // Se for novo, limpa o form
-                  if (clienteId === "Automático") {
-                     clienteForm.reset();
-                     document.getElementById("cliente-id").textContent =
-                        "Automático";
-                     document.getElementById(
-                        "btn-delete-cliente"
-                     ).style.display = "none";
-                  }
-
-                  // Fechar modal mobile
-                  if (window.innerWidth <= 768) {
-                     closeFormModal();
-                  }
-
-                  // Mostrar mensagem de sucesso com modal personalizado
-                  customModal.success(data.message);
-
-                  // Limpar mensagem de status após um tempo
-                  const statusMsg = document.getElementById("status-cliente");
-                  statusMsg.innerHTML = "";
-                  statusMsg.className = "status-message";
-               } else {
-                  customModal.error(data.message);
-               }
-            })
-            .catch((error) => {
-               console.error("Erro ao salvar cliente:", error);
-               customModal.error("Erro ao salvar cliente. Tente novamente.");
-            });
-
-         return false;
-      };
-   }
-
-   // Produto Form Submit
-   const produtoForm = document.getElementById("produtoForm");
-   if (produtoForm) {
-      const originalSubmit = produtoForm.onsubmit;
-      produtoForm.onsubmit = function (e) {
-         e.preventDefault();
-
-         const formData = new FormData(produtoForm);
-         const produtoId = document.getElementById("produto-id").textContent;
-
-         if (produtoId !== "Automático") {
-            formData.append("id", produtoId);
-         }
-
-         fetch("processa_produto.php", {
-            method: "POST",
-            body: formData,
-         })
-            .then((response) => response.json())
-            .then((data) => {
-               if (data.status === "success") {
-                  // Recarregar a lista
-                  loadProdutos();
-
-                  // Se for novo, limpa o form
-                  if (produtoId === "Automático") {
-                     produtoForm.reset();
-                     document.getElementById("produto-id").textContent =
-                        "Automático";
-                     document.getElementById(
-                        "btn-delete-produto"
-                     ).style.display = "none";
-                  }
-
-                  // Fechar modal mobile
-                  if (window.innerWidth <= 768) {
-                     closeFormModal();
-                  }
-
-                  // Mostrar mensagem de sucesso com modal personalizado
-                  customModal.success(data.message);
-
-                  // Limpar mensagem de status após um tempo
-                  const statusMsg = document.getElementById("status-produto");
-                  statusMsg.innerHTML = "";
-                  statusMsg.className = "status-message";
-               } else {
-                  customModal.error(data.message);
-               }
-            })
-            .catch((error) => {
-               console.error("Erro ao salvar produto:", error);
-               customModal.error("Erro ao salvar produto. Tente novamente.");
-            });
-
-         return false;
-      };
-   }
-}
