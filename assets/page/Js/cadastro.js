@@ -1,207 +1,212 @@
 // Sistema de modais personalizados
-class ModalCustom {
-   constructor() {
-      this.init();
-   }
+if (typeof ModalCustom === "undefined") {
+   class ModalCustom {
+      constructor() {
+         this.init();
+      }
 
-   init() {
-      // Criar elementos do modal
-      this.createModalElements();
+      init() {
+         // Criar elementos do modal
+         this.createModalElements();
 
-      // Adicionar event listeners
-      this.setupEventListeners();
-   }
+         // Adicionar event listeners
+         this.setupEventListeners();
+      }
 
-   createModalElements() {
-      // Criar o overlay do modal
-      this.overlay = document.createElement("div");
-      this.overlay.className = "modal-custom-overlay";
+      createModalElements() {
+         // Criar o overlay do modal
+         this.overlay = document.createElement("div");
+         this.overlay.className = "modal-custom-overlay";
 
-      // Criar o container do modal
-      this.container = document.createElement("div");
-      this.container.className = "modal-custom-container";
+         // Criar o container do modal
+         this.container = document.createElement("div");
+         this.container.className = "modal-custom-container";
 
-      // Criar o cabeçalho do modal
-      this.header = document.createElement("div");
-      this.header.className = "modal-custom-header";
+         // Criar o cabeçalho do modal
+         this.header = document.createElement("div");
+         this.header.className = "modal-custom-header";
 
-      // Criar o título
-      this.title = document.createElement("h3");
-      this.title.textContent = "Aviso";
+         // Criar o título
+         this.title = document.createElement("h3");
+         this.title.textContent = "Aviso";
 
-      // Criar o botão de fechar
-      this.closeButton = document.createElement("button");
-      this.closeButton.className = "btn-close-modal-custom";
-      this.closeButton.innerHTML = '<i class="bi bi-x-lg"></i>';
+         // Criar o botão de fechar
+         this.closeButton = document.createElement("button");
+         this.closeButton.className = "btn-close-modal-custom";
+         this.closeButton.innerHTML = '<i class="bi bi-x-lg"></i>';
 
-      // Montar o cabeçalho
-      this.header.appendChild(this.title);
-      this.header.appendChild(this.closeButton);
+         // Montar o cabeçalho
+         this.header.appendChild(this.title);
+         this.header.appendChild(this.closeButton);
 
-      // Criar o conteúdo do modal
-      this.content = document.createElement("div");
-      this.content.className = "modal-custom-content";
+         // Criar o conteúdo do modal
+         this.content = document.createElement("div");
+         this.content.className = "modal-custom-content";
 
-      // Criar o ícone
-      this.icon = document.createElement("div");
-      this.icon.className = "modal-custom-icon";
+         // Criar o ícone
+         this.icon = document.createElement("div");
+         this.icon.className = "modal-custom-icon";
 
-      // Criar a mensagem
-      this.message = document.createElement("div");
-      this.message.className = "modal-custom-message";
+         // Criar a mensagem
+         this.message = document.createElement("div");
+         this.message.className = "modal-custom-message";
 
-      // Criar a área de botões
-      this.actions = document.createElement("div");
-      this.actions.className = "modal-custom-actions";
+         // Criar a área de botões
+         this.actions = document.createElement("div");
+         this.actions.className = "modal-custom-actions";
 
-      // Montar o conteúdo
-      this.content.appendChild(this.icon);
-      this.content.appendChild(this.message);
-      this.content.appendChild(this.actions);
+         // Montar o conteúdo
+         this.content.appendChild(this.icon);
+         this.content.appendChild(this.message);
+         this.content.appendChild(this.actions);
 
-      // Montar o modal
-      this.container.appendChild(this.header);
-      this.container.appendChild(this.content);
-      this.overlay.appendChild(this.container);
+         // Montar o modal
+         this.container.appendChild(this.header);
+         this.container.appendChild(this.content);
+         this.overlay.appendChild(this.container);
 
-      // Adicionar ao body
-      document.body.appendChild(this.overlay);
-   }
+         // Adicionar ao body
+         document.body.appendChild(this.overlay);
+      }
 
-   setupEventListeners() {
-      // Fechar ao clicar no X
-      this.closeButton.addEventListener("click", () => this.close());
+      setupEventListeners() {
+         // Fechar ao clicar no X
+         this.closeButton.addEventListener("click", () => this.close());
 
-      // Fechar ao clicar no overlay (fora do modal)
-      this.overlay.addEventListener("click", (e) => {
-         if (e.target === this.overlay) {
-            this.close();
+         // Fechar ao clicar no overlay (fora do modal)
+         this.overlay.addEventListener("click", (e) => {
+            if (e.target === this.overlay) {
+               this.close();
+            }
+         });
+
+         // Fechar com a tecla ESC
+         document.addEventListener("keydown", (e) => {
+            if (
+               e.key === "Escape" &&
+               this.overlay.classList.contains("active")
+            ) {
+               this.close();
+            }
+         });
+      }
+
+      // Métodos públicos
+      alert(message, title = "Aviso", type = "info") {
+         return new Promise((resolve) => {
+            // Configurar o modal
+            this.title.textContent = title;
+            this.message.textContent = message;
+
+            // Limpar ações anteriores
+            this.actions.innerHTML = "";
+
+            // Configurar o ícone
+            this.setIcon(type);
+
+            // Adicionar botão de OK
+            const okButton = document.createElement("button");
+            okButton.className = "btn-modal-custom btn-modal-confirm";
+            okButton.textContent = "OK";
+            okButton.addEventListener("click", () => {
+               this.close();
+               resolve(true);
+            });
+
+            this.actions.appendChild(okButton);
+
+            // Abrir o modal
+            this.open();
+
+            // Focar no botão OK
+            setTimeout(() => okButton.focus(), 100);
+         });
+      }
+
+      confirm(message, title = "Confirmação", type = "warning") {
+         return new Promise((resolve) => {
+            // Configurar o modal
+            this.title.textContent = title;
+            this.message.textContent = message;
+
+            // Limpar ações anteriores
+            this.actions.innerHTML = "";
+
+            // Configurar o ícone
+            this.setIcon(type);
+
+            // Adicionar botão de Não
+            const noButton = document.createElement("button");
+            noButton.className = "btn-modal-custom btn-modal-cancel";
+            noButton.textContent = "Não";
+            noButton.addEventListener("click", () => {
+               this.close();
+               resolve(false);
+            });
+
+            // Adicionar botão de Sim
+            const yesButton = document.createElement("button");
+            yesButton.className = "btn-modal-custom btn-modal-danger";
+            yesButton.textContent = "Sim";
+            yesButton.addEventListener("click", () => {
+               this.close();
+               resolve(true);
+            });
+
+            this.actions.appendChild(noButton);
+            this.actions.appendChild(yesButton);
+
+            // Abrir o modal
+            this.open();
+
+            // Focar no botão Não por segurança
+            setTimeout(() => noButton.focus(), 100);
+         });
+      }
+
+      success(message, title = "Sucesso") {
+         return this.alert(message, title, "success");
+      }
+
+      error(message, title = "Erro") {
+         return this.alert(message, title, "error");
+      }
+
+      setIcon(type) {
+         this.icon.className = "modal-custom-icon " + type;
+
+         switch (type) {
+            case "success":
+               this.icon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+               break;
+            case "error":
+               this.icon.innerHTML = '<i class="bi bi-x-circle-fill"></i>';
+               break;
+            case "warning":
+               this.icon.innerHTML =
+                  '<i class="bi bi-exclamation-triangle-fill"></i>';
+               break;
+            case "info":
+            default:
+               this.icon.innerHTML = '<i class="bi bi-info-circle-fill"></i>';
+               break;
          }
-      });
+      }
 
-      // Fechar com a tecla ESC
-      document.addEventListener("keydown", (e) => {
-         if (e.key === "Escape" && this.overlay.classList.contains("active")) {
-            this.close();
-         }
-      });
-   }
+      open() {
+         this.overlay.classList.add("active");
+         document.body.style.overflow = "hidden"; // Bloquear scroll
+      }
 
-   // Métodos públicos
-   alert(message, title = "Aviso", type = "info") {
-      return new Promise((resolve) => {
-         // Configurar o modal
-         this.title.textContent = title;
-         this.message.textContent = message;
-
-         // Limpar ações anteriores
-         this.actions.innerHTML = "";
-
-         // Configurar o ícone
-         this.setIcon(type);
-
-         // Adicionar botão de OK
-         const okButton = document.createElement("button");
-         okButton.className = "btn-modal-custom btn-modal-confirm";
-         okButton.textContent = "OK";
-         okButton.addEventListener("click", () => {
-            this.close();
-            resolve(true);
-         });
-
-         this.actions.appendChild(okButton);
-
-         // Abrir o modal
-         this.open();
-
-         // Focar no botão OK
-         setTimeout(() => okButton.focus(), 100);
-      });
-   }
-
-   confirm(message, title = "Confirmação", type = "warning") {
-      return new Promise((resolve) => {
-         // Configurar o modal
-         this.title.textContent = title;
-         this.message.textContent = message;
-
-         // Limpar ações anteriores
-         this.actions.innerHTML = "";
-
-         // Configurar o ícone
-         this.setIcon(type);
-
-         // Adicionar botão de Não
-         const noButton = document.createElement("button");
-         noButton.className = "btn-modal-custom btn-modal-cancel";
-         noButton.textContent = "Não";
-         noButton.addEventListener("click", () => {
-            this.close();
-            resolve(false);
-         });
-
-         // Adicionar botão de Sim
-         const yesButton = document.createElement("button");
-         yesButton.className = "btn-modal-custom btn-modal-danger";
-         yesButton.textContent = "Sim";
-         yesButton.addEventListener("click", () => {
-            this.close();
-            resolve(true);
-         });
-
-         this.actions.appendChild(noButton);
-         this.actions.appendChild(yesButton);
-
-         // Abrir o modal
-         this.open();
-
-         // Focar no botão Não por segurança
-         setTimeout(() => noButton.focus(), 100);
-      });
-   }
-
-   success(message, title = "Sucesso") {
-      return this.alert(message, title, "success");
-   }
-
-   error(message, title = "Erro") {
-      return this.alert(message, title, "error");
-   }
-
-   setIcon(type) {
-      this.icon.className = "modal-custom-icon " + type;
-
-      switch (type) {
-         case "success":
-            this.icon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
-            break;
-         case "error":
-            this.icon.innerHTML = '<i class="bi bi-x-circle-fill"></i>';
-            break;
-         case "warning":
-            this.icon.innerHTML =
-               '<i class="bi bi-exclamation-triangle-fill"></i>';
-            break;
-         case "info":
-         default:
-            this.icon.innerHTML = '<i class="bi bi-info-circle-fill"></i>';
-            break;
+      close() {
+         this.overlay.classList.remove("active");
+         document.body.style.overflow = ""; // Restaurar scroll
       }
    }
 
-   open() {
-      this.overlay.classList.add("active");
-      document.body.style.overflow = "hidden"; // Bloquear scroll
-   }
-
-   close() {
-      this.overlay.classList.remove("active");
-      document.body.style.overflow = ""; // Restaurar scroll
-   }
+   // Inicializar o sistema de modais
+   window.customModal = new ModalCustom();
 }
-
-// Inicializar o sistema de modais
-const customModal = new ModalCustom();
 
 // Sobrescrever os métodos nativos alert e confirm
 window.originalAlert = window.alert;
