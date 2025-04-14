@@ -105,6 +105,18 @@ function limparFormulario() {
 function mostrarFormulario(modo, userData = null) {
    modoEdicao = modo === "edicao";
 
+   // Garantir que os valores de admin e ativo sejam números
+   if (modoEdicao && userData) {
+      // Converter para inteiros se forem string
+      userData.admin = parseInt(userData.admin);
+      userData.ativo = parseInt(userData.ativo);
+
+      // Log para verificar os valores recebidos
+      console.log("Dados do usuário para edição:", userData);
+      console.log("Admin:", userData.admin, "Tipo:", typeof userData.admin);
+      console.log("Ativo:", userData.ativo, "Tipo:", typeof userData.ativo);
+   }
+
    // Atualizar o título do formulário
    formTitle.textContent = modoEdicao ? "Editar Usuário" : "Novo Usuário";
 
@@ -123,6 +135,11 @@ function mostrarFormulario(modo, userData = null) {
       const radioButton = document.querySelector(radioSelector);
       if (radioButton) {
          radioButton.checked = true;
+      } else {
+         console.error(
+            "Radio button para admin não encontrado:",
+            radioSelector
+         );
       }
 
       // Selecionar o radio button correto para status (ativo/inativo)
@@ -130,6 +147,11 @@ function mostrarFormulario(modo, userData = null) {
       const statusButton = document.querySelector(statusSelector);
       if (statusButton) {
          statusButton.checked = true;
+      } else {
+         console.error(
+            "Radio button para ativo não encontrado:",
+            statusSelector
+         );
       }
    } else {
       // Valores padrão para novos usuários
@@ -139,28 +161,140 @@ function mostrarFormulario(modo, userData = null) {
 
    if (isMobile()) {
       // Em dispositivos móveis, exibe o modal
-      const formClone = userForm.cloneNode(true);
-      formClone.classList.remove("hidden");
+      // CORREÇÃO: Não usar cloneNode, mas criar uma cópia do HTML com novos IDs
+      modalContent.innerHTML = ""; // Limpa o conteúdo anterior
 
-      // Limpa o conteúdo anterior do modal
-      modalContent.innerHTML = "";
-      modalContent.appendChild(formClone);
+      const formModalHTML = `
+         <form id="user-form-modal" class="user-form">
+            <h3>${modoEdicao ? "Editar Usuário" : "Novo Usuário"}</h3>
+            <div class="form-group">
+               <label for="id-modal">ID:</label>
+               <input type="text" id="id-modal" name="id" value="${
+                  modoEdicao && userData ? userData.id : ""
+               }" disabled />
+            </div>
+
+            <div class="form-group">
+               <label for="usuario-modal">Usuário:</label>
+               <input type="text" id="usuario-modal" name="usuario" value="${
+                  modoEdicao && userData ? userData.usuario : ""
+               }" required />
+            </div>
+
+            <div class="form-group">
+               <label for="nome-modal">Nome:</label>
+               <input type="text" id="nome-modal" name="nome" value="${
+                  modoEdicao && userData ? userData.nome : ""
+               }" required />
+            </div>
+
+            <div class="form-group">
+               <label for="senha-modal">Senha:</label>
+               <input type="password" id="senha-modal" name="senha" placeholder="Deixe em branco para manter a senha atual" />
+            </div>
+
+            <div class="form-group">
+               <label>Administrador?</label>
+               <div class="admin-radio-group">
+                  <input
+                     type="radio"
+                     id="admin-nao-modal"
+                     name="admin"
+                     value="0"
+                     ${
+                        !modoEdicao ||
+                        (modoEdicao && userData && userData.admin == 0)
+                           ? "checked"
+                           : ""
+                     } />
+                  <label for="admin-nao-modal" class="radio-nao">❌ Não</label>
+
+                  <input
+                     type="radio"
+                     id="admin-sim-modal"
+                     name="admin"
+                     value="1"
+                     ${
+                        modoEdicao && userData && userData.admin == 1
+                           ? "checked"
+                           : ""
+                     } />
+                  <label for="admin-sim-modal" class="radio-sim">✔️ Sim</label>
+               </div>
+            </div>
+
+            <div class="form-group">
+               <label>Status do Usuário:</label>
+               <div class="status-radio-group">
+                  <input
+                     type="radio"
+                     id="ativo-sim-modal"
+                     name="ativo"
+                     value="1"
+                     ${
+                        !modoEdicao ||
+                        (modoEdicao && userData && userData.ativo == 1)
+                           ? "checked"
+                           : ""
+                     } />
+                  <label for="ativo-sim-modal" class="radio-sim">✅ Ativo</label>
+
+                  <input
+                     type="radio"
+                     id="ativo-nao-modal"
+                     name="ativo"
+                     value="0"
+                     ${
+                        modoEdicao && userData && userData.ativo == 0
+                           ? "checked"
+                           : ""
+                     } />
+                  <label for="ativo-nao-modal" class="radio-nao">❌ Inativo</label>
+               </div>
+            </div>
+
+            <div class="form-actions">
+               <button type="submit" id="btn-salvar-modal">Salvar Alterações</button>
+               <button type="button" id="btn-cancelar-modal" class="btn-cancel">Cancelar</button>
+            </div>
+         </form>
+      `;
+
+      modalContent.innerHTML = formModalHTML;
 
       // Exibe o modal
       userModal.style.display = "flex";
 
-      // Adiciona evento de submit ao formulário clonado
-      formClone.addEventListener("submit", async function (e) {
+      // Adiciona evento de submit ao formulário do modal
+      const formModal = document.getElementById("user-form-modal");
+      formModal.addEventListener("submit", async function (e) {
          e.preventDefault();
 
+         // Corrigindo para selecionar os radio buttons dentro do modal
+         const adminChecked = formModal.querySelector(
+            'input[name="admin"]:checked'
+         );
+         const ativoChecked = formModal.querySelector(
+            'input[name="ativo"]:checked'
+         );
+
+         if (!adminChecked || !ativoChecked) {
+            customModal.error(
+               "Por favor selecione todas as opções necessárias."
+            );
+            return;
+         }
+
          const formData = {
-            id: this.querySelector("#id").value,
-            usuario: this.querySelector("#usuario").value,
-            nome: this.querySelector("#nome").value,
-            senha: this.querySelector("#senha").value,
-            admin: this.querySelector('input[name="admin"]:checked').value,
-            ativo: this.querySelector('input[name="ativo"]:checked').value, // Adicionado campo ativo
+            id: document.getElementById("id-modal").value,
+            usuario: document.getElementById("usuario-modal").value,
+            nome: document.getElementById("nome-modal").value,
+            senha: document.getElementById("senha-modal").value,
+            admin: adminChecked.value,
+            ativo: ativoChecked.value,
          };
+
+         console.log("Dados do formulário modal:", formData); // Log para debug
 
          if (modoEdicao) {
             await atualizarUsuario(formData);
@@ -170,6 +304,13 @@ function mostrarFormulario(modo, userData = null) {
 
          userModal.style.display = "none";
       });
+
+      // Adiciona evento ao botão cancelar do modal
+      document
+         .getElementById("btn-cancelar-modal")
+         .addEventListener("click", () => {
+            userModal.style.display = "none";
+         });
    } else {
       // Em desktop, exibe no painel lateral
       placeholder.classList.add("hidden");
@@ -242,7 +383,27 @@ async function atualizarUsuario(formData) {
       formData.admin = parseInt(formData.admin);
       formData.ativo = parseInt(formData.ativo);
 
-      console.log("Dados a serem enviados:", formData); // Debug para ver os dados enviados
+      // Log detalhado para depuração
+      console.log("Dados a serem enviados:", formData);
+      console.log(
+         "Tipo de admin:",
+         typeof formData.admin,
+         "Valor:",
+         formData.admin
+      );
+      console.log(
+         "Tipo de ativo:",
+         typeof formData.ativo,
+         "Valor:",
+         formData.ativo
+      );
+
+      // Verificar se os valores são válidos antes de enviar
+      if (isNaN(formData.admin) || isNaN(formData.ativo)) {
+         throw new Error(
+            "Os valores de admin ou ativo não são números válidos."
+         );
+      }
 
       const resposta = await fetch("api_usuarios.php?acao=atualizar_usuario", {
          method: "POST",
