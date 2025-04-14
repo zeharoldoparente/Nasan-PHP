@@ -98,6 +98,26 @@ ob_start();
                      </div>
                   </div>
 
+                  <!-- Nova seção para ativo/inativo -->
+                  <div class="form-group">
+                     <label>Status do Usuário:</label>
+                     <div class="status-radio-group">
+                        <input
+                           type="radio"
+                           id="ativo-sim"
+                           name="ativo"
+                           value="1" />
+                        <label for="ativo-sim" class="radio-sim">✅ Ativo</label>
+
+                        <input
+                           type="radio"
+                           id="ativo-nao"
+                           name="ativo"
+                           value="0" />
+                        <label for="ativo-nao" class="radio-nao">❌ Inativo</label>
+                     </div>
+                  </div>
+
                   <div class="form-actions">
                      <button type="submit" id="btn-salvar">Salvar Alterações</button>
                      <button type="button" id="btn-cancelar" class="btn-cancel">Cancelar</button>

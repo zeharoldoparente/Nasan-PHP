@@ -19,7 +19,14 @@ if (isset($_POST["submit"]) && !empty($_POST["usuario"]) && !empty($_POST["senha
 
       // Verificar a senha usando password_verify
       if (password_verify($senha, $user['senha'])) {
-         // Senha correta, inicia sessão
+         // Verificar se o usuário está ativo
+         if ($user['ativo'] == 0) {
+            // Usuário inativo, redirecionar com erro específico
+            header('Location: ../../../index.php?erro=2');
+            exit();
+         }
+
+         // Senha correta e usuário ativo, inicia sessão
          $_SESSION['usuario'] = $usuario;
 
          // Armazenar status de administrador na sessão

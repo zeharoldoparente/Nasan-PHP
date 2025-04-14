@@ -20,7 +20,15 @@
       <div class="login-container">
          <h2>Entrar</h2>
          <?php if (isset($_GET['erro'])): ?>
-            <p style="color: red; text-align: center; margin-bottom: 10px;">Usuário ou senha incorretos!</p>
+            <p style="color: red; text-align: center; margin-bottom: 10px;">
+               <?php
+               $mensagem = "Usuário ou senha incorretos!";
+               if ($_GET['erro'] == '2') {
+                  $mensagem = "Usuário inativo. Entre em contato com o administrador.";
+               }
+               echo $mensagem;
+               ?>
+            </p>
          <?php endif; ?>
          <form action="./assets/page/config/testLogin.php" method="POST">
             <input

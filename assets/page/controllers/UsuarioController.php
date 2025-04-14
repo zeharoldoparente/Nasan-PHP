@@ -56,7 +56,8 @@ class UsuarioController
             'usuario' => $this->usuario->getUsuario(),
             'nome' => $this->usuario->getNome(),
             'senha' => '', // Por segurança, não enviamos a senha
-            'admin' => $this->usuario->getAdmin()
+            'admin' => $this->usuario->getAdmin(),
+            'ativo' => $this->usuario->getAtivo() // Adicionado o campo ativo
          ]);
       }
 
@@ -88,6 +89,7 @@ class UsuarioController
       $this->usuario->setNome($dados['nome']);
       $this->usuario->setSenha($dados['senha']);
       $this->usuario->setAdmin(isset($dados['admin']) ? $dados['admin'] : 0);
+      $this->usuario->setAtivo(isset($dados['ativo']) ? $dados['ativo'] : 1); // Por padrão, o usuário é ativo
 
       // Criar usuário
       if ($this->usuario->criar()) {
@@ -126,6 +128,7 @@ class UsuarioController
       if (isset($dados['nome'])) $this->usuario->setNome($dados['nome']);
       if (!empty($dados['senha'])) $this->usuario->setSenha($dados['senha']);
       if (isset($dados['admin'])) $this->usuario->setAdmin($dados['admin']);
+      if (isset($dados['ativo'])) $this->usuario->setAtivo($dados['ativo']); // Adicionado campo ativo
 
       // Atualizar usuário
       if ($this->usuario->atualizar()) {

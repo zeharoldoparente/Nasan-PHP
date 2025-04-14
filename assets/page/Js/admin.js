@@ -41,6 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
          nome: document.getElementById("nome").value,
          senha: document.getElementById("senha").value,
          admin: document.querySelector('input[name="admin"]:checked').value,
+         ativo: document.querySelector('input[name="ativo"]:checked').value, // Adicionado campo ativo
       };
 
       if (modoEdicao) {
@@ -123,9 +124,17 @@ function mostrarFormulario(modo, userData = null) {
       if (radioButton) {
          radioButton.checked = true;
       }
+
+      // Selecionar o radio button correto para status (ativo/inativo)
+      const statusSelector = `input[name="ativo"][value="${userData.ativo}"]`;
+      const statusButton = document.querySelector(statusSelector);
+      if (statusButton) {
+         statusButton.checked = true;
+      }
    } else {
-      // Defina "Não" como padrão para novos usuários
+      // Valores padrão para novos usuários
       document.getElementById("admin-nao").checked = true;
+      document.getElementById("ativo-sim").checked = true; // Novo usuário vem ativo por padrão
    }
 
    if (isMobile()) {
@@ -150,6 +159,7 @@ function mostrarFormulario(modo, userData = null) {
             nome: this.querySelector("#nome").value,
             senha: this.querySelector("#senha").value,
             admin: this.querySelector('input[name="admin"]:checked').value,
+            ativo: this.querySelector('input[name="ativo"]:checked').value, // Adicionado campo ativo
          };
 
          if (modoEdicao) {
@@ -325,6 +335,11 @@ function renderUserCards() {
       const card = document.createElement("div");
       card.classList.add("user-card");
 
+      // Adicionar classe para usuários inativos
+      if (user.ativo == 0) {
+         card.classList.add("user-inactive");
+      }
+
       card.innerHTML = `
             <img src="../image/avatar.png" alt="avatar genérico" />
             <div class="user-info">
@@ -332,6 +347,9 @@ function renderUserCards() {
                 <p class="user-login">${user.usuario}</p>
                 <p class="user-admin">${
                    user.admin == 1 ? "✔️ Admin" : "❌ Usuário comum"
+                }</p>
+                <p class="user-status">${
+                   user.ativo == 1 ? "✅ Ativo" : "❌ Inativo"
                 }</p>
             </div>
             <div class="user-actions">

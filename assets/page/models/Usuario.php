@@ -8,6 +8,7 @@ class Usuario
    private $nome;
    private $senha;
    private $admin;
+   private $ativo; // Adicionado a propriedade ativo
    private $conn;
 
    public function __construct($conn)
@@ -66,10 +67,21 @@ class Usuario
       $this->admin = $admin;
    }
 
+   // Adicionado métodos getter e setter para ativo
+   public function getAtivo()
+   {
+      return $this->ativo;
+   }
+
+   public function setAtivo($ativo)
+   {
+      $this->ativo = $ativo;
+   }
+
    // Método para listar todos os usuários
    public function listarTodos()
    {
-      $sql = "SELECT id, usuario, nome, senha, admin FROM usuarios";
+      $sql = "SELECT id, usuario, nome, senha, admin, ativo FROM usuarios"; // Adicionado campo ativo
       $result = $this->conn->query($sql);
 
       $usuarios = [];
@@ -86,7 +98,7 @@ class Usuario
    // Método para buscar um usuário pelo ID
    public function buscarPorId($id)
    {
-      $sql = "SELECT id, usuario, nome, senha, admin FROM usuarios WHERE id = ?";
+      $sql = "SELECT id, usuario, nome, senha, admin, ativo FROM usuarios WHERE id = ?"; // Adicionado campo ativo
       $stmt = $this->conn->prepare($sql);
       $stmt->bind_param("i", $id);
       $stmt->execute();
@@ -99,6 +111,7 @@ class Usuario
          $this->nome = $dados['nome'];
          $this->senha = $dados['senha'];
          $this->admin = $dados['admin'];
+         $this->ativo = $dados['ativo']; // Armazenar o valor de ativo
          return true;
       }
 
@@ -108,13 +121,18 @@ class Usuario
    // Método para criar um novo usuário
    public function criar()
    {
-      $sql = "INSERT INTO usuarios (usuario, nome, senha, admin) VALUES (?, ?, ?, ?)";
+      $sql = "INSERT INTO usuarios (usuario, nome, senha, admin, ativo) VALUES (?, ?, ?, ?, ?)"; // Adicionado campo ativo
       $stmt = $this->conn->prepare($sql);
 
       // Encrypt the password with password_hash
       $senhaHash = password_hash($this->senha, PASSWORD_DEFAULT);
 
-      $stmt->bind_param("sssi", $this->usuario, $this->nome, $senhaHash, $this->admin);
+      // Se ativo não foi definido, definir como 1 (ativo) por padrão
+      if ($this->ativo === null) {
+         $this->ativo = 1;
+      }
+
+      $stmt->bind_param("sssii", $this->usuario, $this->nome, $senhaHash, $this->admin, $this->ativo);
 
       if ($stmt->execute()) {
          $this->id = $this->conn->insert_id;
@@ -129,18 +147,18 @@ class Usuario
    {
       // Verificar se a senha foi alterada
       if (!empty($this->senha) && strlen($this->senha) < 60) { // Se não for um hash
-         $sql = "UPDATE usuarios SET usuario = ?, nome = ?, senha = ?, admin = ? WHERE id = ?";
+         $sql = "UPDATE usuarios SET usuario = ?, nome = ?, senha = ?, admin = ?, ativo = ? WHERE id = ?"; // Adicionado campo ativo
          $stmt = $this->conn->prepare($sql);
 
          // Criptografar a senha
          $senhaHash = password_hash($this->senha, PASSWORD_DEFAULT);
 
-         $stmt->bind_param("sssii", $this->usuario, $this->nome, $senhaHash, $this->admin, $this->id);
+         $stmt->bind_param("sssiii", $this->usuario, $this->nome, $senhaHash, $this->admin, $this->ativo, $this->id);
       } else {
          // Se a senha não foi alterada ou já é um hash
-         $sql = "UPDATE usuarios SET usuario = ?, nome = ?, admin = ? WHERE id = ?";
+         $sql = "UPDATE usuarios SET usuario = ?, nome = ?, admin = ?, ativo = ? WHERE id = ?"; // Adicionado campo ativo
          $stmt = $this->conn->prepare($sql);
-         $stmt->bind_param("ssii", $this->usuario, $this->nome, $this->admin, $this->id);
+         $stmt->bind_param("ssiii", $this->usuario, $this->nome, $this->admin, $this->ativo, $this->id);
       }
 
       return $stmt->execute();
