@@ -4,6 +4,10 @@ if (!isset($_SESSION['usuario'])) {
    header("Location: ../../index.php");
    exit();
 }
+
+// Verificar se o usuário é administrador
+$isAdmin = isset($_SESSION['admin']) && $_SESSION['admin'] == 1;
+
 ob_start();
 ?>
 <!DOCTYPE html>
@@ -40,9 +44,11 @@ ob_start();
                   <button class="tab-button active" data-tab="clientes">
                      Cadastro de Clientes
                   </button>
-                  <button class="tab-button" data-tab="produtos">
-                     Cadastro de Produtos
-                  </button>
+                  <?php if ($isAdmin): ?>
+                     <button class="tab-button" data-tab="produtos">
+                        Cadastro de Produtos
+                     </button>
+                  <?php endif; ?>
                </div>
 
                <!-- Tab de Cadastro de Clientes -->
@@ -65,19 +71,6 @@ ob_start();
                         </div>
                         <div class="list-content" id="lista-clientes">
                            <!-- Clientes serão adicionados dinamicamente pelo JS -->
-                           <div class="list-item cliente-item" data-id="1">
-                              <div class="list-item-content">
-                                 <h4>Empresa ABC Ltda</h4>
-                                 <p>(11) 3456-7890</p>
-                              </div>
-                           </div>
-                           <div class="list-item cliente-item" data-id="2">
-                              <div class="list-item-content">
-                                 <h4>Tech Solutions S.A.</h4>
-                                 <p>(21) 98765-4321</p>
-                              </div>
-                           </div>
-                           <!-- Exemplo de itens da lista - remova em produção -->
                         </div>
                      </div>
 
@@ -100,6 +93,9 @@ ob_start();
                            action="processa_cliente.php">
                            <input type="hidden" name="form_token" value="<?php echo md5(uniqid(mt_rand(), true));
                                                                            $_SESSION['form_token'] = md5(uniqid(mt_rand(), true)); ?>" />
+                           <!-- Campo oculto para armazenar o id do usuário que criou o cliente -->
+                           <input type="hidden" name="usuario_id" id="usuario_id" value="<?php echo $_SESSION['usuario']; ?>" />
+
                            <section class="form-section">
                               <h3 class="form-title">Dados da Empresa</h3>
                               <div class="form-group">
@@ -264,128 +260,119 @@ ob_start();
                               <button type="submit" class="btn-save">
                                  Salvar Cliente
                               </button>
-                              <button type="button" id="btn-delete-cliente" class="btn-delete" style="display: none;">
-                                 Excluir
-                              </button>
+                              <?php if ($isAdmin): ?>
+                                 <button type="button" id="btn-delete-cliente" class="btn-delete" style="display: none;">
+                                    Excluir
+                                 </button>
+                              <?php endif; ?>
                            </div>
                         </form>
                      </div>
                   </div>
                </div>
 
-               <!-- Tab de Cadastro de Produtos -->
-               <div id="produtos-tab" class="tab-content">
-                  <div class="split-layout">
-                     <!-- Lista de Produtos (Lado Esquerdo) -->
-                     <div class="list-panel">
-                        <div class="list-header">
-                           <h3>Lista de Produtos</h3>
-                           <button class="btn-add" id="add-produto">
-                              <i class="bi bi-plus-lg"></i> Novo Produto
-                           </button>
-                        </div>
-                        <div class="search-bar">
-                           <input
-                              type="text"
-                              placeholder="Buscar produto..."
-                              id="busca-produto" />
-                           <i class="bi bi-search"></i>
-                        </div>
-                        <div class="list-content" id="lista-produtos">
-                           <!-- Produtos serão adicionados dinamicamente pelo JS -->
-                           <div class="list-item produto-item" data-id="1">
-                              <div class="list-item-content">
-                                 <h4>Monitor 24"</h4>
-                                 <p>R$ 999,00</p>
-                              </div>
-                           </div>
-                           <div class="list-item produto-item" data-id="2">
-                              <div class="list-item-content">
-                                 <h4>Teclado sem fio</h4>
-                                 <p>R$ 189,90</p>
-                              </div>
-                           </div>
-                           <!-- Exemplo de itens da lista - remova em produção -->
-                        </div>
-                     </div>
-
-                     <!-- Formulário de Produto (Lado Direito) -->
-                     <div class="form-panel" id="form-produto-panel">
-                        <div class="form-header">
-                           <h2 class="form-title-main">
-                              Cadastro de Produto
-                           </h2>
-                           <div class="id-display">
-                              <span class="id-label">ID:</span>
-                              <span class="id-value" id="produto-id">Automático</span>
-                           </div>
-                        </div>
-
-                        <form
-                           id="produtoForm"
-                           class="pedido-form produto-form"
-                           method="post"
-                           action="processa_produto.php"
-                           enctype="multipart/form-data">
-                           <section class="form-section">
-                              <h3 class="form-title">Informações</h3>
-                              <div class="form-group">
-                                 <label for="codigo-barras">Código do Produto</label>
-                                 <input
-                                    type="text"
-                                    id="codigo-barras"
-                                    name="codigo-barras"
-                                    placeholder="Digite o código do Produto" />
-                              </div>
-                              <div class="form-group">
-                                 <label for="nome-produto">Nome do Produto*</label>
-                                 <input
-                                    type="text"
-                                    id="nome-produto"
-                                    name="nome-produto"
-                                    placeholder="Digite o nome do produto"
-                                    required />
-                              </div>
-                              <div class="form-group">
-                                 <label for="unidade">Unidade de Medida*</label>
-                                 <input type="text"
-                                    id="unidade"
-                                    name="unidade"
-                                    placeholder=" EX: 5 Kg"
-                                    required />
-                              </div>
-                              <div class="form-group">
-                                 <label for="preco-venda">Preço de Venda (R$)*</label>
-                                 <input
-                                    type="number"
-                                    id="preco-venda"
-                                    name="preco-venda"
-                                    placeholder="0,00"
-                                    step="0.01"
-                                    min="0"
-                                    required />
-                              </div>
-                           </section>
-
-                           <div
-                              id="status-produto"
-                              class="status-message"></div>
-
-                           <div class="form-actions">
-                              <button type="button" class="btn-cancel">
-                                 Limpar
-                              </button>
-                              <button type="submit" class="btn-save">
-                                 Salvar Produto
-                              </button>
-                              <button type="button" id="btn-delete-produto" class="btn-delete" style="display: none;">
-                                 Excluir
+               <?php if ($isAdmin): ?>
+                  <!-- Tab de Cadastro de Produtos - Visível apenas para administradores -->
+                  <div id="produtos-tab" class="tab-content">
+                     <div class="split-layout">
+                        <!-- Lista de Produtos (Lado Esquerdo) -->
+                        <div class="list-panel">
+                           <div class="list-header">
+                              <h3>Lista de Produtos</h3>
+                              <button class="btn-add" id="add-produto">
+                                 <i class="bi bi-plus-lg"></i> Novo Produto
                               </button>
                            </div>
-                        </form>
+                           <div class="search-bar">
+                              <input
+                                 type="text"
+                                 placeholder="Buscar produto..."
+                                 id="busca-produto" />
+                              <i class="bi bi-search"></i>
+                           </div>
+                           <div class="list-content" id="lista-produtos">
+                              <!-- Produtos serão adicionados dinamicamente pelo JS -->
+                           </div>
+                        </div>
+
+                        <!-- Formulário de Produto (Lado Direito) -->
+                        <div class="form-panel" id="form-produto-panel">
+                           <div class="form-header">
+                              <h2 class="form-title-main">
+                                 Cadastro de Produto
+                              </h2>
+                              <div class="id-display">
+                                 <span class="id-label">ID:</span>
+                                 <span class="id-value" id="produto-id">Automático</span>
+                              </div>
+                           </div>
+
+                           <form
+                              id="produtoForm"
+                              class="pedido-form produto-form"
+                              method="post"
+                              action="processa_produto.php"
+                              enctype="multipart/form-data">
+                              <section class="form-section">
+                                 <h3 class="form-title">Informações</h3>
+                                 <div class="form-group">
+                                    <label for="codigo-barras">Código do Produto</label>
+                                    <input
+                                       type="text"
+                                       id="codigo-barras"
+                                       name="codigo-barras"
+                                       placeholder="Digite o código do Produto" />
+                                 </div>
+                                 <div class="form-group">
+                                    <label for="nome-produto">Nome do Produto*</label>
+                                    <input
+                                       type="text"
+                                       id="nome-produto"
+                                       name="nome-produto"
+                                       placeholder="Digite o nome do produto"
+                                       required />
+                                 </div>
+                                 <div class="form-group">
+                                    <label for="unidade">Unidade de Medida*</label>
+                                    <input type="text"
+                                       id="unidade"
+                                       name="unidade"
+                                       placeholder=" EX: 5 Kg"
+                                       required />
+                                 </div>
+                                 <div class="form-group">
+                                    <label for="preco-venda">Preço de Venda (R$)*</label>
+                                    <input
+                                       type="number"
+                                       id="preco-venda"
+                                       name="preco-venda"
+                                       placeholder="0,00"
+                                       step="0.01"
+                                       min="0"
+                                       required />
+                                 </div>
+                              </section>
+
+                              <div
+                                 id="status-produto"
+                                 class="status-message"></div>
+
+                              <div class="form-actions">
+                                 <button type="button" class="btn-cancel">
+                                    Limpar
+                                 </button>
+                                 <button type="submit" class="btn-save">
+                                    Salvar Produto
+                                 </button>
+                                 <button type="button" id="btn-delete-produto" class="btn-delete" style="display: none;">
+                                    Excluir
+                                 </button>
+                              </div>
+                           </form>
+                        </div>
                      </div>
                   </div>
-               </div>
+               <?php endif; ?>
             </div>
          </div>
       </div>
@@ -405,6 +392,12 @@ ob_start();
          </div>
       </div>
    </div>
+
+   <!-- Adicionar variável JavaScript para o estado de administrador -->
+   <script>
+      const isAdmin = <?php echo $isAdmin ? 'true' : 'false'; ?>;
+      const currentUser = "<?php echo $_SESSION['usuario']; ?>";
+   </script>
    <script src="./Js/cadastro.js"></script>
    <script src="./Js/modal-custom.js"></script>
 </body>

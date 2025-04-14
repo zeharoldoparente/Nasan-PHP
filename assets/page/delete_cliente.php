@@ -7,6 +7,17 @@ if (!isset($_SESSION['usuario'])) {
 
 include_once(__DIR__ . '/config/config.php');
 
+// Verificar se o usuário é administrador
+$isAdmin = isset($_SESSION['admin']) && $_SESSION['admin'] == 1;
+
+// Apenas administradores podem excluir clientes
+if (!$isAdmin) {
+   $response = ['status' => 'error', 'message' => 'Você não tem permissão para excluir clientes'];
+   header('Content-Type: application/json');
+   echo json_encode($response);
+   exit();
+}
+
 if (isset($_POST['id']) && !empty($_POST['id'])) {
    $id = $_POST['id'];
 

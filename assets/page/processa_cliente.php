@@ -7,6 +7,10 @@ if (!isset($_SESSION['usuario'])) {
 
 include_once(__DIR__ . '/config/config.php');
 
+// Verificar se o usuário é administrador
+$isAdmin = isset($_SESSION['admin']) && $_SESSION['admin'] == 1;
+$usuarioLogado = $_SESSION['usuario'];
+
 // Prevenção contra envios duplicados usando tokens
 if (!isset($_SESSION['form_token']) || !isset($_POST['form_token']) || $_SESSION['form_token'] !== $_POST['form_token']) {
    // Gerar um novo token
@@ -40,10 +44,33 @@ if (!isset($_POST['id']) && isset($_POST['cnpj'])) {
    }
    $checkStmt->close();
 }
+
 // Verifica se é uma edição ou novo cadastro
 if (isset($_POST['id']) && !empty($_POST['id'])) {
    // EDIÇÃO
    $id = $_POST['id'];
+
+   // Verificar se o usuário não-admin tem permissão para editar este cliente
+   if (!$isAdmin) {
+      $checkOwnerSql = "SELECT usuario_cadastro FROM clientes WHERE id = ?";
+      $checkOwnerStmt = $conn->prepare($checkOwnerSql);
+      $checkOwnerStmt->bind_param("i", $id);
+      $checkOwnerStmt->execute();
+      $checkOwnerResult = $checkOwnerStmt->get_result();
+
+      if ($checkOwnerResult->num_rows > 0) {
+         $cliente = $checkOwnerResult->fetch_assoc();
+         if ($cliente['usuario_cadastro'] !== $usuarioLogado) {
+            $response = ['status' => 'error', 'message' => 'Você não tem permissão para editar este cliente'];
+            header('Content-Type: application/json');
+            echo json_encode($response);
+            $checkOwnerStmt->close();
+            exit();
+         }
+      }
+      $checkOwnerStmt->close();
+   }
+
    $empresa = $_POST['empresa'];
    $cnpj = $_POST['cnpj'];
    $ie = isset($_POST['ie']) ? $_POST['ie'] : '';
@@ -92,11 +119,12 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
    $estado = $_POST['estado'];
    $observacoes = isset($_POST['observacoes']) ? $_POST['observacoes'] : '';
 
-   $sql = "INSERT INTO clientes (razao_social, cpf_cnpj, inscricao_estadual, email, telefone, cep, rua, numero, bairro, complemento, cidade, estado, observacoes) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+   // Incluir o usuário que está cadastrando
+   $sql = "INSERT INTO clientes (razao_social, cpf_cnpj, inscricao_estadual, email, telefone, cep, rua, numero, bairro, complemento, cidade, estado, observacoes, usuario_cadastro) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
    $stmt = $conn->prepare($sql);
-   $stmt->bind_param("sssssssssssss", $empresa, $cnpj, $ie, $email, $telefone, $cep, $rua, $numero, $bairro, $complemento, $cidade, $estado, $observacoes);
+   $stmt->bind_param("ssssssssssssss", $empresa, $cnpj, $ie, $email, $telefone, $cep, $rua, $numero, $bairro, $complemento, $cidade, $estado, $observacoes, $usuarioLogado);
 }
 
 // Executa a query

@@ -243,8 +243,11 @@ document.addEventListener("DOMContentLoaded", function () {
    setupClienteListeners();
 
    // ===== PRODUTO FUNCTIONS =====
-   loadProdutos();
-   setupProdutoListeners();
+   // Apenas carregar produtos se o usuário for administrador
+   if (typeof isAdmin !== "undefined" && isAdmin) {
+      loadProdutos();
+      setupProdutoListeners();
+   }
 
    // ===== MODAL HANDLING FOR MOBILE =====
    setupModalHandlers();
@@ -324,7 +327,9 @@ function setupClienteListeners() {
       document.getElementById("cliente-id").textContent = "Automático";
 
       // Esconder o botão de excluir
-      document.getElementById("btn-delete-cliente").style.display = "none";
+      if (document.getElementById("btn-delete-cliente")) {
+         document.getElementById("btn-delete-cliente").style.display = "none";
+      }
 
       // Para mobile, abre o modal
       if (window.innerWidth <= 768) {
@@ -363,7 +368,7 @@ function setupClienteListeners() {
       }
    });
 
-   // Event listeners para formulário de cliente - ATUALIZADO PARA USAR MODAIS
+   // Event listeners para formulário de cliente
    const clienteForm = document.getElementById("clienteForm");
    if (clienteForm) {
       clienteForm.addEventListener("submit", function (e) {
@@ -427,7 +432,7 @@ function setupClienteListeners() {
       });
    });
 
-   // Event listener para botão excluir cliente
+   // Event listener para botão excluir cliente (apenas para administradores)
    const deleteClienteBtn = document.getElementById("btn-delete-cliente");
    if (deleteClienteBtn) {
       deleteClienteBtn.addEventListener("click", function () {
@@ -494,9 +499,11 @@ function loadClienteDetailsForMobile(clienteId) {
             document.getElementById("estado").value = cliente.estado;
             document.getElementById("observacoes").value = cliente.observacoes;
 
-            // Mostra o botão de excluir
-            document.getElementById("btn-delete-cliente").style.display =
-               "block";
+            // Mostra o botão de excluir apenas para administradores
+            const deleteBtn = document.getElementById("btn-delete-cliente");
+            if (deleteBtn && isAdmin) {
+               deleteBtn.style.display = "block";
+            }
 
             // Só abre o modal depois que os dados forem carregados
             openFormModal("cliente", true);
@@ -542,9 +549,11 @@ function loadClienteDetails(clienteId) {
             document.getElementById("estado").value = cliente.estado;
             document.getElementById("observacoes").value = cliente.observacoes;
 
-            // Mostra o botão de excluir
-            document.getElementById("btn-delete-cliente").style.display =
-               "block";
+            // Mostra o botão de excluir apenas para administradores
+            const deleteBtn = document.getElementById("btn-delete-cliente");
+            if (deleteBtn && isAdmin) {
+               deleteBtn.style.display = "block";
+            }
          } else {
             console.error("Erro ao carregar dados do cliente:", data.message);
             customModal.error(
@@ -558,7 +567,7 @@ function loadClienteDetails(clienteId) {
       });
 }
 
-// FUNÇÃO ATUALIZADA para usar modais personalizados
+// Função de exclusão de cliente - verificará se é admin no backend
 function deleteCliente(clienteId) {
    customModal
       .confirm(
@@ -621,15 +630,22 @@ function resetClienteForm() {
    document.getElementById("cep-status").className = "field-status";
    document.getElementById("status-cliente").innerHTML = "";
    document.getElementById("status-cliente").className = "status-message";
+
    // Esconde o botão de excluir
-   document.getElementById("btn-delete-cliente").style.display = "none";
+   const deleteBtn = document.getElementById("btn-delete-cliente");
+   if (deleteBtn) {
+      deleteBtn.style.display = "none";
+   }
 }
 
 // ===== PRODUTO FUNCTIONS =====
+// Estas funções só serão chamadas para administradores
 
 function loadProdutos() {
    // Adicionar um indicador de carregamento
    const listaProdutos = document.getElementById("lista-produtos");
+   if (!listaProdutos) return; // Sair se o elemento não existir (não-admin)
+
    listaProdutos.innerHTML =
       '<div class="loading-indicator">Carregando produtos...</div>';
 
@@ -680,17 +696,24 @@ function loadProdutos() {
       })
       .catch((error) => {
          console.error("Erro ao carregar produtos:", error);
-         listaProdutos.innerHTML =
-            '<div class="error-message">Erro ao carregar produtos. Tente novamente.</div>';
-         customModal.error(
-            "Erro ao carregar a lista de produtos. Verifique a conexão com o banco de dados."
-         );
+         if (listaProdutos) {
+            listaProdutos.innerHTML =
+               '<div class="error-message">Erro ao carregar produtos. Tente novamente.</div>';
+            customModal.error(
+               "Erro ao carregar a lista de produtos. Verifique a conexão com o banco de dados."
+            );
+         }
       });
 }
 
 function setupProdutoListeners() {
+   // Pular se não for administrador
+   if (!isAdmin) return;
+
    // Event listener para busca de produtos
    const buscaProduto = document.getElementById("busca-produto");
+   if (!buscaProduto) return; // Sair se o elemento não existir
+
    buscaProduto.addEventListener("input", () => {
       const searchTerm = buscaProduto.value.toLowerCase();
       const produtoItems = document.querySelectorAll(".produto-item");
@@ -707,21 +730,23 @@ function setupProdutoListeners() {
 
    // Event listener para adicionar novo produto
    const addProdutoBtn = document.getElementById("add-produto");
-   addProdutoBtn.addEventListener("click", () => {
-      resetProdutoForm();
-      document.getElementById("produto-id").textContent = "Automático";
+   if (addProdutoBtn) {
+      addProdutoBtn.addEventListener("click", () => {
+         resetProdutoForm();
+         document.getElementById("produto-id").textContent = "Automático";
 
-      // Esconder o botão de excluir
-      document.getElementById("btn-delete-produto").style.display = "none";
+         // Esconder o botão de excluir
+         document.getElementById("btn-delete-produto").style.display = "none";
 
-      // Para mobile, abre o modal
-      if (window.innerWidth <= 768) {
-         // Para novo cadastro, não precisa esperar dados, abre o modal diretamente
-         openFormModal("produto", true);
-      }
-   });
+         // Para mobile, abre o modal
+         if (window.innerWidth <= 768) {
+            // Para novo cadastro, não precisa esperar dados, abre o modal diretamente
+            openFormModal("produto", true);
+         }
+      });
+   }
 
-   // Event listeners para formulário de produto - ATUALIZADO PARA USAR MODAIS
+   // Event listeners para formulário de produto
    const produtoForm = document.getElementById("produtoForm");
    if (produtoForm) {
       produtoForm.addEventListener("submit", function (e) {
@@ -776,14 +801,16 @@ function setupProdutoListeners() {
 
    // Botão cancelar/limpar
    const cancelarBtns = document.querySelectorAll("#produtoForm .btn-cancel");
-   cancelarBtns.forEach((btn) => {
-      btn.addEventListener("click", () => {
-         resetProdutoForm();
-         if (window.innerWidth <= 768) {
-            closeFormModal();
-         }
+   if (cancelarBtns) {
+      cancelarBtns.forEach((btn) => {
+         btn.addEventListener("click", () => {
+            resetProdutoForm();
+            if (window.innerWidth <= 768) {
+               closeFormModal();
+            }
+         });
       });
-   });
+   }
 
    // Event listener para botão excluir produto
    const deleteProdutoBtn = document.getElementById("btn-delete-produto");
@@ -795,174 +822,6 @@ function setupProdutoListeners() {
          }
       });
    }
-}
-
-function attachProdutoItemListeners() {
-   // Click em um produto da lista
-   const produtoItems = document.querySelectorAll(".produto-item");
-   produtoItems.forEach((item) => {
-      item.addEventListener("click", function () {
-         const produtoId = this.getAttribute("data-id");
-
-         // Para mobile, carrega os dados ANTES de abrir o modal
-         if (window.innerWidth <= 768) {
-            // Primeiro carrega os dados, depois abre o modal quando estiver pronto
-            loadProdutoDetailsForMobile(produtoId);
-         } else {
-            // Em desktop, carrega normalmente
-            loadProdutoDetails(produtoId);
-         }
-      });
-   });
-}
-
-// Função específica para carregar dados de produto no mobile
-function loadProdutoDetailsForMobile(produtoId) {
-   // Mostra um indicador de carregamento
-   const modalOverlay = document.getElementById("form-modal");
-   const modalContent = document.getElementById("modal-content");
-   modalContent.innerHTML =
-      '<div class="loading-indicator">Carregando...</div>';
-   modalOverlay.classList.add("active");
-
-   fetch(`get_produto.php?id=${produtoId}`)
-      .then((response) => {
-         if (!response.ok) {
-            throw new Error("Erro na resposta da rede ao carregar produto");
-         }
-         return response.json();
-      })
-      .then((data) => {
-         if (data.status === "success") {
-            const produto = data.data;
-
-            // Primeiro atualiza o formulário principal com os dados
-            document.getElementById("produto-id").textContent = produto.id;
-            document.getElementById("codigo-barras").value =
-               produto.codigo_barras;
-            document.getElementById("nome-produto").value = produto.nome;
-            document.getElementById("unidade").value = produto.unidade;
-            document.getElementById("preco-venda").value = produto.preco_venda;
-
-            // Mostra o botão de excluir
-            document.getElementById("btn-delete-produto").style.display =
-               "block";
-
-            // Só abre o modal depois que os dados forem carregados
-            openFormModal("produto", true);
-         } else {
-            closeFormModal();
-            customModal.error(
-               "Erro ao carregar dados do produto: " + data.message
-            );
-         }
-      })
-      .catch((error) => {
-         closeFormModal();
-         console.error("Erro ao carregar produto:", error);
-         customModal.error("Erro ao carregar produto. Tente novamente.");
-      });
-}
-
-function loadProdutoDetails(produtoId) {
-   fetch(`get_produto.php?id=${produtoId}`)
-      .then((response) => {
-         if (!response.ok) {
-            throw new Error("Erro na resposta da rede ao carregar produto");
-         }
-         return response.json();
-      })
-      .then((data) => {
-         if (data.status === "success") {
-            const produto = data.data;
-
-            // Preenche o formulário com os dados do produto
-            document.getElementById("produto-id").textContent = produto.id;
-            document.getElementById("codigo-barras").value =
-               produto.codigo_barras;
-            document.getElementById("nome-produto").value = produto.nome;
-            document.getElementById("unidade").value = produto.unidade;
-            document.getElementById("preco-venda").value = produto.preco_venda;
-
-            // Mostra o botão de excluir
-            document.getElementById("btn-delete-produto").style.display =
-               "block";
-         } else {
-            console.error("Erro ao carregar dados do produto:", data.message);
-            customModal.error(
-               "Erro ao carregar dados do produto: " + data.message
-            );
-         }
-      })
-      .catch((error) => {
-         console.error("Erro ao carregar produto:", error);
-         customModal.error("Erro ao carregar produto. Tente novamente.");
-      });
-}
-
-// FUNÇÃO ATUALIZADA para usar modais personalizados
-function deleteProduto(produtoId) {
-   customModal
-      .confirm(
-         "Tem certeza que deseja excluir este produto?",
-         "Confirmar exclusão",
-         "warning"
-      )
-      .then((confirmed) => {
-         if (confirmed) {
-            const formData = new FormData();
-            formData.append("id", produtoId);
-
-            fetch("delete_produto.php", {
-               method: "POST",
-               body: formData,
-            })
-               .then((response) => {
-                  if (!response.ok) {
-                     throw new Error(
-                        "Erro na resposta da rede ao excluir produto"
-                     );
-                  }
-                  return response.json();
-               })
-               .then((data) => {
-                  if (data.status === "success") {
-                     // Atualiza a lista de produtos
-                     loadProdutos();
-
-                     // Reseta o formulário pois o produto foi excluído
-                     resetProdutoForm();
-
-                     // Fecha o modal em dispositivos móveis
-                     if (window.innerWidth <= 768) {
-                        closeFormModal();
-                     }
-
-                     // Mostra mensagem de sucesso
-                     customModal.success("Produto excluído com sucesso!");
-                  } else {
-                     customModal.error(
-                        "Erro ao excluir produto: " + data.message
-                     );
-                  }
-               })
-               .catch((error) => {
-                  console.error("Erro ao excluir produto:", error);
-                  customModal.error(
-                     "Erro ao excluir produto. Tente novamente."
-                  );
-               });
-         }
-      });
-}
-
-function resetProdutoForm() {
-   document.getElementById("produtoForm").reset();
-   document.getElementById("produto-id").textContent = "Automático";
-   document.getElementById("status-produto").innerHTML = "";
-   document.getElementById("status-produto").className = "status-message";
-   // Esconde o botão de excluir
-   document.getElementById("btn-delete-produto").style.display = "none";
 }
 
 // ===== MODAL HANDLING FOR MOBILE =====
@@ -1041,7 +900,49 @@ function openFormModal(type, skipDataLoading = false) {
          document.getElementById("estado").value;
       form.querySelector("#observacoes").value =
          document.getElementById("observacoes").value;
-   } else {
+
+      // Adicionar event listener para o botão de busca CEP no formulário clonado
+      const buscarCepBtn = form.querySelector("#buscar-cep");
+      if (buscarCepBtn) {
+         buscarCepBtn.addEventListener("click", () => {
+            const cepInput = form.querySelector("#cep");
+            const cep = cepInput.value.replace(/\D/g, "");
+
+            if (cep.length === 8) {
+               fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                  .then((response) => response.json())
+                  .then((data) => {
+                     if (!data.erro) {
+                        form.querySelector("#rua").value = data.logradouro;
+                        form.querySelector("#bairro").value = data.bairro;
+                        form.querySelector("#cidade").value = data.localidade;
+                        form.querySelector("#estado").value = data.uf;
+
+                        const cepStatus = form.querySelector("#cep-status");
+                        if (cepStatus) {
+                           cepStatus.innerHTML = "✓";
+                           cepStatus.className = "field-status valid";
+                        }
+                     } else {
+                        const cepStatus = form.querySelector("#cep-status");
+                        if (cepStatus) {
+                           cepStatus.innerHTML = "✗";
+                           cepStatus.className = "field-status invalid";
+                        }
+                     }
+                  })
+                  .catch(() => {
+                     const cepStatus = form.querySelector("#cep-status");
+                     if (cepStatus) {
+                        cepStatus.innerHTML = "✗";
+                        cepStatus.className = "field-status invalid";
+                     }
+                  });
+            }
+         });
+      }
+   } else if (isAdmin) {
+      // Apenas para administradores
       form.querySelector("#codigo-barras").value =
          document.getElementById("codigo-barras").value;
       form.querySelector("#nome-produto").value =
@@ -1052,14 +953,19 @@ function openFormModal(type, skipDataLoading = false) {
          document.getElementById("preco-venda").value;
    }
 
-   // Mostra ou esconde o botão de excluir no modal com base no ID
+   // Mostra ou esconde o botão de excluir no modal com base no ID e permissões
    const deleteBtn =
       type === "cliente"
          ? form.querySelector("#btn-delete-cliente")
          : form.querySelector("#btn-delete-produto");
 
    if (deleteBtn) {
-      deleteBtn.style.display = currentId !== "Automático" ? "block" : "none";
+      // Mostra o botão de excluir apenas para administradores
+      if (isAdmin && currentId !== "Automático") {
+         deleteBtn.style.display = "block";
+      } else {
+         deleteBtn.style.display = "none";
+      }
 
       // Adiciona event listener para o botão excluir no modal
       deleteBtn.addEventListener("click", function () {
@@ -1102,7 +1008,8 @@ function openFormModal(type, skipDataLoading = false) {
                customModal.error("Erro ao salvar cliente. Tente novamente.");
             });
       });
-   } else {
+   } else if (isAdmin) {
+      // Apenas para administradores
       form.addEventListener("submit", function (e) {
          e.preventDefault();
 
@@ -1145,6 +1052,184 @@ function openFormModal(type, skipDataLoading = false) {
 function closeFormModal() {
    const modalOverlay = document.getElementById("form-modal");
    modalOverlay.classList.remove("active");
+}
+
+// Funções de produtos restantes - apenas para administradores
+function attachProdutoItemListeners() {
+   if (!isAdmin) return;
+
+   // Click em um produto da lista
+   const produtoItems = document.querySelectorAll(".produto-item");
+   produtoItems.forEach((item) => {
+      item.addEventListener("click", function () {
+         const produtoId = this.getAttribute("data-id");
+
+         // Para mobile, carrega os dados ANTES de abrir o modal
+         if (window.innerWidth <= 768) {
+            // Primeiro carrega os dados, depois abre o modal quando estiver pronto
+            loadProdutoDetailsForMobile(produtoId);
+         } else {
+            // Em desktop, carrega normalmente
+            loadProdutoDetails(produtoId);
+         }
+      });
+   });
+}
+
+// Função específica para carregar dados de produto no mobile
+function loadProdutoDetailsForMobile(produtoId) {
+   if (!isAdmin) return;
+
+   // Mostra um indicador de carregamento
+   const modalOverlay = document.getElementById("form-modal");
+   const modalContent = document.getElementById("modal-content");
+   modalContent.innerHTML =
+      '<div class="loading-indicator">Carregando...</div>';
+   modalOverlay.classList.add("active");
+
+   fetch(`get_produto.php?id=${produtoId}`)
+      .then((response) => {
+         if (!response.ok) {
+            throw new Error("Erro na resposta da rede ao carregar produto");
+         }
+         return response.json();
+      })
+      .then((data) => {
+         if (data.status === "success") {
+            const produto = data.data;
+
+            // Primeiro atualiza o formulário principal com os dados
+            document.getElementById("produto-id").textContent = produto.id;
+            document.getElementById("codigo-barras").value =
+               produto.codigo_barras;
+            document.getElementById("nome-produto").value = produto.nome;
+            document.getElementById("unidade").value = produto.unidade;
+            document.getElementById("preco-venda").value = produto.preco_venda;
+
+            // Mostra o botão de excluir
+            document.getElementById("btn-delete-produto").style.display =
+               "block";
+
+            // Só abre o modal depois que os dados forem carregados
+            openFormModal("produto", true);
+         } else {
+            closeFormModal();
+            customModal.error(
+               "Erro ao carregar dados do produto: " + data.message
+            );
+         }
+      })
+      .catch((error) => {
+         closeFormModal();
+         console.error("Erro ao carregar produto:", error);
+         customModal.error("Erro ao carregar produto. Tente novamente.");
+      });
+}
+
+function loadProdutoDetails(produtoId) {
+   if (!isAdmin) return;
+
+   fetch(`get_produto.php?id=${produtoId}`)
+      .then((response) => {
+         if (!response.ok) {
+            throw new Error("Erro na resposta da rede ao carregar produto");
+         }
+         return response.json();
+      })
+      .then((data) => {
+         if (data.status === "success") {
+            const produto = data.data;
+
+            // Preenche o formulário com os dados do produto
+            document.getElementById("produto-id").textContent = produto.id;
+            document.getElementById("codigo-barras").value =
+               produto.codigo_barras;
+            document.getElementById("nome-produto").value = produto.nome;
+            document.getElementById("unidade").value = produto.unidade;
+            document.getElementById("preco-venda").value = produto.preco_venda;
+
+            // Mostra o botão de excluir
+            document.getElementById("btn-delete-produto").style.display =
+               "block";
+         } else {
+            console.error("Erro ao carregar dados do produto:", data.message);
+            customModal.error(
+               "Erro ao carregar dados do produto: " + data.message
+            );
+         }
+      })
+      .catch((error) => {
+         console.error("Erro ao carregar produto:", error);
+         customModal.error("Erro ao carregar produto. Tente novamente.");
+      });
+}
+
+function deleteProduto(produtoId) {
+   if (!isAdmin) return;
+
+   customModal
+      .confirm(
+         "Tem certeza que deseja excluir este produto?",
+         "Confirmar exclusão",
+         "warning"
+      )
+      .then((confirmed) => {
+         if (confirmed) {
+            const formData = new FormData();
+            formData.append("id", produtoId);
+
+            fetch("delete_produto.php", {
+               method: "POST",
+               body: formData,
+            })
+               .then((response) => {
+                  if (!response.ok) {
+                     throw new Error(
+                        "Erro na resposta da rede ao excluir produto"
+                     );
+                  }
+                  return response.json();
+               })
+               .then((data) => {
+                  if (data.status === "success") {
+                     // Atualiza a lista de produtos
+                     loadProdutos();
+
+                     // Reseta o formulário pois o produto foi excluído
+                     resetProdutoForm();
+
+                     // Fecha o modal em dispositivos móveis
+                     if (window.innerWidth <= 768) {
+                        closeFormModal();
+                     }
+
+                     // Mostra mensagem de sucesso
+                     customModal.success("Produto excluído com sucesso!");
+                  } else {
+                     customModal.error(
+                        "Erro ao excluir produto: " + data.message
+                     );
+                  }
+               })
+               .catch((error) => {
+                  console.error("Erro ao excluir produto:", error);
+                  customModal.error(
+                     "Erro ao excluir produto. Tente novamente."
+                  );
+               });
+         }
+      });
+}
+
+function resetProdutoForm() {
+   if (!document.getElementById("produtoForm")) return;
+
+   document.getElementById("produtoForm").reset();
+   document.getElementById("produto-id").textContent = "Automático";
+   document.getElementById("status-produto").innerHTML = "";
+   document.getElementById("status-produto").className = "status-message";
+   // Esconde o botão de excluir
+   document.getElementById("btn-delete-produto").style.display = "none";
 }
 
 // Adiciona estilo para o indicador de carregamento e mensagens de status
