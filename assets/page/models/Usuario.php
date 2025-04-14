@@ -132,7 +132,11 @@ class Usuario
          $this->ativo = 1;
       }
 
-      $stmt->bind_param("sssii", $this->usuario, $this->nome, $senhaHash, $this->admin, $this->ativo);
+      // Converter para inteiros
+      $admin = intval($this->admin);
+      $ativo = intval($this->ativo);
+
+      $stmt->bind_param("sssii", $this->usuario, $this->nome, $senhaHash, $admin, $ativo);
 
       if ($stmt->execute()) {
          $this->id = $this->conn->insert_id;
@@ -145,6 +149,11 @@ class Usuario
    // Método para atualizar um usuário existente
    public function atualizar()
    {
+      // Converter para inteiros
+      $admin = intval($this->admin);
+      $ativo = intval($this->ativo);
+      $id = intval($this->id);
+
       // Verificar se a senha foi alterada
       if (!empty($this->senha) && strlen($this->senha) < 60) { // Se não for um hash
          $sql = "UPDATE usuarios SET usuario = ?, nome = ?, senha = ?, admin = ?, ativo = ? WHERE id = ?"; // Adicionado campo ativo
@@ -153,12 +162,12 @@ class Usuario
          // Criptografar a senha
          $senhaHash = password_hash($this->senha, PASSWORD_DEFAULT);
 
-         $stmt->bind_param("sssiii", $this->usuario, $this->nome, $senhaHash, $this->admin, $this->ativo, $this->id);
+         $stmt->bind_param("sssiii", $this->usuario, $this->nome, $senhaHash, $admin, $ativo, $id);
       } else {
          // Se a senha não foi alterada ou já é um hash
          $sql = "UPDATE usuarios SET usuario = ?, nome = ?, admin = ?, ativo = ? WHERE id = ?"; // Adicionado campo ativo
          $stmt = $this->conn->prepare($sql);
-         $stmt->bind_param("ssiii", $this->usuario, $this->nome, $this->admin, $this->ativo, $this->id);
+         $stmt->bind_param("ssiii", $this->usuario, $this->nome, $admin, $ativo, $id);
       }
 
       return $stmt->execute();

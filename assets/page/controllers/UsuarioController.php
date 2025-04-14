@@ -88,8 +88,8 @@ class UsuarioController
       $this->usuario->setUsuario($dados['usuario']);
       $this->usuario->setNome($dados['nome']);
       $this->usuario->setSenha($dados['senha']);
-      $this->usuario->setAdmin(isset($dados['admin']) ? $dados['admin'] : 0);
-      $this->usuario->setAtivo(isset($dados['ativo']) ? $dados['ativo'] : 1); // Por padrão, o usuário é ativo
+      $this->usuario->setAdmin(isset($dados['admin']) ? intval($dados['admin']) : 0);
+      $this->usuario->setAtivo(isset($dados['ativo']) ? intval($dados['ativo']) : 1); // Por padrão, o usuário é ativo
 
       // Criar usuário
       if ($this->usuario->criar()) {
@@ -106,7 +106,7 @@ class UsuarioController
    // Atualizar um usuário existente
    private function atualizarUsuario()
    {
-      // Verificar se é uma requisição PUT
+      // Verificar se é uma requisição POST
       if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
          return json_encode(['erro' => 'Método não permitido']);
       }
@@ -127,8 +127,11 @@ class UsuarioController
       if (isset($dados['usuario'])) $this->usuario->setUsuario($dados['usuario']);
       if (isset($dados['nome'])) $this->usuario->setNome($dados['nome']);
       if (!empty($dados['senha'])) $this->usuario->setSenha($dados['senha']);
-      if (isset($dados['admin'])) $this->usuario->setAdmin($dados['admin']);
-      if (isset($dados['ativo'])) $this->usuario->setAtivo($dados['ativo']); // Adicionado campo ativo
+      if (isset($dados['admin'])) $this->usuario->setAdmin(intval($dados['admin']));
+      if (isset($dados['ativo'])) $this->usuario->setAtivo(intval($dados['ativo'])); // Garantir que é inteiro
+
+      // Debug - para verificar os valores recebidos
+      error_log("Admin: " . intval($dados['admin']) . " | Ativo: " . intval($dados['ativo']));
 
       // Atualizar usuário
       if ($this->usuario->atualizar()) {

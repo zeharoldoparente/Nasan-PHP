@@ -238,6 +238,12 @@ async function criarUsuario(formData) {
 // Função para atualizar um usuário existente
 async function atualizarUsuario(formData) {
    try {
+      // Garantir que admin e ativo sejam números inteiros
+      formData.admin = parseInt(formData.admin);
+      formData.ativo = parseInt(formData.ativo);
+
+      console.log("Dados a serem enviados:", formData); // Debug para ver os dados enviados
+
       const resposta = await fetch("api_usuarios.php?acao=atualizar_usuario", {
          method: "POST",
          headers: {
