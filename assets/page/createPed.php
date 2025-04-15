@@ -35,8 +35,6 @@ ob_start();
 
       <div class="pedido-container">
          <div class="pedido-content">
-            <h2 class="pedido-title">Novo Pedido</h2>
-
             <div class="split-layout">
                <!-- Formulário de Pedido (Lado Esquerdo) -->
                <div class="form-panel">

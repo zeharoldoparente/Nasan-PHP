@@ -50,6 +50,7 @@ if ($debug) {
             <a href="/Nasan-PHP/assets/page/listPed.php">Lista de Pedidos</a>
          </div>
       </div>
+      <a href="/Nasan-PHP/assets/page/sobre.php">Sobre</a>
    </div>
    <div class="navbar-right">
       <div class="hamburger-menu" onclick="toggleMenu()">
@@ -87,6 +88,7 @@ if ($debug) {
             <a href="/Nasan-PHP/assets/page/listPed.php">Lista de Pedidos</a>
          </div>
       </div>
+      <a href="/Nasan-PHP/assets/page/sobre.php">Sobre</a>
    </div>
 </nav>
 

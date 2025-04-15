@@ -309,7 +309,7 @@ a.join-link {
    padding: 25px;
    border-radius: 10px;
    width: 400px;
-   max-width: 90%;
+   max-width: 100%;
    position: relative;
    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
