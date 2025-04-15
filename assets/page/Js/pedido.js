@@ -646,7 +646,6 @@ function limparFormularioPedido() {
    // Limpar campos do pedido
    document.getElementById("transportadora").value = "";
    document.getElementById("forma-pagamento").value = "";
-   document.getElementById("regiao").value = "";
    document.getElementById("observacoes").value = "";
 
    // Limpar produtos
