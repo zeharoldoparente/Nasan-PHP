@@ -537,7 +537,7 @@ function excluirProduto(index) {
       });
 }
 
-// Salvar pedido
+// Em pedido.js, modifique a função salvarPedido()
 function salvarPedido() {
    // Validar cliente
    if (!clienteSelecionado) {
@@ -554,54 +554,72 @@ function salvarPedido() {
    // Validar campos obrigatórios
    const transportadora = document.getElementById("transportadora").value;
    const formaPagamento = document.getElementById("forma-pagamento").value;
-   const regiao = document.getElementById("regiao").value;
 
-   if (!transportadora || !formaPagamento || !regiao) {
+   if (!transportadora || !formaPagamento) {
       customModal.error("Preencha todos os campos obrigatórios");
       return;
    }
 
-   // Preparar dados para envio
-   const dadosPedido = {
-      cliente_id: clienteSelecionado.id,
-      transportadora: transportadora,
-      forma_pagamento: formaPagamento,
-      usuario_id: document.getElementById("vendedor-id").value,
-      regiao: regiao,
-      observacoes: document.getElementById("observacoes").value,
-      produtos: produtosPedido,
-      valor_total: produtosPedido.reduce(
-         (sum, produto) => sum + produto.subtotal,
-         0
-      ),
-   };
-
-   // Exibir indicador de carregamento
-   customModal.alert("Salvando pedido, aguarde...", "Processando", "info");
-
-   // Enviar para o servidor
-   fetch("processa_pedido.php", {
-      method: "POST",
-      headers: {
-         "Content-Type": "application/json",
-      },
-      body: JSON.stringify(dadosPedido),
-   })
-      .then((response) => {
-         if (!response.ok) {
-            throw new Error("Erro na resposta da rede ao salvar pedido");
+   // Obter o ID do usuário via AJAX
+   fetch("get_session_user_id.php")
+      .then((response) => response.json())
+      .then((data) => {
+         if (!data.success) {
+            throw new Error(data.message || "Erro ao obter ID do usuário");
          }
-         return response.json();
+
+         // Preparar dados para envio
+         const dadosPedido = {
+            cliente_id: clienteSelecionado.id,
+            transportadora: transportadora,
+            forma_pagamento: formaPagamento,
+            usuario_id: data.usuario_id, // Usar o ID retornado pelo PHP
+            observacoes: document.getElementById("observacoes").value,
+            produtos: produtosPedido,
+            valor_total: produtosPedido.reduce(
+               (sum, produto) => sum + produto.subtotal,
+               0
+            ),
+         };
+
+         console.log("Dados do pedido a serem enviados:", dadosPedido);
+
+         // Exibir indicador de carregamento
+         customModal.alert(
+            "Salvando pedido, aguarde...",
+            "Processando",
+            "info"
+         );
+
+         // Enviar para o servidor
+         return fetch("processa_pedido.php", {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify(dadosPedido),
+         });
+      })
+      .then((response) => {
+         console.log("Resposta recebida:", response);
+         return response.text().then((text) => {
+            try {
+               // Tentar analisar como JSON
+               return JSON.parse(text);
+            } catch (e) {
+               // Se não for JSON, mostrar a resposta bruta
+               console.error("Resposta não é JSON válido:", text);
+               throw new Error("Resposta não é JSON válido: " + text);
+            }
+         });
       })
       .then((data) => {
+         console.log("Dados de resposta:", data);
          if (data.status === "success") {
             customModal
                .success("Pedido #" + data.pedido_id + " salvo com sucesso!")
                .then(() => {
-                  // Opção 1: Redirecionar para a lista de pedidos
-                  // window.location.href = 'pedidos.php';
-
-                  // Opção 2: Limpar o formulário para um novo pedido
+                  // Limpar o formulário para um novo pedido
                   limparFormularioPedido();
                });
          } else {

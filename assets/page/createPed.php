@@ -108,17 +108,6 @@ ob_start();
                                  disabled />
                               <!-- <input type="hidden" id="vendedor-id" value="<?php echo $_SESSION['id']; ?>" /> -->
                            </div>
-                           <div class="form-group">
-                              <label for="regiao">Região*</label>
-                              <select id="regiao" name="regiao" required>
-                                 <option value="">Selecione a região</option>
-                                 <option value="Norte">Norte</option>
-                                 <option value="Nordeste">Nordeste</option>
-                                 <option value="Centro-Oeste">Centro-Oeste</option>
-                                 <option value="Sudeste">Sudeste</option>
-                                 <option value="Sul">Sul</option>
-                              </select>
-                           </div>
                         </div>
 
                         <div class="form-group">
