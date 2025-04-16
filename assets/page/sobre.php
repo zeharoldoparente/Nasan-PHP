@@ -29,23 +29,48 @@ ob_start();
 </head>
 
 <body class="sobre-page">
-   <div class="container sobre-container">
-      <?php include __DIR__ . '/config/navbar.php'; ?>
-      <div class="sobre-modal">
-         <div class="sobre-content">
-            <h2>Criado e mantido por</h2>
-            <div class="logo-container logo-lg">
-               <img src="../../assets/image/NASAM DEV.svg" alt="NASAM DEV Logo" />
-            </div>
-            <p>José Aroldo Soares</p>
-            <div class="contact">
-               <h2>Contato</h2>
-               <p>(63) 9 9956-9407</p>
-               <p>contato.nasamdev@gmail.com</p>
+   <div class="sobre-modal">
+      <div class="sobre-content">
+         <h2>Criado e mantido por</h2>
+         <div class="logo-container logo-lg">
+            <img src="../../assets/image/NASAM DEV.svg" alt="NASAM DEV Logo" />
+         </div>
+         <p>José Aroldo Soares</p>
+         <div class="contact">
+            <h2>Contato</h2>
+            <p>(63) 9 9956-9407</p>
+            <p>contato.nasamdev@gmail.com</p>
+         </div>
+
+         <div class="daily-verse">
+            <h3>Palavra do dia</h3>
+            <div id="verse-content">
+               <p id="verse-text">Carregando versículo...</p>
+               <p id="verse-reference" class="reference"></p>
             </div>
          </div>
-      </div>
-   </div>
+
+         <script>
+            document.addEventListener('DOMContentLoaded', function() {
+               async function fetchRandomVerse() {
+                  try {
+                     const response = await fetch('https://www.abibliadigital.com.br/api/verses/nvi/random');
+                     const data = await response.json();
+
+                     if (data) {
+                        document.getElementById('verse-text').textContent = '"' + data.text + '"';
+                        document.getElementById('verse-reference').textContent = data.book.name + ' ' + data.chapter + ':' + data.number;
+                     }
+                  } catch (error) {
+                     console.error('Erro ao buscar versículo:', error);
+                     document.getElementById('verse-text').textContent = '"Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna."';
+                     document.getElementById('verse-reference').textContent = 'João 3:16';
+                  }
+               }
+
+               fetchRandomVerse();
+            });
+         </script>
 </body>
 
 </html>
