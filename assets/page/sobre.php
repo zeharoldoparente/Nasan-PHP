@@ -29,9 +29,10 @@ ob_start();
 </head>
 
 <body class="sobre-page">
+   <?php include __DIR__ . '/config/navbar.php'; ?>
    <div class="sobre-modal">
       <div class="sobre-content">
-         <h2>Criado e mantido por</h2>
+         <h2 id="top">Criado e mantido por</h2>
          <div class="logo-container logo-lg">
             <img src="../../assets/image/NASAM DEV.svg" alt="NASAM DEV Logo" />
          </div>

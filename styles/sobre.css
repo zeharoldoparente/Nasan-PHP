@@ -144,21 +144,23 @@ body.sobre-page {
 
 .daily-verse {
    text-align: center;
+   max-height: 100px;
    background-color: #f8fafc;
-   padding: 1.5rem;
+   /* padding: 1rem; */
    border-radius: 12px;
    width: 100%;
-   max-width: 500px;
+   max-width: 750px;
    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-   border-left: 4px solid #8b5cf6; /* Cor roxa para diferenciar */
-   margin-top: 2rem;
+   border-left: 4px solid #3b82f6;
+   margin-top: 8rem;
+   margin-bottom: -40px;
 }
 
 .daily-verse h3 {
    color: #2d3748;
-   font-size: 1.3rem;
+   font-size: 1rem;
    position: relative;
-   margin-bottom: 20px;
+   margin-bottom: 12px;
 }
 
 .daily-verse h3::after {
@@ -169,13 +171,13 @@ body.sobre-page {
    transform: translateX(-50%);
    width: 40px;
    height: 3px;
-   background: linear-gradient(90deg, #8b5cf6, #6366f1);
+   background: linear-gradient(90deg, #5c73f6, #6366f1);
    border-radius: 2px;
 }
 
 #verse-text {
    font-style: italic;
-   font-size: 1.1rem;
+   font-size: 0.7rem;
    color: #4a5568;
    line-height: 1.6;
 }
@@ -183,12 +185,14 @@ body.sobre-page {
 #verse-reference {
    font-weight: 600;
    color: #6366f1;
-   margin-top: 0.5rem;
-   font-size: 0.95rem;
+   font-size: 0.75rem;
 }
 
 /* Responsividade */
 @media (max-width: 768px) {
+   #top {
+      margin-top: 110px;
+   }
    .contact {
       margin-top: 2rem;
       padding: 1rem;
@@ -218,19 +222,19 @@ body.sobre-page {
    }
 
    .logo-lg {
-      width: 350px;
+      width: 400px;
       height: 140px;
    }
    .daily-verse {
-      padding: 1.2rem;
-      margin-top: 1.5rem;
+      margin-top: 9.5rem;
+      margin-bottom: -25px;
    }
 
    .daily-verse h3 {
-      font-size: 1.2rem;
+      font-size: 0.8rem;
    }
 
    #verse-text {
-      font-size: 1rem;
+      font-size: 0.5rem;
    }
 }
