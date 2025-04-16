@@ -35,11 +35,11 @@ $itens_pedido = [];
 if ($pedido_id) {
    // Consulta para obter dados básicos do pedido
    $sql_pedido = "SELECT p.*, c.razao_social as cliente_nome, c.id as cliente_id, 
-                          c.cnpj as cliente_cnpj, c.telefone as cliente_telefone,
-                          CONCAT(c.cidade, '/', c.uf) as cliente_cidade
-                    FROM pedidos p
-                    INNER JOIN clientes c ON p.cliente_id = c.id
-                    WHERE p.id = ?";
+   c.cpf_cnpj as cliente_cnpj, c.telefone as cliente_telefone,
+   CONCAT(c.cidade, '/', c.estado) as cliente_cidade
+FROM pedidos p
+INNER JOIN clientes c ON p.cliente_id = c.id
+WHERE p.id = ?";
 
    $stmt_pedido = $conn->prepare($sql_pedido);
    $stmt_pedido->bind_param("i", $pedido_id);
@@ -57,7 +57,7 @@ if ($pedido_id) {
       }
 
       // Buscar os itens do pedido
-      $sql_itens = "SELECT ip.*, p.nome as produto_nome, p.codigo as produto_codigo
+      $sql_itens = "SELECT ip.*, p.nome as produto_nome, p.codigo_barras as produto_codigo
                        FROM itens_pedido ip
                        INNER JOIN produtos p ON ip.produto_id = p.id
                        WHERE ip.pedido_id = ?";
