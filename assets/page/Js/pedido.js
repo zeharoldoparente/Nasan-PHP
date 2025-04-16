@@ -15,6 +15,7 @@ const formAddProduto = document.getElementById("form-add-produto");
 const modalProdutoId = document.getElementById("modal-produto-id");
 const modalProdutoValor = document.getElementById("modal-produto-valor");
 const modalProdutoQtd = document.getElementById("modal-produto-qtd");
+const modalProdutoDesconto = document.getElementById("modal-produto-desconto");
 const modalProdutoSubtotal = document.getElementById("modal-produto-subtotal");
 const pedidoForm = document.getElementById("pedidoForm");
 
@@ -29,6 +30,14 @@ document.addEventListener("DOMContentLoaded", function () {
    // Inicializar state da UI
    atualizarTabelaProdutos();
 });
+
+// Função auxiliar para converter string para número
+function parseNumero(valor) {
+   // Remove tudo que não é número, ponto ou vírgula
+   const numeroLimpo = valor.toString().replace(/[^\d.,]/g, "");
+   // Substitui vírgula por ponto para garantir formato numérico válido
+   return parseFloat(numeroLimpo.replace(",", "."));
+}
 
 // Carregar produtos disponíveis
 function carregarProdutos() {
@@ -116,16 +125,17 @@ function setupEventListeners() {
       if (selectedOption.value) {
          const preco = selectedOption.getAttribute("data-preco");
          modalProdutoValor.value = preco;
-         atualizarSubtotalModal();
+         atualizarCalculosModal();
       } else {
          modalProdutoValor.value = "";
          modalProdutoSubtotal.value = "";
       }
    });
 
-   // Modal produto - input de quantidade e valor
-   modalProdutoQtd.addEventListener("input", atualizarSubtotalModal);
-   modalProdutoValor.addEventListener("input", atualizarSubtotalModal);
+   // Modal produto - input de quantidade, valor e desconto
+   modalProdutoQtd.addEventListener("input", atualizarCalculosModal);
+   modalProdutoValor.addEventListener("input", atualizarCalculosModal);
+   modalProdutoDesconto.addEventListener("input", atualizarCalculosModal);
 
    // Form de adicionar produto
    formAddProduto.addEventListener("submit", function (e) {
@@ -146,6 +156,34 @@ function setupEventListeners() {
    pedidoForm.addEventListener("submit", function (e) {
       e.preventDefault();
       salvarPedido();
+   });
+}
+
+// Função para atualizar os cálculos no modal
+function atualizarCalculosModal() {
+   const valor = parseNumero(modalProdutoValor.value);
+   const quantidade = parseInt(modalProdutoQtd.value) || 0;
+   const desconto = parseNumero(modalProdutoDesconto.value);
+
+   // Verificar se os valores são válidos
+   if (isNaN(valor) || isNaN(quantidade) || isNaN(desconto)) {
+      modalProdutoSubtotal.value = "R$ 0,00";
+      return;
+   }
+
+   // Calcular subtotal bruto (sem desconto)
+   const subtotalBruto = valor * quantidade;
+
+   // Calcular valor do desconto
+   const valorDesconto = subtotalBruto * (desconto / 100);
+
+   // Calcular subtotal líquido (com desconto)
+   const subtotalLiquido = subtotalBruto - valorDesconto;
+
+   // Atualizar apenas o campo de subtotal
+   modalProdutoSubtotal.value = subtotalLiquido.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
    });
 }
 
@@ -302,7 +340,8 @@ function mostrarResultadosProdutos(produtos) {
 
          modalProdutoValor.value = produto.preco_venda;
          modalProdutoQtd.value = 1;
-         atualizarSubtotalModal();
+         modalProdutoDesconto.value = 0;
+         atualizarCalculosModal();
 
          // Abrir o modal
          abrirModalProduto();
@@ -329,18 +368,6 @@ function fecharModalProduto() {
    formAddProduto.reset();
 }
 
-// Atualizar o subtotal no modal
-function atualizarSubtotalModal() {
-   const valor = parseFloat(modalProdutoValor.value.replace(",", ".")) || 0;
-   const quantidade = parseInt(modalProdutoQtd.value) || 0;
-   const subtotal = valor * quantidade;
-
-   modalProdutoSubtotal.value = subtotal.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-   });
-}
-
 // Adicionar produto ao pedido
 function adicionarProdutoAoPedido() {
    const produtoId = modalProdutoId.value;
@@ -349,26 +376,41 @@ function adicionarProdutoAoPedido() {
       return;
    }
 
+   // Usar a função parseNumero para validação consistente
    const quantidade = parseInt(modalProdutoQtd.value);
    if (isNaN(quantidade) || quantidade <= 0) {
       customModal.error("Informe uma quantidade válida");
       return;
    }
 
-   const valor = parseFloat(modalProdutoValor.value);
+   const valor = parseNumero(modalProdutoValor.value);
    if (isNaN(valor) || valor <= 0) {
       customModal.error("Informe um valor válido");
       return;
    }
 
+   const desconto = parseNumero(modalProdutoDesconto.value);
+   if (isNaN(desconto) || desconto < 0 || desconto > 100) {
+      customModal.error("Informe um desconto válido (0-100%)");
+      return;
+   }
+
+   // Calcular valores
+   const subtotalBruto = valor * quantidade;
+   const valorDesconto = subtotalBruto * (desconto / 100);
+   const subtotalLiquido = subtotalBruto - valorDesconto;
+
    // Verificar se o produto já está no pedido
    const produtoExistente = produtosPedido.findIndex((p) => p.id === produtoId);
 
    if (produtoExistente >= 0) {
-      // Atualizar quantidade e valor
+      // Atualizar quantidade, valor e desconto
       produtosPedido[produtoExistente].quantidade = quantidade;
       produtosPedido[produtoExistente].valor = valor;
-      produtosPedido[produtoExistente].subtotal = valor * quantidade;
+      produtosPedido[produtoExistente].desconto = desconto;
+      produtosPedido[produtoExistente].valorDesconto = valorDesconto;
+      produtosPedido[produtoExistente].subtotalBruto = subtotalBruto;
+      produtosPedido[produtoExistente].subtotal = subtotalLiquido;
    } else {
       // Buscar informações do produto
       const produtoInfo = produtosDisponiveis.find((p) => p.id === produtoId);
@@ -380,7 +422,10 @@ function adicionarProdutoAoPedido() {
          nome: produtoInfo.nome,
          valor: valor,
          quantidade: quantidade,
-         subtotal: valor * quantidade,
+         desconto: desconto,
+         valorDesconto: valorDesconto,
+         subtotalBruto: subtotalBruto,
+         subtotal: subtotalLiquido,
       });
    }
 
@@ -400,6 +445,11 @@ function atualizarTabelaProdutos() {
 
    if (produtosPedido.length === 0) {
       semProdutosDiv.style.display = "flex";
+      // Zerar os totais
+      document.getElementById("total-itens").textContent = "0";
+      document.getElementById("total-valor-bruto").textContent = "R$ 0,00";
+      document.getElementById("total-valor-desconto").textContent = "R$ 0,00";
+      document.getElementById("total-valor").textContent = "R$ 0,00";
       return;
    }
 
@@ -415,6 +465,9 @@ function atualizarTabelaProdutos() {
          currency: "BRL",
       });
 
+      const descontoFormatado =
+         produto.desconto > 0 ? `${produto.desconto}%` : "0%";
+
       const subtotal = produto.subtotal.toLocaleString("pt-BR", {
          style: "currency",
          currency: "BRL",
@@ -425,6 +478,7 @@ function atualizarTabelaProdutos() {
             <td>${produto.nome}</td>
             <td>${valorUnitario}</td>
             <td>${produto.quantidade}</td>
+            <td>${descontoFormatado}</td>
             <td>${subtotal}</td>
             <td>
                 <div class="acoes">
@@ -463,20 +517,44 @@ function atualizarTotais() {
       (sum, produto) => sum + produto.quantidade,
       0
    );
-   const valorTotal = produtosPedido.reduce(
+
+   const valorTotalBruto = produtosPedido.reduce(
+      (sum, produto) => sum + produto.subtotalBruto,
+      0
+   );
+
+   const valorTotalDesconto = produtosPedido.reduce(
+      (sum, produto) => sum + produto.valorDesconto,
+      0
+   );
+
+   const valorTotalLiquido = produtosPedido.reduce(
       (sum, produto) => sum + produto.subtotal,
       0
    );
 
    document.getElementById("total-itens").textContent = totalItens;
+
+   document.getElementById("total-valor-bruto").textContent =
+      valorTotalBruto.toLocaleString("pt-BR", {
+         style: "currency",
+         currency: "BRL",
+      });
+
+   document.getElementById("total-valor-desconto").textContent =
+      valorTotalDesconto.toLocaleString("pt-BR", {
+         style: "currency",
+         currency: "BRL",
+      });
+
    document.getElementById("total-valor").textContent =
-      valorTotal.toLocaleString("pt-BR", {
+      valorTotalLiquido.toLocaleString("pt-BR", {
          style: "currency",
          currency: "BRL",
       });
 }
 
-// Editar produto
+// Editar produto - Versão completamente revisada
 function editarProduto(index) {
    const produto = produtosPedido[index];
 
@@ -488,9 +566,13 @@ function editarProduto(index) {
       }
    }
 
+   // Garantir que os valores são exibidos corretamente
    modalProdutoValor.value = produto.valor;
    modalProdutoQtd.value = produto.quantidade;
-   atualizarSubtotalModal();
+   modalProdutoDesconto.value = produto.desconto;
+
+   // Atualizar o subtotal no modal
+   atualizarCalculosModal();
 
    // Modificar o handler do formulário para atualizar em vez de adicionar
    const originalSubmitHandler = formAddProduto.onsubmit;
@@ -498,22 +580,56 @@ function editarProduto(index) {
    formAddProduto.onsubmit = function (e) {
       e.preventDefault();
 
-      // Atualizar produto
-      produto.valor = parseFloat(modalProdutoValor.value);
-      produto.quantidade = parseInt(modalProdutoQtd.value);
-      produto.subtotal = produto.valor * produto.quantidade;
+      try {
+         // Obter e validar os valores
+         const valor = parseNumero(modalProdutoValor.value);
+         const quantidade = parseInt(modalProdutoQtd.value);
+         const desconto = parseNumero(modalProdutoDesconto.value);
 
-      // Atualizar tabela
-      atualizarTabelaProdutos();
+         // Validações de dados
+         if (isNaN(valor) || valor <= 0) {
+            throw new Error("Informe um valor válido");
+         }
 
-      // Fechar modal
-      fecharModalProduto();
+         if (isNaN(quantidade) || quantidade <= 0) {
+            throw new Error("Informe uma quantidade válida");
+         }
 
-      // Restaurar handler original
-      formAddProduto.onsubmit = originalSubmitHandler;
+         if (isNaN(desconto) || desconto < 0 || desconto > 100) {
+            throw new Error("Informe um desconto válido (0-100%)");
+         }
 
-      // Mostrar mensagem
-      customModal.success("Produto atualizado");
+         // Calcular novos valores
+         const subtotalBruto = valor * quantidade;
+         const valorDesconto = subtotalBruto * (desconto / 100);
+         const subtotalLiquido = subtotalBruto - valorDesconto;
+
+         // Atualizar produto no array
+         produtosPedido[index] = {
+            ...produtosPedido[index],
+            valor: valor,
+            quantidade: quantidade,
+            desconto: desconto,
+            valorDesconto: valorDesconto,
+            subtotalBruto: subtotalBruto,
+            subtotal: subtotalLiquido,
+         };
+
+         // Atualizar tabela
+         atualizarTabelaProdutos();
+
+         // Fechar modal
+         fecharModalProduto();
+
+         // Restaurar handler original
+         formAddProduto.onsubmit = originalSubmitHandler;
+
+         // Mostrar mensagem
+         customModal.success("Produto atualizado");
+      } catch (error) {
+         // Exibir o erro para o usuário
+         customModal.error(error.message);
+      }
    };
 
    // Abrir modal
@@ -537,7 +653,7 @@ function excluirProduto(index) {
       });
 }
 
-// Em pedido.js, modifique a função salvarPedido()
+// Função para salvar o pedido
 function salvarPedido() {
    // Validar cliente
    if (!clienteSelecionado) {
@@ -560,6 +676,22 @@ function salvarPedido() {
       return;
    }
 
+   // Calcular totais para envio
+   const valorTotalBruto = produtosPedido.reduce(
+      (sum, produto) => sum + produto.subtotalBruto,
+      0
+   );
+
+   const valorTotalDesconto = produtosPedido.reduce(
+      (sum, produto) => sum + produto.valorDesconto,
+      0
+   );
+
+   const valorTotalLiquido = produtosPedido.reduce(
+      (sum, produto) => sum + produto.subtotal,
+      0
+   );
+
    // Obter o ID do usuário via AJAX
    fetch("get_session_user_id.php")
       .then((response) => response.json())
@@ -575,11 +707,16 @@ function salvarPedido() {
             forma_pagamento: formaPagamento,
             usuario_id: data.usuario_id, // Usar o ID retornado pelo PHP
             observacoes: document.getElementById("observacoes").value,
-            produtos: produtosPedido,
-            valor_total: produtosPedido.reduce(
-               (sum, produto) => sum + produto.subtotal,
-               0
-            ),
+            produtos: produtosPedido.map((p) => ({
+               id: p.id,
+               quantidade: p.quantidade,
+               valor: p.valor,
+               desconto: p.desconto,
+               valor_desconto: p.valorDesconto,
+            })),
+            valor_total_bruto: valorTotalBruto,
+            valor_total_desconto: valorTotalDesconto,
+            valor_total: valorTotalLiquido, // Valor líquido (com descontos)
          };
 
          console.log("Dados do pedido a serem enviados:", dadosPedido);
@@ -642,6 +779,7 @@ function limparFormularioPedido() {
    document.getElementById("cliente-cnpj").value = "";
    document.getElementById("cliente-telefone").value = "";
    document.getElementById("cliente-cidade").value = "";
+   document.getElementById("produto-search").value = "";
 
    // Limpar campos do pedido
    document.getElementById("transportadora").value = "";

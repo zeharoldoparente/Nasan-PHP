@@ -5,6 +5,76 @@ if (!isset($_SESSION['usuario'])) {
    exit();
 }
 ob_start();
+
+// Incluir a conexão com o banco de dados
+include_once(__DIR__ . '/config/config.php');
+
+// Verificar se o usuário é administrador
+$is_admin = false;
+$usuario_logado = $_SESSION['usuario'];
+$usuario_id = null;
+
+$sql_user = "SELECT id, admin FROM usuarios WHERE usuario = ?";
+$stmt_user = $conn->prepare($sql_user);
+$stmt_user->bind_param("s", $usuario_logado);
+$stmt_user->execute();
+$result_user = $stmt_user->get_result();
+
+if ($result_user->num_rows > 0) {
+   $user_data = $result_user->fetch_assoc();
+   $is_admin = $user_data['admin'] == 1;
+   $usuario_id = $user_data['id'];
+}
+$stmt_user->close();
+
+// Verificar se um ID foi passado para carregar os dados do pedido
+$pedido_id = isset($_GET['id']) ? intval($_GET['id']) : null;
+$pedido = null;
+$itens_pedido = [];
+
+if ($pedido_id) {
+   // Consulta para obter dados básicos do pedido
+   $sql_pedido = "SELECT p.*, c.razao_social as cliente_nome, c.id as cliente_id, 
+                          c.cnpj as cliente_cnpj, c.telefone as cliente_telefone,
+                          CONCAT(c.cidade, '/', c.uf) as cliente_cidade
+                    FROM pedidos p
+                    INNER JOIN clientes c ON p.cliente_id = c.id
+                    WHERE p.id = ?";
+
+   $stmt_pedido = $conn->prepare($sql_pedido);
+   $stmt_pedido->bind_param("i", $pedido_id);
+   $stmt_pedido->execute();
+   $result_pedido = $stmt_pedido->get_result();
+
+   if ($result_pedido->num_rows > 0) {
+      $pedido = $result_pedido->fetch_assoc();
+
+      // Verificar permissão - usuários normais só podem ver seus próprios pedidos
+      if (!$is_admin && $pedido['usuario_id'] != $usuario_id) {
+         // Redirecionar ou mostrar erro
+         header("Location: listPed.php");
+         exit();
+      }
+
+      // Buscar os itens do pedido
+      $sql_itens = "SELECT ip.*, p.nome as produto_nome, p.codigo as produto_codigo
+                       FROM itens_pedido ip
+                       INNER JOIN produtos p ON ip.produto_id = p.id
+                       WHERE ip.pedido_id = ?";
+
+      $stmt_itens = $conn->prepare($sql_itens);
+      $stmt_itens->bind_param("i", $pedido_id);
+      $stmt_itens->execute();
+      $result_itens = $stmt_itens->get_result();
+
+      while ($item = $result_itens->fetch_assoc()) {
+         $itens_pedido[] = $item;
+      }
+
+      $stmt_itens->close();
+   }
+   $stmt_pedido->close();
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -25,10 +95,82 @@ ob_start();
    <link rel="stylesheet" href="../../styles/navbar.css" />
    <link rel="stylesheet" href="../../styles/modal-custom.css" />
    <link rel="stylesheet" href="../../styles/pedido.css" />
-   <title>Criar Pedido</title>
+   <title><?php echo $pedido_id ? 'Editar Pedido #' . $pedido_id : 'Criar Pedido'; ?></title>
+   <style>
+      /* Estilos para os campos de desconto */
+      input:disabled {
+         background-color: #f8fafc;
+         color: #64748b;
+         cursor: not-allowed;
+      }
+
+      .valor-desconto {
+         color: #dc2626;
+         font-weight: 500;
+      }
+
+      .valor-destaque-verde {
+         color: #16a34a;
+         font-weight: 600;
+      }
+
+      /* Estilos para os totais do pedido */
+      .pedido-totais-detalhados {
+         display: flex;
+         flex-direction: column;
+         gap: 8px;
+         padding: 15px;
+         background-color: #f8fafc;
+         border-top: 1px solid #e2e8f0;
+      }
+
+      .total-row {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+      }
+
+      .total-label {
+         font-size: 14px;
+         color: #475569;
+      }
+
+      .total-valor-bruto {
+         font-size: 15px;
+         color: #24265d;
+      }
+
+      .total-valor-desconto {
+         font-size: 15px;
+         color: #dc2626;
+      }
+
+      .total-valor-liquido {
+         font-size: 16px;
+         font-weight: 600;
+         color: #16a34a;
+      }
+
+      /* Estilo para o botão de exclusão (para administradores) */
+      .btn-delete-pedido {
+         background-color: #f87171;
+         color: white;
+         border: none;
+         border-radius: 6px;
+         padding: 8px 15px;
+         font-size: 14px;
+         font-weight: 500;
+         cursor: pointer;
+         margin-right: 10px;
+      }
+
+      .btn-delete-pedido:hover {
+         background-color: #ef4444;
+      }
+   </style>
 </head>
 
-<body>
+<body data-is-admin="<?php echo $is_admin ? 'true' : 'false'; ?>">
    <?php include __DIR__ . '/config/navbar.php'; ?>
    <div class="container">
       <?php include __DIR__ . '/config/page_header.php'; ?>
@@ -39,6 +181,10 @@ ob_start();
                <!-- Formulário de Pedido (Lado Esquerdo) -->
                <div class="form-panel">
                   <form id="pedidoForm" class="pedido-form">
+                     <?php if ($pedido_id): ?>
+                        <input type="hidden" id="pedido-id" value="<?php echo $pedido_id; ?>" />
+                     <?php endif; ?>
+
                      <section class="form-section">
                         <h3 class="form-title">Dados do Cliente</h3>
                         <div class="form-group">
@@ -49,31 +195,32 @@ ob_start();
                                  id="cliente-search"
                                  placeholder="Digite o nome ou CNPJ do cliente"
                                  required
-                                 autocomplete="off" />
+                                 autocomplete="off"
+                                 value="<?php echo $pedido ? $pedido['cliente_nome'] : ''; ?>" />
                               <div id="cliente-results" class="search-results"></div>
                            </div>
                         </div>
-                        <div id="cliente-info" class="cliente-info-container">
+                        <div id="cliente-info" class="cliente-info-container" <?php echo $pedido ? 'style="display: block;"' : ''; ?>>
                            <div class="form-row">
                               <div class="form-group">
                                  <label for="cliente-nome">Nome</label>
-                                 <input type="text" id="cliente-nome" disabled />
-                                 <input type="hidden" id="cliente-id" />
+                                 <input type="text" id="cliente-nome" disabled value="<?php echo $pedido ? $pedido['cliente_nome'] : ''; ?>" />
+                                 <input type="hidden" id="cliente-id" value="<?php echo $pedido ? $pedido['cliente_id'] : ''; ?>" />
                               </div>
                               <div class="form-group">
                                  <label for="cliente-cnpj">CNPJ</label>
-                                 <input type="text" id="cliente-cnpj" disabled />
+                                 <input type="text" id="cliente-cnpj" disabled value="<?php echo $pedido ? $pedido['cliente_cnpj'] : ''; ?>" />
                               </div>
                            </div>
 
                            <div class="form-row">
                               <div class="form-group">
                                  <label for="cliente-telefone">Telefone</label>
-                                 <input type="text" id="cliente-telefone" disabled />
+                                 <input type="text" id="cliente-telefone" disabled value="<?php echo $pedido ? $pedido['cliente_telefone'] : ''; ?>" />
                               </div>
                               <div class="form-group">
                                  <label for="cliente-cidade">Cidade/UF</label>
-                                 <input type="text" id="cliente-cidade" disabled />
+                                 <input type="text" id="cliente-cidade" disabled value="<?php echo $pedido ? $pedido['cliente_cidade'] : ''; ?>" />
                               </div>
                            </div>
 
@@ -88,11 +235,11 @@ ob_start();
                         <div class="form-row">
                            <div class="form-group">
                               <label for="transportadora">Transportadora*</label>
-                              <input type="text" id="transportadora" name="transportadora" required />
+                              <input type="text" id="transportadora" name="transportadora" required value="<?php echo $pedido ? $pedido['transportadora'] : ''; ?>" />
                            </div>
                            <div class="form-group">
                               <label for="forma-pagamento">Forma de Pagamento*</label>
-                              <input type="text" id="forma-pagamento" name="forma_pagamento" required />
+                              <input type="text" id="forma-pagamento" name="forma_pagamento" required value="<?php echo $pedido ? $pedido['forma_pagamento'] : ''; ?>" />
                            </div>
                         </div>
 
@@ -104,17 +251,28 @@ ob_start();
                                  id="vendedor"
                                  value="<?php echo isset($_SESSION['nome']) ? $_SESSION['nome'] : $_SESSION['usuario']; ?>"
                                  disabled />
-                              <!-- <input type="hidden" id="vendedor-id" value="<?php echo $_SESSION['id']; ?>" /> -->
+                              <input type="hidden" id="vendedor-id" value="<?php echo $usuario_id; ?>" />
                            </div>
+                           <?php if ($pedido): ?>
+                              <div class="form-group">
+                                 <label for="status-pedido">Status</label>
+                                 <input type="text" id="status-pedido" value="<?php echo $pedido['status']; ?>" disabled />
+                              </div>
+                           <?php endif; ?>
                         </div>
 
                         <div class="form-group">
                            <label for="observacoes">Observações</label>
-                           <textarea id="observacoes" name="observacoes" rows="3" placeholder="Informações adicionais sobre o pedido"></textarea>
+                           <textarea id="observacoes" name="observacoes" rows="3" placeholder="Informações adicionais sobre o pedido"><?php echo $pedido ? $pedido['observacoes'] : ''; ?></textarea>
                         </div>
                      </section>
 
                      <div class="form-actions">
+                        <?php if ($pedido_id && $is_admin): ?>
+                           <button type="button" id="btn-delete-pedido" class="btn-delete-pedido">
+                              <i class="bi bi-trash"></i> Excluir Pedido
+                           </button>
+                        <?php endif; ?>
                         <button type="submit" class="btn-submit">
                            <i class="bi bi-check-lg"></i> Salvar Pedido
                         </button>
@@ -149,6 +307,7 @@ ob_start();
                               <th>Produto</th>
                               <th>Valor Unit.</th>
                               <th>Qtd.</th>
+                              <th>Desconto</th>
                               <th>Subtotal</th>
                               <th>Ações</th>
                            </tr>
@@ -164,14 +323,24 @@ ob_start();
                      </div>
                   </div>
 
-                  <div class="pedido-totais">
-                     <div class="total-items">
-                        <span>Itens:</span>
-                        <span id="total-itens">0</span>
+                  <div class="pedido-totais-detalhados">
+                     <div class="total-row">
+                        <div class="total-items">
+                           <span>Itens:</span>
+                           <span id="total-itens">0</span>
+                        </div>
                      </div>
-                     <div class="total-valor">
-                        <span>Total:</span>
-                        <span id="total-valor" class="valor-destaque">R$ 0,00</span>
+                     <div class="total-row">
+                        <div class="total-label">Total Bruto:</div>
+                        <div id="total-valor-bruto" class="total-valor-bruto">R$ 0,00</div>
+                     </div>
+                     <div class="total-row">
+                        <div class="total-label">Total Descontos:</div>
+                        <div id="total-valor-desconto" class="total-valor-desconto">R$ 0,00</div>
+                     </div>
+                     <div class="total-row">
+                        <div class="total-label">Total Líquido:</div>
+                        <div id="total-valor" class="total-valor-liquido">R$ 0,00</div>
                      </div>
                   </div>
                </div>
@@ -180,7 +349,7 @@ ob_start();
       </div>
    </div>
 
-   <!-- Modal para adicionar produto -->
+   <!-- Modal para adicionar produto (Simplificado) -->
    <div id="modal-produto" class="modal-overlay">
       <div class="modal-container">
          <div class="modal-header">
@@ -207,6 +376,10 @@ ob_start();
                      <label for="modal-produto-qtd">Quantidade</label>
                      <input type="number" id="modal-produto-qtd" min="1" value="1" required />
                   </div>
+               </div>
+               <div class="form-group">
+                  <label for="modal-produto-desconto">Desconto (%)</label>
+                  <input type="number" id="modal-produto-desconto" min="0" max="100" value="0" step="0.1" />
                </div>
                <div class="form-group">
                   <label for="modal-produto-subtotal">Subtotal (R$)</label>
@@ -236,8 +409,211 @@ ob_start();
       </div>
    </div>
 
+   <!-- Modal de confirmação de exclusão -->
+   <div id="modal-confirmar-exclusao" class="modal-overlay">
+      <div class="modal-container" style="max-width: 400px;">
+         <div class="modal-header">
+            <h3>Confirmar Exclusão</h3>
+            <button class="btn-close-modal">
+               <i class="bi bi-x-lg"></i>
+            </button>
+         </div>
+         <div class="modal-content">
+            <p>Tem certeza que deseja excluir este pedido?</p>
+            <p>Esta ação não poderá ser desfeita.</p>
+            <div class="form-actions" style="margin-top: 20px;">
+               <button type="button" class="btn-cancel btn-close-modal">Cancelar</button>
+               <button type="button" id="btn-confirmar-exclusao" class="btn-delete-pedido">Excluir</button>
+            </div>
+         </div>
+      </div>
+   </div>
+
    <script src="./Js/pedido.js"></script>
    <script src="./Js/modal-custom.js"></script>
+
+   <?php if (!empty($itens_pedido)): ?>
+      <script>
+         // Script para carregar os itens do pedido quando estiver editando
+         document.addEventListener('DOMContentLoaded', function() {
+            // Esconder a mensagem "sem produtos" se houver itens
+            document.getElementById('sem-produtos').style.display = 'none';
+
+            // Adicionar os produtos do pedido à tabela
+            const produtosCarregados = <?php echo json_encode($itens_pedido); ?>;
+
+            produtosCarregados.forEach(item => {
+               // Criar objeto de produto no formato esperado pelo JavaScript
+               const produto = {
+                  id: item.produto_id,
+                  codigo: item.produto_codigo,
+                  nome: item.produto_nome,
+                  quantidade: item.quantidade,
+                  valor: item.preco_unitario,
+                  desconto: item.desconto_percentual,
+                  valor_desconto: item.valor_desconto,
+                  subtotal: (item.quantidade * item.preco_unitario) - item.valor_desconto
+               };
+
+               // Adicionar à lista de produtos (você precisa implementar esta função no seu JavaScript)
+               adicionarProdutoTabela(produto);
+            });
+
+            // Atualizar totais
+            atualizarTotais();
+         });
+      </script>
+   <?php endif; ?>
+
+   <?php if ($pedido_id && $is_admin): ?>
+      <script>
+         // Script para o botão de exclusão de pedido (apenas administradores)
+         document.addEventListener('DOMContentLoaded', function() {
+            // Botão principal de exclusão
+            const btnDeletePedido = document.getElementById('btn-delete-pedido');
+            // Modal de confirmação
+            const modalConfirmarExclusao = document.getElementById('modal-confirmar-exclusao');
+            // Botão de confirmação dentro do modal
+            const btnConfirmarExclusao = document.getElementById('btn-confirmar-exclusao');
+
+            // Mostrar modal de confirmação ao clicar no botão de exclusão
+            btnDeletePedido.addEventListener('click', function(e) {
+               e.preventDefault();
+               // Mostrar modal de confirmação
+               modalConfirmarExclusao.classList.add('active');
+            });
+
+            // Fechar modal ao clicar em qualquer botão "cancelar" ou "fechar"
+            document.querySelectorAll('.btn-close-modal, .btn-cancel').forEach(btn => {
+               btn.addEventListener('click', function() {
+                  modalConfirmarExclusao.classList.remove('active');
+               });
+            });
+
+            // Ação de exclusão ao confirmar
+            btnConfirmarExclusao.addEventListener('click', function() {
+               const pedidoId = document.getElementById('pedido-id').value;
+
+               // Fazer requisição AJAX para excluir o pedido
+               fetch('excluir_pedido.php', {
+                     method: 'POST',
+                     headers: {
+                        'Content-Type': 'application/json'
+                     },
+                     body: JSON.stringify({
+                        pedido_id: pedidoId
+                     })
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                     if (data.success) {
+                        // Redirecionar para a lista de pedidos após exclusão bem-sucedida
+                        window.location.href = 'listPed.php';
+                     } else {
+                        // Mostrar mensagem de erro
+                        customModal.error('Erro ao excluir pedido: ' + data.message);
+                     }
+                  })
+                  .catch(error => {
+                     console.error('Erro:', error);
+                     customModal.error('Erro ao excluir pedido. Tente novamente.');
+                  })
+                  .finally(() => {
+                     // Fechar modal de confirmação
+                     modalConfirmarExclusao.classList.remove('active');
+                  });
+            });
+         });
+      </script>
+   <?php endif; ?>
+
+   <script>
+      // Modificação no JavaScript de pedido para lidar com atualizações
+      document.addEventListener('DOMContentLoaded', function() {
+         // Verificar se é uma edição ou novo pedido
+         const pedidoId = document.getElementById('pedido-id') ? document.getElementById('pedido-id').value : null;
+         const isAdmin = document.body.getAttribute('data-is-admin') === 'true';
+
+         // Função para enviar o formulário
+         document.getElementById('pedidoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Obter dados do formulário
+            const clienteId = document.getElementById('cliente-id').value;
+            const usuarioId = document.getElementById('vendedor-id').value;
+            const transportadora = document.getElementById('transportadora').value;
+            const formaPagamento = document.getElementById('forma-pagamento').value;
+            const observacoes = document.getElementById('observacoes').value;
+
+            // Validar campos obrigatórios
+            if (!clienteId || !transportadora || !formaPagamento) {
+               customModal.error('Por favor, preencha todos os campos obrigatórios.');
+               return;
+            }
+
+            // Obter produtos da tabela (função que você já deve ter implementado)
+            const produtos = obterProdutosDaTabela();
+
+            if (produtos.length === 0) {
+               customModal.error('Adicione pelo menos um produto ao pedido.');
+               return;
+            }
+
+            // Calcular totais
+            const valorTotalBruto = calcularTotalBruto();
+            const valorTotalDesconto = calcularTotalDesconto();
+            const valorTotal = calcularTotalLiquido();
+
+            // Preparar dados para envio
+            const dados = {
+               cliente_id: clienteId,
+               usuario_id: usuarioId,
+               transportadora: transportadora,
+               forma_pagamento: formaPagamento,
+               observacoes: observacoes,
+               produtos: produtos,
+               valor_total_bruto: valorTotalBruto,
+               valor_total_desconto: valorTotalDesconto,
+               valor_total: valorTotal
+            };
+
+            // Se for edição, adicionar o ID do pedido
+            if (pedidoId) {
+               dados.pedido_id = pedidoId;
+            }
+
+            // Enviar para o servidor
+            fetch('processa_pedido.php', {
+                  method: 'POST',
+                  headers: {
+                     'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(dados)
+               })
+               .then(response => response.json())
+               .then(data => {
+                  if (data.status === 'success') {
+                     // Mostrar mensagem de sucesso
+                     customModal.success(pedidoId ?
+                        'Pedido atualizado com sucesso!' :
+                        'Pedido cadastrado com sucesso!');
+
+                     // Redirecionar após 1,5 segundos
+                     setTimeout(() => {
+                        window.location.href = 'listPed.php';
+                     }, 1500);
+                  } else {
+                     customModal.error('Erro ao processar pedido: ' + data.message);
+                  }
+               })
+               .catch(error => {
+                  console.error('Erro:', error);
+                  customModal.error('Erro ao processar pedido. Tente novamente.');
+               });
+         });
+      });
+   </script>
+
 </body>
 
 </html>
