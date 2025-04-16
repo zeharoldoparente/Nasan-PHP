@@ -1,0 +1,179 @@
+/* Estilo para o corpo e container principal */
+body.sobre-page {
+   overflow: hidden; /* Evita rolagem */
+   height: 100vh; /* Altura total da viewport */
+   margin: 0;
+   padding: 0;
+   background-color: #ffffff; /* Fundo branco */
+}
+
+.container.sobre-container {
+   background-color: #ffffff;
+   min-height: 100vh; /* Garantir que ocupe toda a altura */
+   margin: 0;
+   padding: 0;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   width: 100%;
+   position: relative;
+}
+
+/* Modificamos o nome da classe .modal para .sobre-modal para evitar conflitos */
+.sobre-modal {
+   background-color: #ffffff;
+   border-radius: 20px;
+   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+   width: 80%;
+   max-width: 800px;
+   max-height: 90vh; /* Um pouco maior para dispositivos menores */
+   overflow: hidden;
+   position: absolute;
+   top: 50%; /* Posicionamento vertical */
+   left: 50%; /* Posicionamento horizontal */
+   transform: translate(-50%, -50%); /* Centralização perfeita */
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   z-index: 10;
+}
+
+.sobre-content {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   padding: 3rem 2rem;
+   height: 100%;
+   width: 100%; /* Garantir largura total */
+}
+
+.sobre-content h2 {
+   font-weight: 600;
+   color: #2d3748;
+   position: relative;
+   margin-bottom: 30px; /* Espaço para o sublinhado */
+   text-align: center; /* Centralizar título */
+}
+
+.sobre-content h2::after {
+   content: "";
+   position: absolute;
+   bottom: -10px;
+   left: 50%;
+   transform: translateX(-50%);
+   width: 50px;
+   height: 3px;
+   background: linear-gradient(90deg, #6366f1, #3b82f6);
+   border-radius: 2px;
+}
+
+.sobre-content p {
+   font-size: 1.2rem;
+   color: #4a5568;
+   margin-top: 0; /* Removido o espaço superior */
+   text-align: center; /* Centralizar texto */
+}
+
+.contact {
+   text-align: center;
+   background-color: #f8fafc;
+   padding: 1.5rem;
+   border-radius: 12px;
+   width: 100%;
+   max-width: 400px;
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+   border-left: 4px solid #3b82f6;
+   margin-top: 2rem;
+}
+
+.contact h2 {
+   color: #2d3748;
+   font-size: 1.5rem;
+   margin-bottom: 20px;
+}
+
+.contact p {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   margin-bottom: 10px;
+   gap: 10px; /* Espaço entre o ícone e o texto */
+}
+
+.contact p:before {
+   font-family: "bootstrap-icons";
+   color: #3b82f6;
+   font-size: 1.2rem;
+}
+
+.contact p:first-of-type:before {
+   content: "\F4E7"; /* Ícone de telefone */
+}
+
+.contact p:last-of-type:before {
+   content: "\F32F"; /* Ícone de email */
+}
+
+.logo-container {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   overflow: hidden;
+   margin-top: -15px; /* Margem negativa para aproximar do título */
+   margin-bottom: -15px; /* Margem negativa para aproximar do texto */
+}
+
+.logo-container img {
+   max-width: 100%;
+   max-height: 100%;
+   object-fit: contain;
+   transition: transform 0.3s ease;
+   margin-top: -40px; /* Margem negativa no topo da imagem */
+   margin-bottom: -40px; /* Margem negativa na base da imagem */
+}
+
+.logo-container img:hover {
+   transform: scale(1.05);
+}
+
+.logo-lg {
+   width: 500px;
+   height: 350px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+   .contact {
+      margin-top: 2rem;
+      padding: 1rem;
+   }
+
+   .sobre-modal {
+      width: 95%;
+      max-height: none;
+      height: auto;
+   }
+
+   .sobre-content {
+      padding: 2rem 1rem;
+   }
+
+   .sobre-content p {
+      font-size: 1rem;
+   }
+
+   .sobre-content h2 {
+      margin-bottom: 10px;
+      font-size: 1.4rem;
+   }
+
+   .contact h2 {
+      font-size: 1.3rem;
+   }
+
+   .logo-lg {
+      width: 350px;
+      height: 140px;
+   }
+}

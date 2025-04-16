@@ -23,14 +23,28 @@ ob_start();
    <link rel="icon" href="../image/logo.png" type="image/x-icon" />
    <link rel="stylesheet" href="../../styles/global.css" />
    <link rel="stylesheet" href="../../styles/navbar.css" />
-   <title>Lista de Pedidos</title>
+   <link rel="stylesheet" href="../../styles/sobre.css" />
+
+   <title>Sobre Nós</title>
 </head>
 
-<body>
-   <div class="container">
+<body class="sobre-page">
+   <div class="container sobre-container">
       <?php include __DIR__ . '/config/navbar.php'; ?>
-
-
+      <div class="sobre-modal">
+         <div class="sobre-content">
+            <h2>Criado e mantido por</h2>
+            <div class="logo-container logo-lg">
+               <img src="../../assets/image/NASAM DEV.svg" alt="NASAM DEV Logo" />
+            </div>
+            <p>José Aroldo Soares</p>
+            <div class="contact">
+               <h2>Contato</h2>
+               <p>(63) 9 9956-9407</p>
+               <p>contato.nasamdev@gmail.com</p>
+            </div>
+         </div>
+      </div>
    </div>
 </body>
 
