@@ -55,20 +55,25 @@ try {
    // Verificar se é um pedido novo ou atualização
    $is_update = isset($data['pedido_id']) && !empty($data['pedido_id']);
    $pedidoId = $is_update ? $data['pedido_id'] : null;
+   $vendedor_original_id = null; // Variável para armazenar o ID do vendedor original
 
    // Se for atualização e o usuário for admin, definir o status para "Aprovado com Alteração"
    $status = 'Pendente'; // Padrão para novos pedidos
 
    if ($is_update) {
-      // Verificar status atual do pedido
-      $sql_status = "SELECT status FROM pedidos WHERE id = ?";
+      // Verificar status atual do pedido e obter o vendedor original
+      $sql_status = "SELECT status, usuario_id FROM pedidos WHERE id = ?";
       $stmt_status = $conn->prepare($sql_status);
       $stmt_status->bind_param("i", $pedidoId);
       $stmt_status->execute();
       $status_result = $stmt_status->get_result();
 
       if ($status_result->num_rows > 0) {
-         $status_atual = $status_result->fetch_assoc()['status'];
+         $row = $status_result->fetch_assoc();
+         $status_atual = $row['status'];
+
+         // Armazenar o ID do vendedor original para manter o vendedor original
+         $vendedor_original_id = $row['usuario_id'];
 
          // Se o administrador estiver editando, mudar para "Aprovado com Alteração"
          if ($is_admin) {
@@ -81,14 +86,15 @@ try {
       $stmt_status->close();
    }
 
-   // Validar se o usuário existe
+   // Validar se o usuário existe (usando o ID correto dependendo do contexto)
+   $usuario_id_validar = $is_update ? $vendedor_original_id : $data['usuario_id'];
    $checkUser = $conn->prepare("SELECT id FROM usuarios WHERE id = ?");
-   $checkUser->bind_param("i", $data['usuario_id']);
+   $checkUser->bind_param("i", $usuario_id_validar);
    $checkUser->execute();
    $userResult = $checkUser->get_result();
 
    if ($userResult->num_rows === 0) {
-      throw new Exception("Usuário com ID " . $data['usuario_id'] . " não existe no banco de dados");
+      throw new Exception("Usuário com ID " . $usuario_id_validar . " não existe no banco de dados");
    }
 
    // Validar se o cliente existe
@@ -103,7 +109,8 @@ try {
 
    // Converter para os tipos corretos
    $cliente_id = (int)$data['cliente_id'];
-   $usuario_id = (int)$data['usuario_id'];
+   // Usar o ID do vendedor original para atualizações ou o ID do usuário atual para novos pedidos
+   $usuario_id = $is_update ? $vendedor_original_id : (int)$data['usuario_id'];
    $valor_total_bruto = isset($data['valor_total_bruto']) ? (float)$data['valor_total_bruto'] : 0;
    $valor_total_desconto = isset($data['valor_total_desconto']) ? (float)$data['valor_total_desconto'] : 0;
    $valor_total = (float)$data['valor_total'];
