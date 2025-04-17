@@ -103,7 +103,7 @@ $stmt_total->close();
 // Obter contagem por status
 $pedidos_pendentes = getStatusCount($conn, 'Pendente', $usuario_id, $is_admin);
 $pedidos_aprovados = getStatusCount($conn, 'Aprovado', $usuario_id, $is_admin);
-$pedidos_alterados = getStatusCount($conn, 'Aprovado com Alteração', $usuario_id, $is_admin);
+$pedidos_alterados = getStatusCount($conn, 'Aprovado com Alteraç', $usuario_id, $is_admin);
 $pedidos_enviados = getStatusCount($conn, 'Enviado', $usuario_id, $is_admin);
 $pedidos_pagos = getStatusCount($conn, 'Pago', $usuario_id, $is_admin);
 $pedidos_pagos_parcial = getStatusCount($conn, 'Pago Parcial', $usuario_id, $is_admin);
