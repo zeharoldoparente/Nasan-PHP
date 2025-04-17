@@ -5,6 +5,76 @@ if (!isset($_SESSION['usuario'])) {
    exit();
 }
 ob_start();
+
+// Função para obter o versículo do dia
+function getVersiculoDoDia()
+{
+   // Definir caminho do arquivo de cache
+   // Como estamos em /page/controllers/models/sobre.php, precisamos subir 3 níveis
+   $cacheFile = __DIR__ . '/../../cache/versiculo_diario.json';
+   $hoje = date('Y-m-d');
+
+   // Verificar se o cache existe e é de hoje
+   if (file_exists($cacheFile)) {
+      $conteudo = file_get_contents($cacheFile);
+      $dados = json_decode($conteudo, true);
+
+      // Se o cache for de hoje, retorna os dados
+      if (isset($dados['data']) && substr($dados['data'], 0, 10) === $hoje) {
+         return $dados;
+      }
+   }
+
+   // Se não tiver cache ou estiver expirado, buscar novo versículo
+   $token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdHIiOiJUaHUgQXByIDE3IDIwMjUgMTQ6NTI6MDQgR01UKzAwMDAuam9zZWhhcm9sZG9wYXJlbnRlQGdtYWlsLmNvbSIsImlhdCI6MTc0NDkwMTUyNH0.eYluA84Ez_BMQadCVkRvj1l2ZX0nVxvipFDc1_9cohs';
+   $apiUrl = 'https://www.abibliadigital.com.br/api/verses/nvi/random';
+
+   // Usar cURL para fazer a requisição
+   $ch = curl_init($apiUrl);
+   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+   curl_setopt($ch, CURLOPT_HTTPHEADER, [
+      'Authorization: Bearer ' . $token,
+      'Content-Type: application/json'
+   ]);
+
+   $response = curl_exec($ch);
+   $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+   curl_close($ch);
+
+   // Se a requisição foi bem-sucedida
+   if ($httpCode === 200 && $response) {
+      $data = json_decode($response, true);
+
+      if ($data && isset($data['text'])) {
+         // Formatar dados para o cache
+         $versiculo = [
+            'texto' => $data['text'],
+            'referencia' => $data['book']['name'] . ' ' . $data['chapter'] . ':' . $data['number'],
+            'data' => date('c') // Data ISO 8601 (2025-04-17T14:52:04+00:00)
+         ];
+
+         // Criar diretório de cache se não existir
+         if (!is_dir(dirname($cacheFile))) {
+            mkdir(dirname($cacheFile), 0755, true);
+         }
+
+         // Salvar o cache
+         file_put_contents($cacheFile, json_encode($versiculo));
+
+         return $versiculo;
+      }
+   }
+
+   // Se tudo falhar, retornar versículo padrão
+   return [
+      'texto' => 'E tenho vos dito estas coisas para que em mim tenham paz, no mundo tereis aflições mas tende bom ânimo, eu venci o mundo.',
+      'referencia' => 'João 16:33',
+      'data' => date('c')
+   ];
+}
+
+// Obter versículo do dia
+$versiculo = getVersiculoDoDia();
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -46,32 +116,12 @@ ob_start();
          <div class="daily-verse">
             <h3>Palavra do dia</h3>
             <div id="verse-content">
-               <p id="verse-text">Carregando versículo...</p>
-               <p id="verse-reference" class="reference"></p>
+               <p id="verse-text">"<?php echo htmlspecialchars($versiculo['texto']); ?>"</p>
+               <p id="verse-reference" class="reference"><?php echo htmlspecialchars($versiculo['referencia']); ?></p>
             </div>
          </div>
-
-         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-               async function fetchRandomVerse() {
-                  try {
-                     const response = await fetch('https://www.abibliadigital.com.br/api/verses/nvi/random');
-                     const data = await response.json();
-
-                     if (data) {
-                        document.getElementById('verse-text').textContent = '"' + data.text + '"';
-                        document.getElementById('verse-reference').textContent = data.book.name + ' ' + data.chapter + ':' + data.number;
-                     }
-                  } catch (error) {
-                     console.error('Erro ao buscar versículo:', error);
-                     document.getElementById('verse-text').textContent = '"Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna."';
-                     document.getElementById('verse-reference').textContent = 'João 3:16';
-                  }
-               }
-
-               fetchRandomVerse();
-            });
-         </script>
+      </div>
+   </div>
 </body>
 
 </html>
