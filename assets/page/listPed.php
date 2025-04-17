@@ -250,6 +250,42 @@ $stmt_user->close();
    <script src="./Js/modal-custom.js"></script>
    <script src="./Js/listaPedidos.js"></script>
 
+   <script>
+      document.addEventListener('DOMContentLoaded', function() {
+         // Verificar se existe um filtro salvo no localStorage
+         const filtroStatus = localStorage.getItem('filtro_status');
+         if (filtroStatus) {
+            // Definir o valor do select
+            const selectStatus = document.getElementById('filtro-status');
+            if (selectStatus) {
+               selectStatus.value = filtroStatus;
+
+               // Esperar um momento para garantir que o resto da página carregou
+               setTimeout(function() {
+                  // Acionar o clique no botão de filtrar
+                  document.getElementById('btn-filtrar').click();
+               }, 100);
+
+               // Limpar o filtro do localStorage
+               localStorage.removeItem('filtro_status');
+            }
+         }
+
+         // Receber filtro via URL (método alternativo)
+         const urlParams = new URLSearchParams(window.location.search);
+         const statusParam = urlParams.get('status');
+         if (statusParam) {
+            const selectStatus = document.getElementById('filtro-status');
+            if (selectStatus) {
+               selectStatus.value = statusParam;
+
+               setTimeout(function() {
+                  document.getElementById('btn-filtrar').click();
+               }, 100);
+            }
+         }
+      });
+   </script>
 </body>
 
 </html>
