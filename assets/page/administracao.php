@@ -107,7 +107,7 @@ ob_start();
                            name="admin"
                            value="0" />
                         <label for="admin-nao" class="radio-nao">
-                           <i class="bi bi-person-fill" style="color: green;"></i> Usuário comum
+                           <i class="bi bi-person-fill"></i> Usuário comum
                         </label>
 
                         <input

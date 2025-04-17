@@ -221,7 +221,7 @@ function mostrarFormulario(modo, userData = null) {
                            : ""
                      } />
                   <label for="admin-nao-modal" class="radio-nao">
-                     <i class="bi bi-person-fill" style="color: green;"></i> Usuário comum
+                     <i class="bi bi-person-fill"></i> Usuário comum
                   </label>
 
                   <input
@@ -539,8 +539,7 @@ function getUserStatusIcons(user) {
       adminIcon =
          '<i class="bi bi-person-fill-gear" style="color: blue;" title="Administrador"></i>';
    } else {
-      adminIcon =
-         '<i class="bi bi-person-fill" style="color: green;" title="Usuário comum"></i>';
+      adminIcon = '<i class="bi bi-person-fill" title="Usuário comum"></i>';
    }
 
    // Ícone de status
