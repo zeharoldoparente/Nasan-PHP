@@ -242,7 +242,7 @@
    border: 2px solid transparent;
 }
 
-.radio-sim {
+/* .radio-sim {
    background-color: #e0f7e9;
    color: #2e7d32;
    border-color: #2e7d32;
@@ -252,17 +252,17 @@
    background-color: #fdecea;
    color: #c62828;
    border-color: #c62828;
-}
+} */
 
-input[type="radio"]:checked + .radio-sim {
+/* input[type="radio"]:checked + .radio-sim {
    background-color: #2e7d32;
-   color: white;
+   color: black;
 }
 
 input[type="radio"]:checked + .radio-nao {
    background-color: #c62828;
    color: white;
-}
+} */
 
 /* Modal para dispositivos móveis */
 .modal {
@@ -401,13 +401,13 @@ input[type="radio"]:checked + .radio-nao {
 
 /* Aplicamos o mesmo estilo que já está definido para admin-radio-group */
 input[type="radio"]:checked + .radio-sim {
-   background-color: #2e7d32;
-   color: white;
+   /* background-color: #2e7d32; */
+   color: black;
 }
 
 input[type="radio"]:checked + .radio-nao {
-   background-color: #c62828;
-   color: white;
+   /* background-color: #c62828; */
+   color: black;
 }
 
 /* Estilo para usuários inativos na lista */
@@ -425,6 +425,12 @@ input[type="radio"]:checked + .radio-nao {
 
 /* Media query para dispositivos móveis */
 @media screen and (max-width: 768px) {
+   body {
+      overflow: hidden;
+   }
+   .container {
+      height: 100vh;
+   }
    .admin-actions {
       width: 100%;
       margin-left: 5px;
@@ -445,7 +451,7 @@ input[type="radio"]:checked + .radio-nao {
       width: 100%;
       border-right: none;
       border-bottom: 1px solid rgba(223, 219, 219, 0.212);
-      max-height: 400px;
+      max-height: 620px;
    }
 
    .user-details {
