@@ -434,187 +434,35 @@ WHERE p.id = ?";
 
    <?php if (!empty($itens_pedido)): ?>
       <script>
-         // Script para carregar os itens do pedido quando estiver editando
          document.addEventListener('DOMContentLoaded', function() {
-            // Esconder a mensagem "sem produtos" se houver itens
-            document.getElementById('sem-produtos').style.display = 'none';
+            // Limpar a lista de produtos existente
+            produtosPedido = [];
 
-            // Adicionar os produtos do pedido à tabela
+            // Carregar os produtos do pedido
             const produtosCarregados = <?php echo json_encode($itens_pedido); ?>;
 
             produtosCarregados.forEach(item => {
-               // Criar objeto de produto no formato esperado pelo JavaScript
-               const produto = {
+               // Calcular valores
+               const subtotalBruto = parseFloat(item.preco_unitario) * parseInt(item.quantidade);
+               const valorDesconto = parseFloat(item.valor_desconto);
+               const subtotalLiquido = subtotalBruto - valorDesconto;
+
+               // Adicionar produto ao array global
+               produtosPedido.push({
                   id: item.produto_id,
-                  codigo: item.produto_codigo,
+                  codigo: item.produto_codigo || "Sem código",
                   nome: item.produto_nome,
-                  quantidade: item.quantidade,
-                  valor: item.preco_unitario,
-                  desconto: item.desconto_percentual,
-                  valor_desconto: item.valor_desconto,
-                  subtotal: (item.quantidade * item.preco_unitario) - item.valor_desconto
-               };
-
-               // Adicionar à lista de produtos (você precisa implementar esta função no seu JavaScript)
-               adicionarProdutoTabela(produto);
-            });
-
-            // Atualizar totais
-            atualizarTotais();
-         });
-      </script>
-   <?php endif; ?>
-
-   <?php if ($pedido_id && $is_admin): ?>
-      <script>
-         // Script para o botão de exclusão de pedido (apenas administradores)
-         document.addEventListener('DOMContentLoaded', function() {
-            // Botão principal de exclusão
-            const btnDeletePedido = document.getElementById('btn-delete-pedido');
-            // Modal de confirmação
-            const modalConfirmarExclusao = document.getElementById('modal-confirmar-exclusao');
-            // Botão de confirmação dentro do modal
-            const btnConfirmarExclusao = document.getElementById('btn-confirmar-exclusao');
-
-            // Mostrar modal de confirmação ao clicar no botão de exclusão
-            btnDeletePedido.addEventListener('click', function(e) {
-               e.preventDefault();
-               // Mostrar modal de confirmação
-               modalConfirmarExclusao.classList.add('active');
-            });
-
-            // Fechar modal ao clicar em qualquer botão "cancelar" ou "fechar"
-            document.querySelectorAll('.btn-close-modal, .btn-cancel').forEach(btn => {
-               btn.addEventListener('click', function() {
-                  modalConfirmarExclusao.classList.remove('active');
+                  valor: parseFloat(item.preco_unitario),
+                  quantidade: parseInt(item.quantidade),
+                  desconto: parseFloat(item.desconto_percentual),
+                  valorDesconto: valorDesconto,
+                  subtotalBruto: subtotalBruto,
+                  subtotal: subtotalLiquido
                });
             });
 
-            // Ação de exclusão ao confirmar
-            btnConfirmarExclusao.addEventListener('click', function() {
-               const pedidoId = document.getElementById('pedido-id').value;
-
-               // Fazer requisição AJAX para excluir o pedido
-               fetch('excluir_pedido.php', {
-                     method: 'POST',
-                     headers: {
-                        'Content-Type': 'application/json'
-                     },
-                     body: JSON.stringify({
-                        pedido_id: pedidoId
-                     })
-                  })
-                  .then(response => response.json())
-                  .then(data => {
-                     if (data.success) {
-                        // Redirecionar para a lista de pedidos após exclusão bem-sucedida
-                        window.location.href = 'listPed.php';
-                     } else {
-                        // Mostrar mensagem de erro
-                        customModal.error('Erro ao excluir pedido: ' + data.message);
-                     }
-                  })
-                  .catch(error => {
-                     console.error('Erro:', error);
-                     customModal.error('Erro ao excluir pedido. Tente novamente.');
-                  })
-                  .finally(() => {
-                     // Fechar modal de confirmação
-                     modalConfirmarExclusao.classList.remove('active');
-                  });
-            });
+            // Atualizar a tabela de produtos
+            atualizarTabelaProdutos();
          });
       </script>
    <?php endif; ?>
-
-   <script>
-      // Modificação no JavaScript de pedido para lidar com atualizações
-      document.addEventListener('DOMContentLoaded', function() {
-         // Verificar se é uma edição ou novo pedido
-         const pedidoId = document.getElementById('pedido-id') ? document.getElementById('pedido-id').value : null;
-         const isAdmin = document.body.getAttribute('data-is-admin') === 'true';
-
-         // Função para enviar o formulário
-         document.getElementById('pedidoForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            // Obter dados do formulário
-            const clienteId = document.getElementById('cliente-id').value;
-            const usuarioId = document.getElementById('vendedor-id').value;
-            const transportadora = document.getElementById('transportadora').value;
-            const formaPagamento = document.getElementById('forma-pagamento').value;
-            const observacoes = document.getElementById('observacoes').value;
-
-            // Validar campos obrigatórios
-            if (!clienteId || !transportadora || !formaPagamento) {
-               customModal.error('Por favor, preencha todos os campos obrigatórios.');
-               return;
-            }
-
-            // Obter produtos da tabela (função que você já deve ter implementado)
-            const produtos = obterProdutosDaTabela();
-
-            if (produtos.length === 0) {
-               customModal.error('Adicione pelo menos um produto ao pedido.');
-               return;
-            }
-
-            // Calcular totais
-            const valorTotalBruto = calcularTotalBruto();
-            const valorTotalDesconto = calcularTotalDesconto();
-            const valorTotal = calcularTotalLiquido();
-
-            // Preparar dados para envio
-            const dados = {
-               cliente_id: clienteId,
-               usuario_id: usuarioId,
-               transportadora: transportadora,
-               forma_pagamento: formaPagamento,
-               observacoes: observacoes,
-               produtos: produtos,
-               valor_total_bruto: valorTotalBruto,
-               valor_total_desconto: valorTotalDesconto,
-               valor_total: valorTotal
-            };
-
-            // Se for edição, adicionar o ID do pedido
-            if (pedidoId) {
-               dados.pedido_id = pedidoId;
-            }
-
-            // Enviar para o servidor
-            fetch('processa_pedido.php', {
-                  method: 'POST',
-                  headers: {
-                     'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify(dados)
-               })
-               .then(response => response.json())
-               .then(data => {
-                  if (data.status === 'success') {
-                     // Mostrar mensagem de sucesso
-                     customModal.success(pedidoId ?
-                        'Pedido atualizado com sucesso!' :
-                        'Pedido cadastrado com sucesso!');
-
-                     // Redirecionar após 1,5 segundos
-                     setTimeout(() => {
-                        window.location.href = 'listPed.php';
-                     }, 1500);
-                  } else {
-                     customModal.error('Erro ao processar pedido: ' + data.message);
-                  }
-               })
-               .catch(error => {
-                  console.error('Erro:', error);
-                  customModal.error('Erro ao processar pedido. Tente novamente.');
-               });
-         });
-      });
-   </script>
-
-</body>
-
-</html>
-<?php ob_end_flush(); ?>

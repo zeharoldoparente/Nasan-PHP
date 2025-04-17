@@ -19,6 +19,10 @@ const modalProdutoDesconto = document.getElementById("modal-produto-desconto");
 const modalProdutoSubtotal = document.getElementById("modal-produto-subtotal");
 const pedidoForm = document.getElementById("pedidoForm");
 
+function encontrarProdutoPorId(produtoId) {
+   return produtosDisponiveis.find((p) => p.id === produtoId);
+}
+
 // Inicialização
 document.addEventListener("DOMContentLoaded", function () {
    // Carregar produtos disponíveis
@@ -366,6 +370,26 @@ function abrirModalProduto() {
 function fecharModalProduto() {
    modalProduto.classList.remove("active");
    formAddProduto.reset();
+
+   // Restaurar estado padrão
+   const modalTitle = document.querySelector("#modal-produto .modal-header h3");
+   if (modalTitle) {
+      modalTitle.textContent = "Adicionar Produto";
+   }
+
+   // Habilitar o dropdown se estiver desabilitado
+   if (modalProdutoId.disabled) {
+      modalProdutoId.disabled = false;
+   }
+
+   // Restaurar texto do botão de submit
+   const submitButton = formAddProduto.querySelector('button[type="submit"]');
+   if (submitButton) {
+      submitButton.textContent = "Adicionar";
+   }
+
+   // Remover atributos especiais
+   formAddProduto.removeAttribute("data-edit-index");
 }
 
 // Adicionar produto ao pedido
@@ -554,25 +578,56 @@ function atualizarTotais() {
       });
 }
 
-// Editar produto - Versão completamente revisada
+// Editar produto
 function editarProduto(index) {
    const produto = produtosPedido[index];
+   console.log("Produto para edição:", produto); // Para depuração
 
-   // Preencher os campos do modal
+   // Definir o título do modal
+   const modalTitle = document.querySelector("#modal-produto .modal-header h3");
+   if (modalTitle) {
+      modalTitle.textContent = "Editar Produto";
+   }
+
+   // IMPORTANTE: Garantir que os IDs sejam do mesmo tipo para comparação
+   const produtoIdString = String(produto.id);
+
+   console.log("Verificando opções disponíveis no dropdown:");
    for (let i = 0; i < modalProdutoId.options.length; i++) {
-      if (modalProdutoId.options[i].value === produto.id) {
+      const optionValue = modalProdutoId.options[i].value;
+      console.log(
+         `Opção ${i}: valor="${optionValue}", comparando com produto.id="${produtoIdString}"`
+      );
+
+      if (optionValue === produtoIdString) {
+         console.log("MATCH ENCONTRADO! Selecionando índice: " + i);
          modalProdutoId.selectedIndex = i;
          break;
       }
    }
 
-   // Garantir que os valores são exibidos corretamente
+   // Se não encontrou o produto, desabilitar o dropdown
+   if (modalProdutoId.selectedIndex === 0 && produtoIdString !== "") {
+      console.log("Produto não encontrado na lista: " + produtoIdString);
+      modalProdutoId.disabled = true;
+   }
+
+   // Preencher os demais campos
    modalProdutoValor.value = produto.valor;
    modalProdutoQtd.value = produto.quantidade;
    modalProdutoDesconto.value = produto.desconto;
 
    // Atualizar o subtotal no modal
    atualizarCalculosModal();
+
+   // Modificar o texto do botão de submit
+   const submitButton = formAddProduto.querySelector('button[type="submit"]');
+   if (submitButton) {
+      submitButton.textContent = "Atualizar";
+   }
+
+   // Guardar o índice do produto para uso no submit
+   formAddProduto.setAttribute("data-edit-index", index);
 
    // Modificar o handler do formulário para atualizar em vez de adicionar
    const originalSubmitHandler = formAddProduto.onsubmit;
@@ -581,6 +636,9 @@ function editarProduto(index) {
       e.preventDefault();
 
       try {
+         // Obter o índice do produto sendo editado
+         const editIndex = parseInt(this.getAttribute("data-edit-index"));
+
          // Obter e validar os valores
          const valor = parseNumero(modalProdutoValor.value);
          const quantidade = parseInt(modalProdutoQtd.value);
@@ -605,8 +663,8 @@ function editarProduto(index) {
          const subtotalLiquido = subtotalBruto - valorDesconto;
 
          // Atualizar produto no array
-         produtosPedido[index] = {
-            ...produtosPedido[index],
+         produtosPedido[editIndex] = {
+            ...produtosPedido[editIndex], // Manter as propriedades existentes
             valor: valor,
             quantidade: quantidade,
             desconto: desconto,
@@ -614,6 +672,17 @@ function editarProduto(index) {
             subtotalBruto: subtotalBruto,
             subtotal: subtotalLiquido,
          };
+
+         // Limpar atributos especiais do formulário
+         formAddProduto.removeAttribute("data-edit-index");
+         if (modalProdutoId.disabled) {
+            modalProdutoId.disabled = false;
+         }
+
+         // Restaurar texto do botão
+         if (submitButton) {
+            submitButton.textContent = "Adicionar";
+         }
 
          // Atualizar tabela
          atualizarTabelaProdutos();
@@ -655,6 +724,44 @@ function excluirProduto(index) {
 
 // Função para salvar o pedido
 function salvarPedido() {
+   // Verificar se é uma edição ou novo pedido
+   const pedidoId = document.getElementById("pedido-id")
+      ? document.getElementById("pedido-id").value
+      : null;
+   const isEdicao = !!pedidoId;
+
+   // Se for edição, obter o cliente do campo hidden
+   if (isEdicao && !clienteSelecionado) {
+      const clienteId = document.getElementById("cliente-id").value;
+      const clienteNome = document.getElementById("cliente-nome").value;
+      const clienteCnpj = document.getElementById("cliente-cnpj").value;
+      const clienteTelefone = document.getElementById("cliente-telefone").value;
+
+      // Cidade/UF pode estar em formato "Cidade/UF"
+      let clienteCidade = "";
+      let clienteEstado = "";
+      const cidadeUf = document.getElementById("cliente-cidade").value;
+      if (cidadeUf && cidadeUf !== "Não informado") {
+         const partes = cidadeUf.split("/");
+         if (partes.length === 2) {
+            clienteCidade = partes[0];
+            clienteEstado = partes[1];
+         }
+      }
+
+      // Criar objeto clienteSelecionado com dados dos campos
+      clienteSelecionado = {
+         id: clienteId,
+         razao_social: clienteNome,
+         cpf_cnpj: clienteCnpj,
+         telefone: clienteTelefone,
+         cidade: clienteCidade,
+         estado: clienteEstado,
+      };
+
+      console.log("Cliente reconstruído para edição:", clienteSelecionado);
+   }
+
    // Validar cliente
    if (!clienteSelecionado) {
       customModal.error("Selecione um cliente para o pedido");
@@ -692,7 +799,7 @@ function salvarPedido() {
       0
    );
 
-   // Obter o ID do usuário via AJAX
+   // Obter usuário
    fetch("get_session_user_id.php")
       .then((response) => response.json())
       .then((data) => {
@@ -705,7 +812,7 @@ function salvarPedido() {
             cliente_id: clienteSelecionado.id,
             transportadora: transportadora,
             forma_pagamento: formaPagamento,
-            usuario_id: data.usuario_id, // Usar o ID retornado pelo PHP
+            usuario_id: data.usuario_id,
             observacoes: document.getElementById("observacoes").value,
             produtos: produtosPedido.map((p) => ({
                id: p.id,
@@ -716,8 +823,13 @@ function salvarPedido() {
             })),
             valor_total_bruto: valorTotalBruto,
             valor_total_desconto: valorTotalDesconto,
-            valor_total: valorTotalLiquido, // Valor líquido (com descontos)
+            valor_total: valorTotalLiquido,
          };
+
+         // Se for edição, adicionar o ID do pedido
+         if (isEdicao) {
+            dadosPedido.pedido_id = pedidoId;
+         }
 
          console.log("Dados do pedido a serem enviados:", dadosPedido);
 
@@ -756,8 +868,8 @@ function salvarPedido() {
             customModal
                .success("Pedido #" + data.pedido_id + " salvo com sucesso!")
                .then(() => {
-                  // Limpar o formulário para um novo pedido
-                  limparFormularioPedido();
+                  // Redirecionar para a lista de pedidos após o sucesso
+                  window.location.href = "listPed.php";
                });
          } else {
             throw new Error(data.message || "Erro ao salvar pedido");
