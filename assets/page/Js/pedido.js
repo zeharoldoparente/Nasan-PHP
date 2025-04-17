@@ -37,10 +37,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Função auxiliar para converter string para número
 function parseNumero(valor) {
+   if (valor === null || valor === undefined || valor === "") return 0;
+
+   // Verifica se já é um número
+   if (typeof valor === "number") return valor;
+
    // Remove tudo que não é número, ponto ou vírgula
    const numeroLimpo = valor.toString().replace(/[^\d.,]/g, "");
+
+   // Se estiver vazio após limpeza
+   if (numeroLimpo === "") return 0;
+
    // Substitui vírgula por ponto para garantir formato numérico válido
-   return parseFloat(numeroLimpo.replace(",", "."));
+   const numeroFinal = parseFloat(numeroLimpo.replace(",", "."));
+
+   return isNaN(numeroFinal) ? 0 : numeroFinal;
 }
 
 // Carregar produtos disponíveis
@@ -165,30 +176,35 @@ function setupEventListeners() {
 
 // Função para atualizar os cálculos no modal
 function atualizarCalculosModal() {
-   const valor = parseNumero(modalProdutoValor.value);
-   const quantidade = parseInt(modalProdutoQtd.value) || 0;
-   const desconto = parseNumero(modalProdutoDesconto.value);
+   try {
+      const valor = parseNumero(modalProdutoValor.value);
+      const quantidade = parseInt(modalProdutoQtd.value) || 0;
+      const desconto = parseNumero(modalProdutoDesconto.value);
 
-   // Verificar se os valores são válidos
-   if (isNaN(valor) || isNaN(quantidade) || isNaN(desconto)) {
+      // Verificar se os valores são válidos
+      if (isNaN(valor) || valor <= 0) {
+         modalProdutoSubtotal.value = "R$ 0,00";
+         return;
+      }
+
+      // Calcular subtotal bruto (sem desconto)
+      const subtotalBruto = valor * quantidade;
+
+      // Calcular valor do desconto
+      const valorDesconto = subtotalBruto * (desconto / 100);
+
+      // Calcular subtotal líquido (com desconto)
+      const subtotalLiquido = subtotalBruto - valorDesconto;
+
+      // Atualizar apenas o campo de subtotal
+      modalProdutoSubtotal.value = subtotalLiquido.toLocaleString("pt-BR", {
+         style: "currency",
+         currency: "BRL",
+      });
+   } catch (error) {
+      console.error("Erro ao calcular valores:", error);
       modalProdutoSubtotal.value = "R$ 0,00";
-      return;
    }
-
-   // Calcular subtotal bruto (sem desconto)
-   const subtotalBruto = valor * quantidade;
-
-   // Calcular valor do desconto
-   const valorDesconto = subtotalBruto * (desconto / 100);
-
-   // Calcular subtotal líquido (com desconto)
-   const subtotalLiquido = subtotalBruto - valorDesconto;
-
-   // Atualizar apenas o campo de subtotal
-   modalProdutoSubtotal.value = subtotalLiquido.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-   });
 }
 
 // Função para buscar clientes pelo nome ou CNPJ
@@ -621,9 +637,9 @@ function editarProduto(index) {
    }
 
    // Preencher os demais campos
-   modalProdutoValor.value = produto.valor;
+   modalProdutoValor.value = Number(produto.valor).toFixed(2);
    modalProdutoQtd.value = produto.quantidade;
-   modalProdutoDesconto.value = produto.desconto;
+   modalProdutoDesconto.value = Number(produto.desconto).toFixed(2);
 
    // Atualizar o subtotal no modal
    atualizarCalculosModal();
@@ -644,18 +660,15 @@ function editarProduto(index) {
       e.preventDefault();
 
       try {
-         // Obter o índice do produto sendo editado
          const editIndex = parseInt(this.getAttribute("data-edit-index"));
 
-         // Obter e validar os valores
          const valor = parseNumero(modalProdutoValor.value);
-         const quantidade = parseInt(modalProdutoQtd.value);
+         const quantidade = parseNumero(modalProdutoQtd.value);
          const desconto = parseNumero(modalProdutoDesconto.value);
 
-         // Validações de dados
-         if (isNaN(valor) || valor <= 0) {
-            throw new Error("Informe um valor válido");
-         }
+         // if (isNaN(valor) || valor <= 0) {
+         //    throw new Error("Informe um valor válido");
+         // }
 
          if (isNaN(quantidade) || quantidade <= 0) {
             throw new Error("Informe uma quantidade válida");
@@ -665,46 +678,35 @@ function editarProduto(index) {
             throw new Error("Informe um desconto válido (0-100%)");
          }
 
-         // Calcular novos valores
          const subtotalBruto = valor * quantidade;
          const valorDesconto = subtotalBruto * (desconto / 100);
          const subtotalLiquido = subtotalBruto - valorDesconto;
 
-         // Atualizar produto no array
          produtosPedido[editIndex] = {
-            ...produtosPedido[editIndex], // Manter as propriedades existentes
-            valor: valor,
-            quantidade: quantidade,
-            desconto: desconto,
-            valorDesconto: valorDesconto,
-            subtotalBruto: subtotalBruto,
+            ...produtosPedido[editIndex],
+            valor,
+            quantidade,
+            desconto,
+            valorDesconto,
+            subtotalBruto,
             subtotal: subtotalLiquido,
          };
 
-         // Limpar atributos especiais do formulário
          formAddProduto.removeAttribute("data-edit-index");
-         if (modalProdutoId.disabled) {
-            modalProdutoId.disabled = false;
-         }
+         if (modalProdutoId.disabled) modalProdutoId.disabled = false;
 
-         // Restaurar texto do botão
-         if (submitButton) {
-            submitButton.textContent = "Adicionar";
-         }
+         const submitButton = formAddProduto.querySelector(
+            'button[type="submit"]'
+         );
+         if (submitButton) submitButton.textContent = "Adicionar";
 
-         // Atualizar tabela
          atualizarTabelaProdutos();
-
-         // Fechar modal
          fecharModalProduto();
 
-         // Restaurar handler original
          formAddProduto.onsubmit = originalSubmitHandler;
 
-         // Mostrar mensagem
          customModal.success("Produto atualizado");
       } catch (error) {
-         // Exibir o erro para o usuário
          customModal.error(error.message);
       }
    };
