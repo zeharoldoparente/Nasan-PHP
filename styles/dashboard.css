@@ -245,3 +245,54 @@
       grid-template-columns: 1fr;
    }
 }
+
+/* Estilos para o filtro de data no dashboard */
+.dashboard-date-filter {
+   background-color: #fff;
+   border-radius: 8px;
+   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+   padding: 15px;
+   margin-bottom: 20px;
+}
+
+.dashboard-date-filter h3 {
+   font-size: 16px;
+   font-weight: 600;
+   color: #333;
+   margin-top: 0;
+   margin-bottom: 15px;
+}
+
+.date-filter-form {
+   display: flex;
+   gap: 15px;
+   align-items: flex-end;
+}
+
+.date-filter-form .filtro-grupo {
+   flex: 1;
+}
+
+.date-filter-form .btn-filtrar {
+   background-color: #24265d;
+   color: white;
+   border: none;
+   border-radius: 6px;
+   padding: 8px 15px;
+   font-size: 14px;
+   font-weight: 500;
+   cursor: pointer;
+   height: 38px;
+   margin-top: 22px;
+}
+
+@media (max-width: 768px) {
+   .date-filter-form {
+      flex-direction: column;
+      gap: 10px;
+   }
+
+   .date-filter-form .btn-filtrar {
+      width: 100%;
+   }
+}

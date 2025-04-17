@@ -92,6 +92,16 @@ $stmt_user->close();
                   <option value="Pago Parcial">Pago Parcial</option>
                </select>
             </div>
+            <!-- INÍCIO: Novo filtro de data -->
+            <div class="filtro-grupo">
+               <label class="filtro-label" for="filtro-data-inicio">Data Início</label>
+               <input type="date" id="filtro-data-inicio" class="filtro-input filtro-data">
+            </div>
+            <div class="filtro-grupo">
+               <label class="filtro-label" for="filtro-data-fim">Data Fim</label>
+               <input type="date" id="filtro-data-fim" class="filtro-input filtro-data">
+            </div>
+            <!-- FIM: Novo filtro de data -->
             <button id="btn-filtrar" class="btn-filtrar">
                <i class="bi bi-search"></i> Filtrar
             </button>

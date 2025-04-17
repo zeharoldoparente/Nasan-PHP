@@ -72,6 +72,19 @@ if (isset($data['status']) && !empty($data['status'])) {
    $types .= "s";
 }
 
+// Filtro por intervalo de datas
+if (isset($data['data_inicio']) && !empty($data['data_inicio'])) {
+   $sql .= " AND p.data_pedido >= ?";
+   $params[] = $data['data_inicio'];
+   $types .= "s";
+}
+
+if (isset($data['data_fim']) && !empty($data['data_fim'])) {
+   $sql .= " AND p.data_pedido <= ?";
+   $params[] = $data['data_fim'] . " 23:59:59"; // Incluir até o fim do dia
+   $types .= "s";
+}
+
 // Se for administrador e especificar um vendedor, filtrar por vendedor
 if ($is_admin && isset($data['vendedor']) && !empty($data['vendedor'])) {
    $vendedor_busca = '%' . $data['vendedor'] . '%';

@@ -196,6 +196,8 @@ document.addEventListener("DOMContentLoaded", function () {
          .value.trim();
       const cliente = document.getElementById("filtro-cliente").value.trim();
       const status = document.getElementById("filtro-status").value;
+      const dataInicio = document.getElementById("filtro-data-inicio").value;
+      const dataFim = document.getElementById("filtro-data-fim").value;
       let vendedor = "";
 
       if (isAdmin) {
@@ -210,6 +212,8 @@ document.addEventListener("DOMContentLoaded", function () {
          numero_pedido: numeroPedido,
          cliente: cliente,
          status: status,
+         data_inicio: dataInicio,
+         data_fim: dataFim,
       };
 
       if (isAdmin) {

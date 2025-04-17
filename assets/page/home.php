@@ -28,24 +28,41 @@ if ($result_user->num_rows > 0) {
 }
 $stmt_user->close();
 
-// Função para obter a contagem de pedidos por status
-function getStatusCount($conn, $status, $usuario_id = null, $is_admin = false)
+$filtro_data_inicio = isset($_GET['data_inicio']) ? $_GET['data_inicio'] : null;
+$filtro_data_fim = isset($_GET['data_fim']) ? $_GET['data_fim'] : null;
+
+// Função modificada para contar pedidos por status com filtro de data
+function getStatusCount($conn, $status, $usuario_id = null, $is_admin = false, $data_inicio = null, $data_fim = null)
 {
    // Para diagnóstico: imprimir no console PHP os parâmetros recebidos
    error_log("Buscando contagem para status: '{$status}', usuario_id: {$usuario_id}, is_admin: " . ($is_admin ? 'true' : 'false'));
 
    $sql = "SELECT COUNT(*) as total FROM pedidos WHERE status = ?";
+   $params = array($status);
+   $types = "s";
 
    // Se não for admin, filtrar apenas os pedidos do usuário
    if (!$is_admin && $usuario_id) {
       $sql .= " AND usuario_id = ?";
-      $stmt = $conn->prepare($sql);
-      $stmt->bind_param("si", $status, $usuario_id);
-   } else {
-      $stmt = $conn->prepare($sql);
-      $stmt->bind_param("s", $status);
+      $params[] = $usuario_id;
+      $types .= "i";
    }
 
+   // Adicionar filtros de data se fornecidos
+   if ($data_inicio) {
+      $sql .= " AND data_pedido >= ?";
+      $params[] = $data_inicio;
+      $types .= "s";
+   }
+   if ($data_fim) {
+      $sql .= " AND data_pedido <= ?";
+      $data_fim_completa = $data_fim . " 23:59:59"; // Incluir até o fim do dia
+      $params[] = $data_fim_completa;
+      $types .= "s";
+   }
+
+   $stmt = $conn->prepare($sql);
+   $stmt->bind_param($types, ...$params);
    $stmt->execute();
    $result = $stmt->get_result();
    $count = $result->fetch_assoc()['total'];
@@ -57,37 +74,40 @@ function getStatusCount($conn, $status, $usuario_id = null, $is_admin = false)
    return $count;
 }
 
-// Obter estatísticas de pedidos
-$total_pedidos = 0;
-$valor_total = 0.00;
-$pedidos_pendentes = 0;
-$pedidos_aprovados = 0;
-$pedidos_alterados = 0;
-$pedidos_enviados = 0;
-$pedidos_pagos = 0;
-$pedidos_pagos_parcial = 0;
-
-// Verificação direta dos dados de status no banco para diagnóstico
-$sql_verificar_status = "SELECT status, COUNT(*) as total FROM pedidos GROUP BY status";
-$result_verificar = $conn->query($sql_verificar_status);
-if ($result_verificar) {
-   error_log("---- Verificação direta dos status no banco ----");
-   while ($row = $result_verificar->fetch_assoc()) {
-      error_log("Status: '" . $row['status'] . "', Quantidade: " . $row['total']);
-   }
-   error_log("----------------------------------------------");
-}
-
+// Substitua a consulta de estatísticas existente por esta versão com filtro de data
 // Consulta base para estatísticas
+$params = [];
+$types = "";
+
 if ($is_admin) {
    // Admin vê todos os pedidos
-   $sql_total = "SELECT COUNT(*) as total, SUM(valor_total) as valor_total FROM pedidos";
-   $stmt_total = $conn->prepare($sql_total);
+   $sql_total = "SELECT COUNT(*) as total, SUM(valor_total) as valor_total FROM pedidos WHERE 1=1";
 } else {
    // Usuário comum vê apenas seus pedidos
    $sql_total = "SELECT COUNT(*) as total, SUM(valor_total) as valor_total FROM pedidos WHERE usuario_id = ?";
-   $stmt_total = $conn->prepare($sql_total);
-   $stmt_total->bind_param("i", $usuario_id);
+   $params[] = $usuario_id;
+   $types .= "i";
+}
+
+// Adicionar filtros de data se fornecidos
+if ($filtro_data_inicio) {
+   $sql_total .= " AND data_pedido >= ?";
+   $params[] = $filtro_data_inicio;
+   $types .= "s";
+}
+
+if ($filtro_data_fim) {
+   $sql_total .= " AND data_pedido <= ?";
+   $data_fim_completa = $filtro_data_fim . " 23:59:59"; // Incluir até o fim do dia
+   $params[] = $data_fim_completa;
+   $types .= "s";
+}
+
+$stmt_total = $conn->prepare($sql_total);
+
+// Bind params apenas se houver parâmetros
+if (!empty($params)) {
+   $stmt_total->bind_param($types, ...$params);
 }
 
 $stmt_total->execute();
@@ -100,31 +120,57 @@ if ($result_total->num_rows > 0) {
 }
 $stmt_total->close();
 
+// Substitua a chamada da função getStatusCount pela versão com filtro de data
 // Obter contagem por status
-$pedidos_pendentes = getStatusCount($conn, 'Pendente', $usuario_id, $is_admin);
-$pedidos_aprovados = getStatusCount($conn, 'Aprovado', $usuario_id, $is_admin);
-$pedidos_alterados = getStatusCount($conn, 'Aprovado com Alteraç', $usuario_id, $is_admin);
-$pedidos_enviados = getStatusCount($conn, 'Enviado', $usuario_id, $is_admin);
-$pedidos_pagos = getStatusCount($conn, 'Pago', $usuario_id, $is_admin);
-$pedidos_pagos_parcial = getStatusCount($conn, 'Pago Parcial', $usuario_id, $is_admin);
+$pedidos_pendentes = getStatusCount($conn, 'Pendente', $usuario_id, $is_admin, $filtro_data_inicio, $filtro_data_fim);
+$pedidos_aprovados = getStatusCount($conn, 'Aprovado', $usuario_id, $is_admin, $filtro_data_inicio, $filtro_data_fim);
+$pedidos_alterados = getStatusCount($conn, 'Aprovado com Alteraç', $usuario_id, $is_admin, $filtro_data_inicio, $filtro_data_fim);
+$pedidos_enviados = getStatusCount($conn, 'Enviado', $usuario_id, $is_admin, $filtro_data_inicio, $filtro_data_fim);
+$pedidos_pagos = getStatusCount($conn, 'Pago', $usuario_id, $is_admin, $filtro_data_inicio, $filtro_data_fim);
+$pedidos_pagos_parcial = getStatusCount($conn, 'Pago Parcial', $usuario_id, $is_admin, $filtro_data_inicio, $filtro_data_fim);
 
+// Substitua a consulta de pedidos recentes por esta versão com filtro de data
 // Obter pedidos recentes
+$params_recentes = [];
+$types_recentes = "";
+
 if ($is_admin) {
    $sql_recentes = "SELECT p.id, p.data_pedido, p.valor_total, p.status, c.razao_social as cliente_nome, u.nome as vendedor_nome 
                      FROM pedidos p
                      INNER JOIN clientes c ON p.cliente_id = c.id
                      INNER JOIN usuarios u ON p.usuario_id = u.id
-                     ORDER BY p.data_pedido DESC LIMIT 5";
-   $stmt_recentes = $conn->prepare($sql_recentes);
+                     WHERE 1=1";
 } else {
    $sql_recentes = "SELECT p.id, p.data_pedido, p.valor_total, p.status, c.razao_social as cliente_nome, u.nome as vendedor_nome 
                      FROM pedidos p
                      INNER JOIN clientes c ON p.cliente_id = c.id
                      INNER JOIN usuarios u ON p.usuario_id = u.id
-                     WHERE p.usuario_id = ?
-                     ORDER BY p.data_pedido DESC LIMIT 5";
-   $stmt_recentes = $conn->prepare($sql_recentes);
-   $stmt_recentes->bind_param("i", $usuario_id);
+                     WHERE p.usuario_id = ?";
+   $params_recentes[] = $usuario_id;
+   $types_recentes .= "i";
+}
+
+// Adicionar filtros de data se fornecidos
+if ($filtro_data_inicio) {
+   $sql_recentes .= " AND p.data_pedido >= ?";
+   $params_recentes[] = $filtro_data_inicio;
+   $types_recentes .= "s";
+}
+
+if ($filtro_data_fim) {
+   $sql_recentes .= " AND p.data_pedido <= ?";
+   $data_fim_completa = $filtro_data_fim . " 23:59:59"; // Incluir até o fim do dia
+   $params_recentes[] = $data_fim_completa;
+   $types_recentes .= "s";
+}
+
+$sql_recentes .= " ORDER BY p.data_pedido DESC LIMIT 5";
+
+$stmt_recentes = $conn->prepare($sql_recentes);
+
+// Bind params apenas se houver parâmetros
+if (!empty($params_recentes)) {
+   $stmt_recentes->bind_param($types_recentes, ...$params_recentes);
 }
 
 $stmt_recentes->execute();
@@ -136,16 +182,43 @@ while ($row = $result_recentes->fetch_assoc()) {
 }
 $stmt_recentes->close();
 
+// Substitua a consulta de top vendedores por esta versão com filtro de data (apenas para admin)
 // Para admin: verificar vendedores com mais pedidos
 $top_vendedores = [];
 if ($is_admin) {
+   $params_vendedores = [];
+   $types_vendedores = "";
+
    $sql_vendedores = "SELECT u.nome, COUNT(p.id) as total_pedidos, SUM(p.valor_total) as valor_total
                       FROM pedidos p
                       INNER JOIN usuarios u ON p.usuario_id = u.id
-                      GROUP BY p.usuario_id
+                      WHERE 1=1";
+
+   // Adicionar filtros de data se fornecidos
+   if ($filtro_data_inicio) {
+      $sql_vendedores .= " AND p.data_pedido >= ?";
+      $params_vendedores[] = $filtro_data_inicio;
+      $types_vendedores .= "s";
+   }
+
+   if ($filtro_data_fim) {
+      $sql_vendedores .= " AND p.data_pedido <= ?";
+      $data_fim_completa = $filtro_data_fim . " 23:59:59"; // Incluir até o fim do dia
+      $params_vendedores[] = $data_fim_completa;
+      $types_vendedores .= "s";
+   }
+
+   $sql_vendedores .= " GROUP BY p.usuario_id
                       ORDER BY total_pedidos DESC
                       LIMIT 5";
+
    $stmt_vendedores = $conn->prepare($sql_vendedores);
+
+   // Bind params apenas se houver parâmetros
+   if (!empty($params_vendedores)) {
+      $stmt_vendedores->bind_param($types_vendedores, ...$params_vendedores);
+   }
+
    $stmt_vendedores->execute();
    $result_vendedores = $stmt_vendedores->get_result();
 
@@ -154,6 +227,7 @@ if ($is_admin) {
    }
    $stmt_vendedores->close();
 }
+
 
 $conn->close();
 ?>
@@ -185,6 +259,23 @@ $conn->close();
          <div class="dashboard-welcome">
             <h2>Olá, <?php echo $usuario_nome; ?>!</h2>
             <p>Bem-vindo ao painel de controle do sistema de pedidos.</p>
+         </div>
+
+         <div class="dashboard-date-filter">
+            <h3>Filtrar por Período</h3>
+            <div class="date-filter-form">
+               <div class="filtro-grupo">
+                  <label class="filtro-label" for="dashboard-data-inicio">De</label>
+                  <input type="date" id="dashboard-data-inicio" class="filtro-input filtro-data">
+               </div>
+               <div class="filtro-grupo">
+                  <label class="filtro-label" for="dashboard-data-fim">Até</label>
+                  <input type="date" id="dashboard-data-fim" class="filtro-input filtro-data">
+               </div>
+               <button id="btn-filtrar-dashboard" class="btn-filtrar">
+                  <i class="bi bi-search"></i> Filtrar
+               </button>
+            </div>
          </div>
 
          <!-- Alerta de pedidos pendentes (apenas para admin) -->
@@ -398,6 +489,8 @@ $conn->close();
          </div>
       </div>
    </div>
+
+   <script src="./Js/dashboard-filter.js"></script>
 
    <script>
       document.addEventListener('DOMContentLoaded', function() {
