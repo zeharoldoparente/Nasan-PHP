@@ -34,6 +34,25 @@ ob_start();
    <link rel="stylesheet" href="../../styles/admin.css" />
    <link rel="stylesheet" href="../../styles/modal-custom.css" />
    <title>Administração</title>
+   <style>
+      /* Estilos adicionais para os ícones de status */
+      .user-status-icons {
+         display: flex;
+         gap: 10px;
+         align-items: center;
+         margin-top: 5px;
+      }
+
+      .user-status-icons i {
+         font-size: 1.2rem;
+      }
+
+      /* Estilos para os ícones nos radio buttons */
+      .admin-radio-group label i,
+      .status-radio-group label i {
+         margin-right: 5px;
+      }
+   </style>
 </head>
 
 <body>
@@ -87,18 +106,22 @@ ob_start();
                            id="admin-nao"
                            name="admin"
                            value="0" />
-                        <label for="admin-nao" class="radio-nao">❌ Não</label>
+                        <label for="admin-nao" class="radio-nao">
+                           <i class="bi bi-person-fill" style="color: green;"></i> Usuário comum
+                        </label>
 
                         <input
                            type="radio"
                            id="admin-sim"
                            name="admin"
                            value="1" />
-                        <label for="admin-sim" class="radio-sim">✔️ Sim</label>
+                        <label for="admin-sim" class="radio-sim">
+                           <i class="bi bi-person-fill-gear" style="color: blue;"></i> Admin
+                        </label>
                      </div>
                   </div>
 
-                  <!-- Nova seção para ativo/inativo -->
+                  <!-- Nova seção para ativo/inativo com ícones -->
                   <div class="form-group">
                      <label>Status do Usuário:</label>
                      <div class="status-radio-group">
@@ -107,14 +130,18 @@ ob_start();
                            id="ativo-sim"
                            name="ativo"
                            value="1" />
-                        <label for="ativo-sim" class="radio-sim">✅ Ativo</label>
+                        <label for="ativo-sim" class="radio-sim">
+                           <i class="bi bi-person-check" style="color: green;"></i> Ativo
+                        </label>
 
                         <input
                            type="radio"
                            id="ativo-nao"
                            name="ativo"
                            value="0" />
-                        <label for="ativo-nao" class="radio-nao">❌ Inativo</label>
+                        <label for="ativo-nao" class="radio-nao">
+                           <i class="bi bi-person-fill-slash" style="color: red;"></i> Inativo
+                        </label>
                      </div>
                   </div>
 
@@ -135,9 +162,6 @@ ob_start();
          <div id="modal-content"></div>
       </div>
    </div>
-
-   <!-- Removemos os modais antigos (confirm-modal e message-modal) -->
-   <!-- Não precisamos deles, pois serão substituídos pelo modal-custom -->
 
    <script src="./Js/admin.js"></script>
    <script src="./Js/modal-custom.js"></script>

