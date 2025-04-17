@@ -255,6 +255,7 @@ function mostrarResultadosClientes(clientes) {
 
       item.addEventListener("click", function () {
          selecionarCliente(cliente);
+         produtoSearch.value = "";
          clienteResults.innerHTML = "";
          clienteResults.classList.remove("active");
       });
@@ -458,6 +459,13 @@ function adicionarProdutoAoPedido() {
 
    // Fechar o modal
    fecharModalProduto();
+
+   // Limpar o campo de busca de produtos
+   produtoSearch.value = "";
+
+   // Limpar os resultados da pesquisa
+   produtoResults.innerHTML = "";
+   produtoResults.classList.remove("active");
 
    // Mostrar mensagem de sucesso
    customModal.success("Produto adicionado ao pedido");
