@@ -47,6 +47,27 @@ $stmt_user->close();
    <link rel="stylesheet" href="../../styles/pedido.css" />
    <link rel="stylesheet" href="../../styles/listaPedidos.css" />
    <title>Lista de Pedidos</title>
+   <style>
+      /* Estilo para o botão de PDF */
+      .btn-pdf {
+         background-color: #f97316;
+         color: white;
+         border: none;
+         border-radius: 4px;
+         width: 32px;
+         height: 32px;
+         display: inline-flex;
+         justify-content: center;
+         align-items: center;
+         margin-right: 5px;
+         cursor: pointer;
+         transition: background-color 0.2s;
+      }
+
+      .btn-pdf:hover {
+         background-color: #ea580c;
+      }
+   </style>
 </head>
 
 <!-- Adicionando o atributo data-is-admin ao body para uso no JavaScript -->
@@ -119,9 +140,7 @@ $stmt_user->close();
                      <th>Valor Líquido</th>
                      <th>Data</th>
                      <th>Status</th>
-                     <?php if ($is_admin): ?>
-                        <th>Ações</th>
-                     <?php endif; ?>
+                     <th>Ações</th> <!-- Coluna de ações para todos os usuários -->
                   </tr>
                </thead>
                <tbody id="lista-pedidos">
@@ -211,6 +230,9 @@ $stmt_user->close();
 
                            // Coluna de ações para administradores
                            echo "<td class='actions-column'>";
+                           echo "<a href='gerarPDF.php?id={$pedido['id']}' class='btn-pdf' title='Gerar PDF' target='_blank'>";
+                           echo "<i class='bi bi-file-earmark-pdf'></i>";
+                           echo "</a>";
                            echo "<button class='btn-delete' data-id='{$pedido['id']}'>";
                            echo "<i class='bi bi-trash'></i>";
                            echo "</button>";
@@ -218,12 +240,18 @@ $stmt_user->close();
                         } else {
                            // Somente visualização para usuários normais
                            echo "<td><span class='status-badge {$status_class}'>{$pedido['status']}</span></td>";
+                           // Adicionando botão de PDF para usuários normais
+                           echo "<td class='actions-column'>";
+                           echo "<a href='gerarPDF.php?id={$pedido['id']}' class='btn-pdf' title='Gerar PDF' target='_blank'>";
+                           echo "<i class='bi bi-file-earmark-pdf'></i>";
+                           echo "</a>";
+                           echo "</td>";
                         }
 
                         echo "</tr>";
                      }
                   } else {
-                     echo "<tr><td colspan='" . ($is_admin ? 8 : 7) . "' class='sem-pedidos'>Nenhum pedido encontrado</td></tr>";
+                     echo "<tr><td colspan='8' class='sem-pedidos'>Nenhum pedido encontrado</td></tr>";
                   }
 
                   $stmt_pedidos->close();

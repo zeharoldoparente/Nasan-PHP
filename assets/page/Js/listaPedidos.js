@@ -8,7 +8,8 @@ document.addEventListener("DOMContentLoaded", function () {
          // Ignorar cliques em elementos da dropdown de status ou botão de exclusão
          if (
             (e.target.closest(".status-dropdown") && isAdmin) ||
-            e.target.closest(".btn-delete")
+            e.target.closest(".btn-delete") ||
+            e.target.closest(".btn-pdf")
          ) {
             return;
          }
@@ -249,9 +250,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (pedidos.length === 0) {
          const tr = document.createElement("tr");
-         tr.innerHTML = `<td colspan="${
-            isAdmin ? 8 : 7
-         }" class="sem-pedidos">Nenhum pedido encontrado</td>`;
+         tr.innerHTML = `<td colspan="8" class="sem-pedidos">Nenhum pedido encontrado</td>`;
          tbody.appendChild(tr);
          return;
       }
@@ -335,18 +334,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
          tr.appendChild(tdStatus);
 
-         // Adicionar coluna de ações para admin
+         // Adicionar coluna de ações
+         const tdActions = document.createElement("td");
+         tdActions.className = "actions-column";
+
+         // Adicionar botão PDF para todos os usuários
+         tdActions.innerHTML = `
+            <a href="gerarPDF.php?id=${pedido.id}" class="btn-pdf" title="Gerar PDF" target="_blank">
+               <i class="bi bi-file-earmark-pdf"></i>
+            </a>
+         `;
+
+         // Adicionar botão de exclusão apenas para admin
          if (isAdmin) {
-            const tdActions = document.createElement("td");
-            tdActions.className = "actions-column";
-            tdActions.innerHTML = `
+            tdActions.innerHTML += `
                <button class="btn-delete" data-id="${pedido.id}">
                   <i class="bi bi-trash"></i>
                </button>
             `;
-            tr.appendChild(tdActions);
          }
 
+         tr.appendChild(tdActions);
          tbody.appendChild(tr);
 
          // Adicionar evento de clique à linha
@@ -354,7 +362,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // Ignorar cliques em elementos da dropdown de status ou botão de exclusão
             if (
                (e.target.closest(".status-dropdown") && isAdmin) ||
-               e.target.closest(".btn-delete")
+               e.target.closest(".btn-delete") ||
+               e.target.closest(".btn-pdf")
             ) {
                return;
             }
