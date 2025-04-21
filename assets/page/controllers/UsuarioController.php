@@ -15,28 +15,33 @@ class UsuarioController
    // Processar as requisições AJAX
    public function processarRequisicao()
    {
-      $acao = isset($_GET['acao']) ? $_GET['acao'] : '';
+      try {
+         $acao = isset($_GET['acao']) ? $_GET['acao'] : '';
 
-      switch ($acao) {
-         case 'listar_usuarios':
-            return $this->listarUsuarios();
+         switch ($acao) {
+            case 'listar_usuarios':
+               return $this->listarUsuarios();
 
-         case 'obter_usuario':
-            $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-            return $this->obterUsuario($id);
+            case 'obter_usuario':
+               $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+               return $this->obterUsuario($id);
 
-         case 'criar_usuario':
-            return $this->criarUsuario();
+            case 'criar_usuario':
+               return $this->criarUsuario();
 
-         case 'atualizar_usuario':
-            return $this->atualizarUsuario();
+            case 'atualizar_usuario':
+               return $this->atualizarUsuario();
 
-         case 'excluir_usuario':
-            $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-            return $this->excluirUsuario($id);
+            case 'excluir_usuario':
+               $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+               return $this->excluirUsuario($id);
 
-         default:
-            return json_encode(['erro' => 'Ação não reconhecida']);
+            default:
+               return json_encode(['erro' => 'Ação não reconhecida']);
+         }
+      } catch (Exception $e) {
+         // Capturar qualquer exceção não tratada e retornar como JSON
+         return json_encode(['erro' => 'Erro interno: ' . $e->getMessage()]);
       }
    }
 
@@ -130,9 +135,6 @@ class UsuarioController
       if (isset($dados['admin'])) $this->usuario->setAdmin(intval($dados['admin']));
       if (isset($dados['ativo'])) $this->usuario->setAtivo(intval($dados['ativo'])); // Garantir que é inteiro
 
-      // Debug - para verificar os valores recebidos
-      error_log("Admin: " . intval($dados['admin']) . " | Ativo: " . intval($dados['ativo']));
-
       // Atualizar usuário
       if ($this->usuario->atualizar()) {
          return json_encode([
@@ -144,16 +146,45 @@ class UsuarioController
       return json_encode(['erro' => 'Erro ao atualizar usuário']);
    }
 
-   // Excluir um usuário
+   // Excluir um usuário - MÉTODO MELHORADO COM TRATAMENTO DE RESTRIÇÃO FK
    private function excluirUsuario($id)
    {
-      if ($this->usuario->excluir($id)) {
-         return json_encode([
-            'sucesso' => true,
-            'mensagem' => 'Usuário excluído com sucesso'
-         ]);
-      }
+      try {
+         // Validar ID
+         if ($id <= 0) {
+            return json_encode(['erro' => 'ID de usuário inválido']);
+         }
 
-      return json_encode(['erro' => 'Erro ao excluir usuário']);
+         // Proteção para usuário desenvolvedor (ID 3)
+         if ($id === 3) {
+            return json_encode(['erro' => 'Este usuário não pode ser excluído']);
+         }
+
+         // Verificar se o usuário tem pedidos associados
+         if ($this->usuario->temPedidosAssociados($id)) {
+            // Tentar inativar o usuário
+            if ($this->usuario->inativar($id)) {
+               return json_encode([
+                  'sucesso' => true,
+                  'mensagem' => 'Usuário não pôde ser excluído devido a pedidos associados, mas foi inativado com sucesso.'
+               ]);
+            } else {
+               return json_encode(['erro' => 'Não foi possível inativar o usuário']);
+            }
+         }
+
+         // Tentar excluir o usuário
+         if ($this->usuario->excluir($id)) {
+            return json_encode([
+               'sucesso' => true,
+               'mensagem' => 'Usuário excluído com sucesso'
+            ]);
+         } else {
+            return json_encode(['erro' => 'Não foi possível excluir o usuário']);
+         }
+      } catch (Exception $e) {
+         // Capturar qualquer exceção e retornar como JSON
+         return json_encode(['erro' => 'Erro ao excluir usuário: ' . $e->getMessage()]);
+      }
    }
 }

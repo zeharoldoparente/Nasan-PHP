@@ -11,7 +11,6 @@ const userForm = document.getElementById("user-form");
 const formTitle = document.getElementById("form-title");
 const userModal = document.getElementById("user-modal");
 const modalContent = document.getElementById("modal-content");
-const closeModal = document.querySelector(".close-modal");
 const btnNovoUsuario = document.getElementById("btn-novo-usuario");
 const btnCancelar = document.getElementById("btn-cancelar");
 
@@ -42,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
          nome: document.getElementById("nome").value,
          senha: document.getElementById("senha").value,
          admin: document.querySelector('input[name="admin"]:checked').value,
-         ativo: document.querySelector('input[name="ativo"]:checked').value, // Adicionado campo ativo
+         ativo: document.querySelector('input[name="ativo"]:checked').value,
       };
 
       if (modoEdicao) {
@@ -52,9 +51,12 @@ document.addEventListener("DOMContentLoaded", function () {
       }
    });
 
-   // Fecha o modal quando clica no X
-   closeModal.addEventListener("click", () => {
-      userModal.style.display = "none";
+   // Fechar os modais quando clica no X
+   const btnCloseModalElements = document.querySelectorAll(".btn-close-modal");
+   btnCloseModalElements.forEach((btn) => {
+      btn.addEventListener("click", () => {
+         userModal.style.display = "none";
+      });
    });
 
    // Fecha o modal quando clica fora do conteúdo
@@ -123,11 +125,6 @@ function mostrarFormulario(modo, userData = null) {
       // Converter para inteiros se forem string
       userData.admin = parseInt(userData.admin);
       userData.ativo = parseInt(userData.ativo);
-
-      // Log para verificar os valores recebidos
-      console.log("Dados do usuário para edição:", userData);
-      console.log("Admin:", userData.admin, "Tipo:", typeof userData.admin);
-      console.log("Ativo:", userData.ativo, "Tipo:", typeof userData.ativo);
    }
 
    // Atualizar o título do formulário
@@ -148,11 +145,6 @@ function mostrarFormulario(modo, userData = null) {
       const radioButton = document.querySelector(radioSelector);
       if (radioButton) {
          radioButton.checked = true;
-      } else {
-         console.error(
-            "Radio button para admin não encontrado:",
-            radioSelector
-         );
       }
 
       // Selecionar o radio button correto para status (ativo/inativo)
@@ -160,11 +152,6 @@ function mostrarFormulario(modo, userData = null) {
       const statusButton = document.querySelector(statusSelector);
       if (statusButton) {
          statusButton.checked = true;
-      } else {
-         console.error(
-            "Radio button para ativo não encontrado:",
-            statusSelector
-         );
       }
    } else {
       // Valores padrão para novos usuários
@@ -174,7 +161,6 @@ function mostrarFormulario(modo, userData = null) {
 
    if (isMobile()) {
       // Em dispositivos móveis, exibe o modal
-      // CORREÇÃO: Não usar cloneNode, mas criar uma cópia do HTML com novos IDs
       modalContent.innerHTML = ""; // Limpa o conteúdo anterior
 
       const formModalHTML = `
@@ -220,7 +206,7 @@ function mostrarFormulario(modo, userData = null) {
                            ? "checked"
                            : ""
                      } />
-                  <label for="admin-nao-modal" class="radio-nao">
+                  <label for="admin-nao-modal">
                      <i class="bi bi-person-fill"></i> Usuário comum
                   </label>
 
@@ -234,8 +220,8 @@ function mostrarFormulario(modo, userData = null) {
                            ? "checked"
                            : ""
                      } />
-                  <label for="admin-sim-modal" class="radio-sim">
-                     <i class="bi bi-person-fill-gear" style="color: blue;"></i> Admin
+                  <label for="admin-sim-modal">
+                     <i class="bi bi-person-fill-gear"></i> Admin
                   </label>
                </div>
             </div>
@@ -254,8 +240,8 @@ function mostrarFormulario(modo, userData = null) {
                            ? "checked"
                            : ""
                      } />
-                  <label for="ativo-sim-modal" class="radio-sim">
-                     <i class="bi bi-person-check" style="color: green;"></i> Ativo
+                  <label for="ativo-sim-modal">
+                     <i class="bi bi-person-check"></i> Ativo
                   </label>
 
                   <input
@@ -268,8 +254,8 @@ function mostrarFormulario(modo, userData = null) {
                            ? "checked"
                            : ""
                      } />
-                  <label for="ativo-nao-modal" class="radio-nao">
-                     <i class="bi bi-person-fill-slash" style="color: red;"></i> Inativo
+                  <label for="ativo-nao-modal">
+                     <i class="bi bi-person-fill-slash"></i> Inativo
                   </label>
                </div>
             </div>
@@ -314,8 +300,6 @@ function mostrarFormulario(modo, userData = null) {
             admin: adminChecked.value,
             ativo: ativoChecked.value,
          };
-
-         console.log("Dados do formulário modal:", formData); // Log para debug
 
          if (modoEdicao) {
             await atualizarUsuario(formData);
@@ -376,9 +360,18 @@ async function criarUsuario(formData) {
          method: "POST",
          headers: {
             "Content-Type": "application/json",
+            Accept: "application/json",
          },
          body: JSON.stringify(formData),
       });
+
+      // Verificar se a resposta é JSON válido
+      const contentType = resposta.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+         const text = await resposta.text();
+         console.error("Resposta não-JSON recebida:", text);
+         throw new Error("Formato de resposta inválido do servidor");
+      }
 
       if (!resposta.ok) {
          throw new Error(`Erro HTTP: ${resposta.status}`);
@@ -415,21 +408,6 @@ async function atualizarUsuario(formData) {
       formData.admin = parseInt(formData.admin);
       formData.ativo = parseInt(formData.ativo);
 
-      // Log detalhado para depuração
-      console.log("Dados a serem enviados:", formData);
-      console.log(
-         "Tipo de admin:",
-         typeof formData.admin,
-         "Valor:",
-         formData.admin
-      );
-      console.log(
-         "Tipo de ativo:",
-         typeof formData.ativo,
-         "Valor:",
-         formData.ativo
-      );
-
       // Verificar se os valores são válidos antes de enviar
       if (isNaN(formData.admin) || isNaN(formData.ativo)) {
          throw new Error(
@@ -441,9 +419,18 @@ async function atualizarUsuario(formData) {
          method: "POST",
          headers: {
             "Content-Type": "application/json",
+            Accept: "application/json",
          },
          body: JSON.stringify(formData),
       });
+
+      // Verificar se a resposta é JSON válido
+      const contentType = resposta.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+         const text = await resposta.text();
+         console.error("Resposta não-JSON recebida:", text);
+         throw new Error("Formato de resposta inválido do servidor");
+      }
 
       if (!resposta.ok) {
          throw new Error(`Erro HTTP: ${resposta.status}`);
@@ -470,6 +457,28 @@ async function atualizarUsuario(formData) {
    }
 }
 
+// Função para confirmar exclusão de usuário
+function confirmarExclusao(userId) {
+   // Proteção adicional: impedir confirmação de exclusão do usuário desenvolvedor
+   if (parseInt(userId) === DEV_USER_ID) {
+      customModal.error("Este usuário não pode ser excluído.");
+      return;
+   }
+
+   // Usar o customModal.confirm em vez do modal-confirmar-exclusao
+   customModal
+      .confirm(
+         "Tem certeza que deseja excluir este usuário? Se ele tiver pedidos associados, será inativado em vez de excluído.",
+         "Confirmar Exclusão",
+         "warning"
+      )
+      .then((confirmado) => {
+         if (confirmado) {
+            excluirUsuario(userId);
+         }
+      });
+}
+
 // Função para excluir um usuário
 async function excluirUsuario(userId) {
    try {
@@ -478,9 +487,26 @@ async function excluirUsuario(userId) {
          throw new Error("Este usuário não pode ser excluído.");
       }
 
+      // Fazer a requisição explicitamente como JSON
       const resposta = await fetch(
-         `api_usuarios.php?acao=excluir_usuario&id=${userId}`
+         `api_usuarios.php?acao=excluir_usuario&id=${userId}`,
+         {
+            method: "GET",
+            headers: {
+               Accept: "application/json",
+               "Content-Type": "application/json",
+            },
+         }
       );
+
+      // Verificar se a resposta é JSON válido antes de processá-la
+      const contentType = resposta.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+         // Se não for JSON, obter o texto para debugging
+         const text = await resposta.text();
+         console.error("Resposta não-JSON recebida:", text);
+         throw new Error("Formato de resposta inválido do servidor");
+      }
 
       if (!resposta.ok) {
          throw new Error(`Erro HTTP: ${resposta.status}`);
@@ -492,10 +518,13 @@ async function excluirUsuario(userId) {
          throw new Error(resultado.erro);
       }
 
+      // Mostrar mensagem de sucesso
       customModal.success(
          resultado.mensagem || "Usuário excluído com sucesso!"
       );
-      await carregarUsuarios(); // Recarregar a lista
+
+      // Recarregar a lista de usuários
+      await carregarUsuarios();
 
       // Esconder o formulário e mostrar o placeholder se estiver em modo desktop
       if (!isMobile()) {
@@ -504,29 +533,10 @@ async function excluirUsuario(userId) {
       }
    } catch (erro) {
       console.error("Erro ao excluir usuário:", erro);
-      customModal.error("Erro ao excluir usuário: " + erro.message);
-   }
-}
 
-// Função para confirmar exclusão de usuário
-function confirmarExclusao(userId) {
-   // Proteção adicional: impedir confirmação de exclusão do usuário desenvolvedor
-   if (parseInt(userId) === DEV_USER_ID) {
-      customModal.error("Este usuário não pode ser excluído.");
-      return;
+      // Mostrar erro em um modal customizado
+      customModal.error(erro.message || "Erro ao excluir usuário.");
    }
-
-   customModal
-      .confirm(
-         "Tem certeza que deseja excluir este usuário?",
-         "Confirmar Exclusão",
-         "warning"
-      )
-      .then((confirmado) => {
-         if (confirmado) {
-            excluirUsuario(userId);
-         }
-      });
 }
 
 // Função para renderizar ícones com base no estado do usuário

@@ -173,13 +173,55 @@ class Usuario
       return $stmt->execute();
    }
 
-   // Método para excluir um usuário
-   public function excluir($id)
+   // Método para verificar se o usuário tem pedidos associados
+   public function temPedidosAssociados($id)
    {
-      $sql = "DELETE FROM usuarios WHERE id = ?";
+      $sql = "SELECT COUNT(*) as total FROM pedidos WHERE usuario_id = ?";
+      $stmt = $this->conn->prepare($sql);
+      $stmt->bind_param("i", $id);
+      $stmt->execute();
+      $result = $stmt->get_result();
+
+      if ($result->num_rows > 0) {
+         $row = $result->fetch_assoc();
+         return $row['total'] > 0;
+      }
+
+      return false;
+   }
+
+   // Método para inativar um usuário
+   public function inativar($id)
+   {
+      $sql = "UPDATE usuarios SET ativo = 0 WHERE id = ?";
       $stmt = $this->conn->prepare($sql);
       $stmt->bind_param("i", $id);
 
       return $stmt->execute();
+   }
+
+   // Método para excluir um usuário (modificado para lidar com restrições FK)
+   public function excluir($id)
+   {
+      try {
+         // Verificar se tem pedidos associados
+         if ($this->temPedidosAssociados($id)) {
+            // Se tem pedidos, apenas inativa o usuário
+            return $this->inativar($id);
+         }
+
+         // Se não tem pedidos, tenta excluir normalmente
+         $sql = "DELETE FROM usuarios WHERE id = ?";
+         $stmt = $this->conn->prepare($sql);
+         $stmt->bind_param("i", $id);
+
+         return $stmt->execute();
+      } catch (Exception $e) {
+         // Log do erro para depuração
+         error_log("Erro ao excluir usuário: " . $e->getMessage());
+
+         // Em caso de erro, tenta inativar o usuário como fallback
+         return $this->inativar($id);
+      }
    }
 }

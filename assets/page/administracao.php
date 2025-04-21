@@ -59,7 +59,7 @@ ob_start();
                </div>
             </div>
 
-            <!-- Detalhes do Usuário (Lado Direito) -->
+            <!-- Detalhes do Usuário (Lado Direito) - Visível apenas em desktop -->
             <div class="user-details">
                <div class="details-user" id="details-user">
                   <div class="details-placeholder" id="details-placeholder">
