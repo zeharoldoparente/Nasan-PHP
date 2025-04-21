@@ -1,4 +1,3 @@
-/* Estilos específicos para o dashboard */
 .dashboard-container {
    padding: 20px;
    font-family: "Poppins", sans-serif;
@@ -76,7 +75,6 @@
    margin-top: 5px;
 }
 
-/* Cores para os status */
 .bg-total {
    background-color: #4338ca;
 }
@@ -102,11 +100,29 @@
    background-color: #047857;
 }
 
-/* Seção de tabelas */
 .dashboard-tables {
    display: grid;
    grid-template-columns: 1fr;
    gap: 20px;
+}
+@media (min-width: 769px) {
+   .dashboard-welcome-filter-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 30px;
+   }
+
+   .dashboard-welcome {
+      flex: 1;
+      margin-bottom: 0;
+   }
+
+   .dashboard-date-filter {
+      width: 50%;
+      margin-left: 20px;
+   }
 }
 
 @media (min-width: 992px) {
@@ -176,7 +192,6 @@
    background-color: #f1f5f9;
 }
 
-/* Status badges */
 .status-badge {
    display: inline-block;
    padding: 4px 8px;
@@ -205,7 +220,6 @@
    background-color: #6366f1;
 }
 
-/* Alerta de pedidos pendentes */
 .alerta-pendentes {
    background-color: #fee2e2;
    border-left: 4px solid #ef4444;
@@ -239,20 +253,18 @@
    text-decoration: underline;
 }
 
-/* Responsividade */
 @media (max-width: 768px) {
    .dashboard-cards {
       grid-template-columns: 1fr;
    }
 }
 
-/* Estilos para o filtro de data no dashboard */
 .dashboard-date-filter {
+   margin-top: -70px;
    background-color: #fff;
    border-radius: 8px;
-   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-   padding: 15px;
-   margin-bottom: 20px;
+   padding: 20px;
+   margin-bottom: -15px;
 }
 
 .dashboard-date-filter h3 {
@@ -264,31 +276,44 @@
 }
 
 .date-filter-form {
-   display: flex;
+   display: grid;
+   grid-template-columns: 1fr 1fr;
    gap: 15px;
-   align-items: flex-end;
 }
 
 .date-filter-form .filtro-grupo {
-   flex: 1;
+   display: flex;
+   flex-direction: column;
 }
 
 .date-filter-form .btn-filtrar {
+   grid-column: 1 / -1;
    background-color: #24265d;
    color: white;
    border: none;
    border-radius: 6px;
-   padding: 8px 15px;
+   padding: 10px 15px;
    font-size: 14px;
    font-weight: 500;
    cursor: pointer;
-   height: 38px;
-   margin-top: 22px;
+   margin-top: 10px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   gap: 5px;
+}
+.date-filter-form .btn-filtrar i {
+   font-size: 16px;
 }
 
 @media (max-width: 768px) {
+   .dashboard-date-filter {
+      margin-top: 0px;
+      padding: 15px;
+      margin-bottom: 20px;
+   }
    .date-filter-form {
-      flex-direction: column;
+      grid-template-columns: 1fr;
       gap: 10px;
    }
 

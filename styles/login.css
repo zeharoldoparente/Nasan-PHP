@@ -1,10 +1,9 @@
-/* Estilos específicos para a página de login */
 body {
    margin: 0;
    padding: 0;
-   background-image: url("../assets/image/_0017_2.svg");
+   background-image: url("../assets/image/_0017.svg");
    background-position: center;
-   background-size: cover;
+   background-size: contain;
    background-repeat: no-repeat;
    height: 100vh;
    display: flex;
@@ -96,7 +95,18 @@ body {
    width: 120px;
 }
 
-/* Responsividade */
+@media (min-width: 1200px) {
+   body {
+      background-size: 70% auto;
+   }
+}
+
+@media (min-width: 1600px) {
+   body {
+      background-size: 35% auto;
+   }
+}
+
 @media (max-width: 768px) {
    body {
       background-image: url("../assets/image/_0017.svg");

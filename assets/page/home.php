@@ -255,30 +255,28 @@ $conn->close();
       <?php include __DIR__ . '/config/page_header.php'; ?>
 
       <div class="dashboard-container">
-         <!-- Mensagem de boas-vindas -->
-         <div class="dashboard-welcome">
-            <h2>Olá, <?php echo $usuario_nome; ?>!</h2>
-            <p>Bem-vindo ao painel de controle do sistema de pedidos.</p>
-         </div>
-
-         <div class="dashboard-date-filter">
-            <h3>Filtrar por Período</h3>
-            <div class="date-filter-form">
-               <div class="filtro-grupo">
-                  <label class="filtro-label" for="dashboard-data-inicio">De</label>
-                  <input type="date" id="dashboard-data-inicio" class="filtro-input filtro-data">
+         <div class="dashboard-welcome-filter-container">
+            <div class="dashboard-welcome">
+               <h2>Olá, <?php echo $usuario_nome; ?>!</h2>
+               <p>Bem-vindo ao painel de controle do sistema de pedidos.</p>
+            </div>
+            <div class="dashboard-date-filter">
+               <h3>Filtrar por Período</h3>
+               <div class="date-filter-form">
+                  <div class="filtro-grupo">
+                     <label class="filtro-label" for="dashboard-data-inicio">De</label>
+                     <input type="date" id="dashboard-data-inicio" class="filtro-input filtro-data">
+                  </div>
+                  <div class="filtro-grupo">
+                     <label class="filtro-label" for="dashboard-data-fim">Até</label>
+                     <input type="date" id="dashboard-data-fim" class="filtro-input filtro-data">
+                  </div>
+                  <button id="btn-filtrar-dashboard" class="btn-filtrar">
+                     <i class="bi bi-search"></i> Filtrar
+                  </button>
                </div>
-               <div class="filtro-grupo">
-                  <label class="filtro-label" for="dashboard-data-fim">Até</label>
-                  <input type="date" id="dashboard-data-fim" class="filtro-input filtro-data">
-               </div>
-               <button id="btn-filtrar-dashboard" class="btn-filtrar">
-                  <i class="bi bi-search"></i> Filtrar
-               </button>
             </div>
          </div>
-
-         <!-- Alerta de pedidos pendentes (apenas para admin) -->
          <?php if ($is_admin && $pedidos_pendentes > 0): ?>
             <div class="alerta-pendentes">
                <h3><i class="bi bi-exclamation-triangle-fill"></i> Atenção!</h3>
@@ -287,10 +285,7 @@ $conn->close();
                </p>
             </div>
          <?php endif; ?>
-
-         <!-- Cards de estatísticas -->
          <div class="dashboard-cards">
-            <!-- Total de pedidos -->
             <div class="card">
                <div class="card-header">
                   <div class="card-icon bg-total">
@@ -301,8 +296,6 @@ $conn->close();
                <h3 class="card-value"><?php echo $total_pedidos; ?></h3>
                <p class="card-subtitle"><?php echo $is_admin ? 'Todos os pedidos' : 'Seus pedidos'; ?></p>
             </div>
-
-            <!-- Valor total -->
             <div class="card">
                <div class="card-header">
                   <div class="card-icon bg-valor">
@@ -313,8 +306,6 @@ $conn->close();
                <h3 class="card-value">R$ <?php echo number_format($valor_total, 2, ',', '.'); ?></h3>
                <p class="card-subtitle"><?php echo $is_admin ? 'Todos os pedidos' : 'Seus pedidos'; ?></p>
             </div>
-
-            <!-- Pedidos pendentes -->
             <div class="card">
                <div class="card-header">
                   <div class="card-icon bg-pendente">
@@ -325,8 +316,6 @@ $conn->close();
                <h3 class="card-value"><?php echo $pedidos_pendentes; ?></h3>
                <p class="card-subtitle">Aguardando aprovação</p>
             </div>
-
-            <!-- Pedidos aprovados -->
             <div class="card">
                <div class="card-header">
                   <div class="card-icon bg-aprovado">
@@ -337,8 +326,6 @@ $conn->close();
                <h3 class="card-value"><?php echo $pedidos_aprovados; ?></h3>
                <p class="card-subtitle">Pedidos aprovados</p>
             </div>
-
-            <!-- Pedidos com alteração -->
             <div class="card">
                <div class="card-header">
                   <div class="card-icon bg-alteracao">
@@ -349,8 +336,6 @@ $conn->close();
                <h3 class="card-value"><?php echo $pedidos_alterados; ?></h3>
                <p class="card-subtitle">Aprovados com alteração</p>
             </div>
-
-            <!-- Pedidos enviados -->
             <div class="card">
                <div class="card-header">
                   <div class="card-icon bg-enviado">
@@ -361,8 +346,6 @@ $conn->close();
                <h3 class="card-value"><?php echo $pedidos_enviados; ?></h3>
                <p class="card-subtitle">Em transporte</p>
             </div>
-
-            <!-- Pedidos pagos -->
             <div class="card">
                <div class="card-header">
                   <div class="card-icon bg-pago">
@@ -373,8 +356,6 @@ $conn->close();
                <h3 class="card-value"><?php echo $pedidos_pagos; ?></h3>
                <p class="card-subtitle">Pagamento completo</p>
             </div>
-
-            <!-- Pedidos pagos parcialmente -->
             <div class="card">
                <div class="card-header">
                   <div class="card-icon bg-pago-parcial">
@@ -386,10 +367,7 @@ $conn->close();
                <p class="card-subtitle">Pagamento parcial</p>
             </div>
          </div>
-
-         <!-- Seção de tabelas -->
          <div class="dashboard-tables">
-            <!-- Tabela de pedidos recentes -->
             <div class="table-container">
                <div class="table-header">
                   <h3 class="table-title">Pedidos Recentes</h3>
@@ -413,7 +391,6 @@ $conn->close();
                         </tr>
                      <?php else: ?>
                         <?php foreach ($pedidos_recentes as $pedido):
-                           // Determinar classe de status
                            $status_class = '';
                            switch ($pedido['status']) {
                               case 'Pendente':
@@ -437,11 +414,7 @@ $conn->close();
                               default:
                                  $status_class = 'status-pendente';
                            }
-
-                           // Formatar data
                            $data_formatada = date('d/m/Y', strtotime($pedido['data_pedido']));
-
-                           // Formatar valor
                            $valor_formatado = 'R$ ' . number_format($pedido['valor_total'], 2, ',', '.');
                         ?>
                            <tr onclick="window.location.href='createPed.php?id=<?php echo $pedido['id']; ?>'" style="cursor: pointer;">
@@ -459,7 +432,6 @@ $conn->close();
             </div>
 
             <?php if ($is_admin && !empty($top_vendedores)): ?>
-               <!-- Tabela de vendedores (apenas para admin) -->
                <div class="table-container">
                   <div class="table-header">
                      <h3 class="table-title">Top Vendedores</h3>
@@ -494,7 +466,6 @@ $conn->close();
 
    <script>
       document.addEventListener('DOMContentLoaded', function() {
-         // Adicionar funcionalidade de clique nas linhas da tabela
          document.querySelectorAll('.dashboard-table tbody tr').forEach(row => {
             row.addEventListener('click', function() {
                const pedidoId = this.querySelector('td:first-child').textContent.replace('#', '');
