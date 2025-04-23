@@ -20,19 +20,8 @@ if (!isset($_POST['nome']) || empty($_POST['nome'])) {
 $usuarioLogado = $_SESSION['usuario'];
 $novoNome = $_POST['nome'];
 
-// Conexão com banco de dados
-$servidor = "localhost";
-$usuario = "root";
-$senha = "";
-$banco = "nasam";
-
-$conn = new mysqli($servidor, $usuario, $senha, $banco);
-
-if ($conn->connect_error) {
-   header('Content-Type: application/json');
-   echo json_encode(['success' => false, 'message' => 'Erro de conexão com o banco de dados']);
-   exit;
-}
+// Incluir config.php que agora fornece $conn
+require_once(__DIR__ . "/config.php");
 
 // Executar UPDATE
 $sql = "UPDATE usuarios SET nome = ? WHERE usuario = ?";

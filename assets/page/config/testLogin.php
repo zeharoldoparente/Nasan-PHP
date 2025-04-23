@@ -1,15 +1,33 @@
 <?php
-session_start(); // Inicia a sessão para armazenar dados temporários
+session_start();
 
 if (isset($_POST["submit"]) && !empty($_POST["usuario"]) && !empty($_POST["senha"])) {
-   include_once(__DIR__ . "/config.php");
+   // Usar caminho absoluto para garantir que encontre o arquivo
+   require_once __DIR__ . "/config.php";
+
+   // Verificar se a conexão foi estabelecida corretamente
+   if (!$conn) {
+      error_log("Falha na conexão com o banco de dados");
+      header('Location: ../../../index.php?erro=3');
+      exit();
+   }
 
    $usuario = $_POST['usuario'];
    $senha = $_POST['senha'];
 
+   // Adicionar log para debug
+   error_log("Tentativa de login para usuário: " . $usuario);
+
    // Buscar o usuário no banco
    $sql = "SELECT * FROM usuarios WHERE usuario = ?";
    $stmt = $conn->prepare($sql);
+
+   if (!$stmt) {
+      error_log("Erro na preparação da query: " . $conn->error);
+      header('Location: ../../../index.php?erro=3');
+      exit();
+   }
+
    $stmt->bind_param("s", $usuario);
    $stmt->execute();
    $result = $stmt->get_result();
@@ -21,36 +39,24 @@ if (isset($_POST["submit"]) && !empty($_POST["usuario"]) && !empty($_POST["senha
       if (password_verify($senha, $user['senha'])) {
          // Verificar se o usuário está ativo
          if ($user['ativo'] == 0) {
-            // Usuário inativo, redirecionar com erro específico
+            $stmt->close();
             header('Location: ../../../index.php?erro=2');
             exit();
          }
 
-         // Senha correta e usuário ativo, inicia sessão
          $_SESSION['usuario'] = $usuario;
-
-         // Armazenar status de administrador na sessão
          $_SESSION['admin'] = $user['admin'] ?? 0;
+         $_SESSION['nome'] = !empty($user['nome']) ? $user['nome'] : $usuario;
 
-         // Verificar se existe a coluna 'nome' na tabela e se tem valor
-         if (isset($user['nome']) && !empty($user['nome'])) {
-            $_SESSION['nome'] = $user['nome'];
-         } else {
-            // Se não existir ou estiver vazio, usar o nome de usuário como padrão
-            $_SESSION['nome'] = $usuario;
-         }
-
-         header('Location: loading.php'); // Página de loading
+         $stmt->close();
+         header('Location: loading.php');
          exit();
       }
    }
 
-   // Falha no login, redireciona de volta ao index com erro
+   $stmt->close();
    header('Location: ../../../index.php?erro=1');
    exit();
-
-   $stmt->close();
-   $conn->close();
 } else {
    header('Location: ../../../index.php?erro=1');
    exit();
