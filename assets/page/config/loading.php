@@ -55,22 +55,19 @@
    </div>
 
    <script>
-      (function() {
-         const loadingText = document.getElementById("loading-text");
-         let dots = 0;
+      let loadingText = document.getElementById("loading-text");
+      let dots = 0;
 
-         function updateLoadingText() {
-            dots = (dots + 1) % 4;
-            loadingText.textContent = "Carregando as informações" + ".".repeat(dots);
-            setTimeout(updateLoadingText, 500);
-         }
+      function updateLoadingText() {
+         dots = (dots + 1) % 4;
+         loadingText.textContent = "Carregando as informações" + ".".repeat(dots);
+      }
 
-         updateLoadingText();
+      setInterval(updateLoadingText, 500);
 
-         setTimeout(function() {
-            window.location.href = '../home.php';
-         }, 3000);
-      })();
+      setTimeout(function() {
+         window.location.href = '../home.php';
+      }, 3000);
    </script>
 </body>
 

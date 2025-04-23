@@ -1,13 +1,29 @@
 <?php
+// Verificar se existe uma sessão ativa
 if (session_status() == PHP_SESSION_NONE) {
    session_start();
 }
 
-$usuarioLogado = isset($_SESSION['usuario']) ? htmlspecialchars($_SESSION['usuario']) : 'Visitante';
-$nomeUsuario = isset($_SESSION['nome']) ? htmlspecialchars($_SESSION['nome']) : $usuarioLogado;
+// Verificar se o usuário está logado
+$usuarioLogado = isset($_SESSION['usuario']) ? $_SESSION['usuario'] : 'Visitante';
+
+// Obter o nome completo do usuário do banco de dados ou da sessão
+$nomeUsuario = $usuarioLogado; // Por padrão, usamos o nome de usuário
+if (isset($_SESSION['nome'])) {
+   $nomeUsuario = $_SESSION['nome']; // Se houver um nome definido na sessão
+}
+
+// Verificar se o usuário é administrador
 $isAdmin = isset($_SESSION['admin']) && $_SESSION['admin'] == 1;
 
-$debug = false;
+// Para depuração - imprimir informações da sessão
+$debug = false; // Altere para true para ativar a depuração
+if ($debug) {
+   echo "<pre style='position:fixed;top:100px;right:10px;background:white;z-index:9999;padding:10px;border:1px solid black;'>";
+   echo "SESSION: ";
+   print_r($_SESSION);
+   echo "</pre>";
+}
 ?>
 
 <nav class="navbar">
@@ -16,7 +32,7 @@ $debug = false;
          <img src="/Nasan-PHP/assets/image/logo.png" alt="Logo Nasam" />
       </a>
       <div class="h2">
-         <img src="/Nasan-PHP/assets/image/nome.png" alt="Nasam">
+         <img src="/Nasan-PHP/assets/image/nome.png" alt="">
       </div>
    </div>
    <div class="links">
@@ -45,8 +61,8 @@ $debug = false;
          <img src="/Nasan-PHP/assets/image/avatar.png" alt="Avatar" class="avatar" onclick="toggleUserMenu()" />
          <div class="user-menu" id="user-menu">
             <div class="user-info">
-               <p id="user-name"><?php echo $nomeUsuario; ?></p>
-               <span class="user-email"><?php echo $usuarioLogado; ?></span>
+               <p id="user-name"><?php echo htmlspecialchars($nomeUsuario); ?></p>
+               <span class="user-email"><?php echo htmlspecialchars($usuarioLogado); ?></span>
             </div>
             <button class="edit-button" onclick="openEditModal()">Editar perfil</button>
             <hr />
@@ -84,7 +100,7 @@ $debug = false;
       <form id="edit-form" action="/Nasan-PHP/assets/page/config/update_user.php" method="post">
          <div class="form-group">
             <label for="edit-name">Nome:</label>
-            <input type="text" id="edit-name" name="nome" value="<?php echo $nomeUsuario; ?>" required>
+            <input type="text" id="edit-name" name="nome" value="<?php echo htmlspecialchars($nomeUsuario); ?>" required>
          </div>
          <button type="submit" class="save-button">Salvar</button>
       </form>
@@ -92,9 +108,3 @@ $debug = false;
 </div>
 
 <script src="/Nasan-PHP/assets/page/JS/navBar.js"></script>
-
-<?php if ($debug): ?>
-   <pre style='position:fixed;top:100px;right:10px;background:white;z-index:9999;padding:10px;border:1px solid black;'>
-SESSION: <?php print_r($_SESSION); ?>
-</pre>
-<?php endif; ?>

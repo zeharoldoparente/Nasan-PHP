@@ -7,7 +7,7 @@ if (!isset($_SESSION['usuario'])) {
 ob_start();
 
 // Incluir a conexão com o banco de dados
-require_once(__DIR__ . '/config/config.php');
+include_once(__DIR__ . '/config/config.php');
 
 // Verificar se o usuário é administrador
 $is_admin = false;

@@ -1,4 +1,5 @@
 <?php
+// Iniciar sessão
 session_start();
 
 // Verificar se o usuário está logado
@@ -19,8 +20,19 @@ if (!isset($_POST['nome']) || empty($_POST['nome'])) {
 $usuarioLogado = $_SESSION['usuario'];
 $novoNome = $_POST['nome'];
 
-// Incluir config.php que agora fornece $conn
-require_once(__DIR__ . "/config.php");
+// Conexão com banco de dados
+$servidor = "localhost";
+$usuario = "root";
+$senha = "";
+$banco = "nasam";
+
+$conn = new mysqli($servidor, $usuario, $senha, $banco);
+
+if ($conn->connect_error) {
+   header('Content-Type: application/json');
+   echo json_encode(['success' => false, 'message' => 'Erro de conexão com o banco de dados']);
+   exit;
+}
 
 // Executar UPDATE
 $sql = "UPDATE usuarios SET nome = ? WHERE usuario = ?";
@@ -30,16 +42,19 @@ $result = $stmt->execute();
 $linhasAfetadas = $stmt->affected_rows;
 
 // Atualizar a sessão se o banco foi atualizado
-if ($result && $linhasAfetadas > 0) {
+if ($result) {
    $_SESSION['nome'] = $novoNome;
-   $resposta = ['success' => true, 'message' => 'Nome atualizado com sucesso'];
-} else {
-   $resposta = ['success' => false, 'message' => 'Nenhuma alteração realizada. Verifique se o usuário existe.'];
 }
 
-// Fechar a declaração
+// Fechar conexões
 $stmt->close();
+$conn->close();
 
 // Responder ao cliente
-header('Content-Type: application/json');
-echo json_encode($resposta);
+if ($result && $linhasAfetadas > 0) {
+   header('Content-Type: application/json');
+   echo json_encode(['success' => true, 'message' => 'Nome atualizado com sucesso']);
+} else {
+   header('Content-Type: application/json');
+   echo json_encode(['success' => false, 'message' => 'Nenhuma alteração realizada. Verifique se o usuário existe.']);
+}
