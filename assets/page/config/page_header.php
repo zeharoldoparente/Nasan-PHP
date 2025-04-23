@@ -1,16 +1,16 @@
 <?php
-// Armazena todo o conteúdo gerado até agora
-$buffer = ob_get_contents();
-ob_clean(); // Limpa o buffer sem desativá-lo
+if (ob_get_level() == 0) {
+   ob_start();
+}
 
-// Extrai o título do HTML
+$buffer = ob_get_contents();
+ob_clean();
+
 $page_title = "Página Sem Título";
 if (preg_match('/<title>(.*?)<\/title>/i', $buffer, $matches)) {
    $page_title = trim($matches[1]);
 }
 
-// Reenvia o conteúdo original
 echo $buffer;
 
-// Adiciona o H1 com o título extraído
 echo '<h1 class="page-title">' . htmlspecialchars($page_title) . '</h1>';
