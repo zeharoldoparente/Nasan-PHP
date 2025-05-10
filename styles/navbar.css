@@ -186,8 +186,6 @@ a.join-link {
 .mobile-menu.open {
    display: flex;
 }
-
-/* Avatar Dropdown Styling */
 .avatar-dropdown {
    position: relative;
 }
@@ -289,8 +287,6 @@ a.join-link {
 .logout a:hover {
    color: #c52121;
 }
-
-/* Modal Styling */
 .modal {
    display: none;
    position: fixed;

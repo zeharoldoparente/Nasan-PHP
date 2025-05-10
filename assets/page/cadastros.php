@@ -5,7 +5,6 @@ if (!isset($_SESSION['usuario'])) {
    exit();
 }
 
-// Verificar se o usuário é administrador
 $isAdmin = isset($_SESSION['admin']) && $_SESSION['admin'] == 1;
 
 ob_start();
@@ -15,7 +14,7 @@ ob_start();
 
 <head>
    <meta charset="UTF-8" />
-   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
    <link rel="preconnect" href="https://fonts.googleapis.com" />
    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
    <link
@@ -33,10 +32,10 @@ ob_start();
 </head>
 
 <body>
-   <?php include __DIR__ . '/config/navbar.php'; ?>
+   <?php include 'config/navbar.php'; ?>
    <div class="container">
 
-      <?php include __DIR__ . '/config/page_header.php'; ?>
+      <?php include 'config/page_header.php'; ?>
       <div class="cadastro-container">
          <div class="cadastro-content">
             <div class="tabs-container">
@@ -50,11 +49,8 @@ ob_start();
                      </button>
                   <?php endif; ?>
                </div>
-
-               <!-- Tab de Cadastro de Clientes -->
                <div id="clientes-tab" class="tab-content active">
                   <div class="split-layout">
-                     <!-- Lista de Clientes (Lado Esquerdo) -->
                      <div class="list-panel">
                         <div class="list-header">
                            <h3>Lista de Clientes</h3>
@@ -70,11 +66,8 @@ ob_start();
                            <i class="bi bi-search"></i>
                         </div>
                         <div class="list-content" id="lista-clientes">
-                           <!-- Clientes serão adicionados dinamicamente pelo JS -->
                         </div>
                      </div>
-
-                     <!-- Formulário de Cliente (Lado Direito) -->
                      <div class="form-panel" id="form-cliente-panel">
                         <div class="form-header">
                            <h2 class="form-title-main">
@@ -93,7 +86,6 @@ ob_start();
                            action="processa_cliente.php">
                            <input type="hidden" name="form_token" value="<?php echo md5(uniqid(mt_rand(), true));
                                                                            $_SESSION['form_token'] = md5(uniqid(mt_rand(), true)); ?>" />
-                           <!-- Campo oculto para armazenar o id do usuário que criou o cliente -->
                            <input type="hidden" name="usuario_id" id="usuario_id" value="<?php echo $_SESSION['usuario']; ?>" />
 
                            <section class="form-section">
@@ -272,10 +264,8 @@ ob_start();
                </div>
 
                <?php if ($isAdmin): ?>
-                  <!-- Tab de Cadastro de Produtos - Visível apenas para administradores -->
                   <div id="produtos-tab" class="tab-content">
                      <div class="split-layout">
-                        <!-- Lista de Produtos (Lado Esquerdo) -->
                         <div class="list-panel">
                            <div class="list-header">
                               <h3>Lista de Produtos</h3>
@@ -291,11 +281,8 @@ ob_start();
                               <i class="bi bi-search"></i>
                            </div>
                            <div class="list-content" id="lista-produtos">
-                              <!-- Produtos serão adicionados dinamicamente pelo JS -->
                            </div>
                         </div>
-
-                        <!-- Formulário de Produto (Lado Direito) -->
                         <div class="form-panel" id="form-produto-panel">
                            <div class="form-header">
                               <h2 class="form-title-main">
@@ -378,7 +365,6 @@ ob_start();
       </div>
    </div>
 
-   <!-- Modal para Mobile -->
    <div class="modal-overlay" id="form-modal">
       <div class="modal-container">
          <div class="modal-header">
@@ -388,18 +374,15 @@ ob_start();
             </button>
          </div>
          <div class="modal-content" id="modal-content">
-            <!-- O formulário será clonado aqui pelo JavaScript -->
          </div>
       </div>
    </div>
-
-   <!-- Adicionar variável JavaScript para o estado de administrador -->
    <script>
       const isAdmin = <?php echo $isAdmin ? 'true' : 'false'; ?>;
       const currentUser = "<?php echo $_SESSION['usuario']; ?>";
    </script>
-   <script src="./Js/cadastro.js"></script>
-   <script src="./Js/modal-custom.js"></script>
+   <script src="Js/cadastro.js"></script>
+   <script src="Js/modal-custom.js"></script>
 </body>
 
 </html>

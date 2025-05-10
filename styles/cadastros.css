@@ -68,16 +68,12 @@
 .tab-content.active {
    display: block;
 }
-
-/* Split Layout */
 .split-layout {
    display: flex;
    gap: 20px;
    height: calc(100vh - 220px);
    min-height: 500px;
 }
-
-/* Lista Panel */
 .list-panel {
    flex: 0 0 300px;
    background-color: #f8f9fa;
@@ -189,8 +185,6 @@
    color: #64748b;
    margin: 0;
 }
-
-/* Form Panel */
 .form-panel {
    flex: 1;
    overflow-y: auto;
@@ -443,8 +437,6 @@ textarea {
    border: 1px solid #fecaca;
    display: block;
 }
-
-/* Modal para Mobile */
 .modal-overlay {
    position: fixed;
    top: 0;
@@ -515,17 +507,13 @@ textarea {
    overflow-y: auto;
    max-height: calc(90vh - 60px);
 }
-
-/* Responsividade */
 @media (min-width: 769px) {
-   /* Esconde o modal em telas grandes */
    .modal-overlay {
       display: none;
    }
 }
 
 @media (max-width: 768px) {
-   /* Estilos para mobile */
    .tabs-nav {
       flex-direction: row;
       justify-content: space-between;
@@ -549,8 +537,6 @@ textarea {
       width: 100%;
       min-height: calc(100vh - 280px);
    }
-
-   /* Esconde o painel de formulário em telas pequenas */
    .form-panel {
       display: none;
    }
@@ -559,8 +545,6 @@ textarea {
       flex-direction: column;
       gap: 0;
    }
-
-   /* Ajustes ao formulário no modal */
    .modal-content .form-panel {
       display: block;
       border: none;
@@ -568,14 +552,12 @@ textarea {
    }
 
    .modal-content .form-header {
-      display: none; /* Esconde o header do form pois já temos o header do modal */
+      display: none;
    }
 
    .modal-content .form-actions {
       margin-top: 16px;
    }
-
-   /* Ajustes nas abas para mobile */
    .tabs-nav {
       position: sticky;
       top: 0;
@@ -587,8 +569,6 @@ textarea {
       border-radius: 0;
       padding: 12px 5px;
    }
-
-   /* Melhorias para a lista em mobile */
    .list-header {
       position: sticky;
       z-index: 5;
@@ -610,8 +590,6 @@ textarea {
    .list-item:active {
       background-color: #f0f4ff;
    }
-
-   /* Botões no formulário mobile */
    .modal-content .form-actions {
       flex-direction: column;
       gap: 10px;
@@ -624,8 +602,6 @@ textarea {
       width: 100%;
       padding: 12px;
    }
-
-   /* Coloca o botão excluir por último no mobile */
    .modal-content .btn-delete {
       order: 3;
    }
@@ -637,8 +613,6 @@ textarea {
    .modal-content .btn-cancel {
       order: 2;
    }
-
-   /* Ajustes no tamanho do modal */
    .modal-container {
       width: 100%;
       height: 100%;
@@ -652,12 +626,10 @@ textarea {
       max-height: calc(100vh - 60px);
       padding: 16px;
    }
-
-   /* Ajustes nos campos do formulário para mobile */
    .modal-content input,
    .modal-content select,
    .modal-content textarea {
-      font-size: 16px; /* Evita zoom automático no iOS */
+      font-size: 16px;
       padding: 12px;
    }
 
@@ -665,8 +637,6 @@ textarea {
       font-size: 14px;
       margin-bottom: 6px;
    }
-
-   /* Animação de deslizar para cima ao abrir o modal */
    .modal-container {
       transform: translateY(100%);
    }

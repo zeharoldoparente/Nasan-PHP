@@ -5,31 +5,23 @@ if (!isset($_SESSION['usuario'])) {
    exit();
 }
 ob_start();
-
-// Função para obter o versículo do dia
 function getVersiculoDoDia()
 {
-   // Definir caminho do arquivo de cache
-   // Como estamos em /page/controllers/models/sobre.php, precisamos subir 3 níveis
    $cacheFile = __DIR__ . '/../../cache/versiculo_diario.json';
    $hoje = date('Y-m-d');
 
-   // Verificar se o cache existe e é de hoje
    if (file_exists($cacheFile)) {
       $conteudo = file_get_contents($cacheFile);
       $dados = json_decode($conteudo, true);
 
-      // Se o cache for de hoje, retorna os dados
       if (isset($dados['data']) && substr($dados['data'], 0, 10) === $hoje) {
          return $dados;
       }
    }
 
-   // Se não tiver cache ou estiver expirado, buscar novo versículo
    $token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdHIiOiJUaHUgQXByIDE3IDIwMjUgMTQ6NTI6MDQgR01UKzAwMDAuam9zZWhhcm9sZG9wYXJlbnRlQGdtYWlsLmNvbSIsImlhdCI6MTc0NDkwMTUyNH0.eYluA84Ez_BMQadCVkRvj1l2ZX0nVxvipFDc1_9cohs';
    $apiUrl = 'https://www.abibliadigital.com.br/api/verses/nvi/random';
 
-   // Usar cURL para fazer a requisição
    $ch = curl_init($apiUrl);
    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
    curl_setopt($ch, CURLOPT_HTTPHEADER, [
@@ -41,31 +33,26 @@ function getVersiculoDoDia()
    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
    curl_close($ch);
 
-   // Se a requisição foi bem-sucedida
    if ($httpCode === 200 && $response) {
       $data = json_decode($response, true);
 
       if ($data && isset($data['text'])) {
-         // Formatar dados para o cache
          $versiculo = [
             'texto' => $data['text'],
             'referencia' => $data['book']['name'] . ' ' . $data['chapter'] . ':' . $data['number'],
-            'data' => date('c') // Data ISO 8601 (2025-04-17T14:52:04+00:00)
+            'data' => date('c')
          ];
 
-         // Criar diretório de cache se não existir
          if (!is_dir(dirname($cacheFile))) {
             mkdir(dirname($cacheFile), 0755, true);
          }
 
-         // Salvar o cache
          file_put_contents($cacheFile, json_encode($versiculo));
 
          return $versiculo;
       }
    }
 
-   // Se tudo falhar, retornar versículo padrão
    return [
       'texto' => 'E tenho vos dito estas coisas para que em mim tenham paz, no mundo tereis aflições mas tende bom ânimo, eu venci o mundo.',
       'referencia' => 'João 16:33',
@@ -73,7 +60,6 @@ function getVersiculoDoDia()
    ];
 }
 
-// Obter versículo do dia
 $versiculo = getVersiculoDoDia();
 ?>
 <!DOCTYPE html>
@@ -81,7 +67,7 @@ $versiculo = getVersiculoDoDia();
 
 <head>
    <meta charset="UTF-8" />
-   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
    <link rel="preconnect" href="https://fonts.googleapis.com" />
    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
    <link

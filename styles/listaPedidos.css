@@ -166,8 +166,6 @@
 .page-item:hover:not(.active) {
    background-color: #f8fafc;
 }
-
-/* Modal de Status */
 .status-dropdown {
    position: relative;
    display: inline-block;
@@ -200,8 +198,6 @@
 .status-option:hover {
    background-color: #f8fafc;
 }
-
-/* Estilo para o botão de exclusão */
 .actions-column {
    text-align: center;
    width: 50px;
@@ -242,7 +238,6 @@
 .btn-pdf:hover {
    background-color: #ea580c;
 }
-/* Responsividade */
 @media (max-width: 992px) {
    .pedidos-filtros {
       flex-wrap: wrap;

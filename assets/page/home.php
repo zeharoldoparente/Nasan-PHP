@@ -6,10 +6,8 @@ if (!isset($_SESSION['usuario'])) {
 }
 ob_start();
 
-// Incluir a conexão com o banco de dados
-include_once(__DIR__ . '/config/config.php');
+include_once 'config/config.php';
 
-// Verificar se o usuário é administrador
 $is_admin = false;
 $usuario_logado = $_SESSION['usuario'];
 $usuario_id = null;
@@ -31,24 +29,20 @@ $stmt_user->close();
 $filtro_data_inicio = isset($_GET['data_inicio']) ? $_GET['data_inicio'] : null;
 $filtro_data_fim = isset($_GET['data_fim']) ? $_GET['data_fim'] : null;
 
-// Função modificada para contar pedidos por status com filtro de data
 function getStatusCount($conn, $status, $usuario_id = null, $is_admin = false, $data_inicio = null, $data_fim = null)
 {
-   // Para diagnóstico: imprimir no console PHP os parâmetros recebidos
    error_log("Buscando contagem para status: '{$status}', usuario_id: {$usuario_id}, is_admin: " . ($is_admin ? 'true' : 'false'));
 
    $sql = "SELECT COUNT(*) as total FROM pedidos WHERE status = ?";
    $params = array($status);
    $types = "s";
 
-   // Se não for admin, filtrar apenas os pedidos do usuário
    if (!$is_admin && $usuario_id) {
       $sql .= " AND usuario_id = ?";
       $params[] = $usuario_id;
       $types .= "i";
    }
 
-   // Adicionar filtros de data se fornecidos
    if ($data_inicio) {
       $sql .= " AND data_pedido >= ?";
       $params[] = $data_inicio;
@@ -56,7 +50,7 @@ function getStatusCount($conn, $status, $usuario_id = null, $is_admin = false, $
    }
    if ($data_fim) {
       $sql .= " AND data_pedido <= ?";
-      $data_fim_completa = $data_fim . " 23:59:59"; // Incluir até o fim do dia
+      $data_fim_completa = $data_fim . " 23:59:59";
       $params[] = $data_fim_completa;
       $types .= "s";
    }
@@ -68,28 +62,22 @@ function getStatusCount($conn, $status, $usuario_id = null, $is_admin = false, $
    $count = $result->fetch_assoc()['total'];
    $stmt->close();
 
-   // Para diagnóstico: imprimir a contagem obtida
    error_log("Contagem para status '{$status}': {$count}");
 
    return $count;
 }
 
-// Substitua a consulta de estatísticas existente por esta versão com filtro de data
-// Consulta base para estatísticas
 $params = [];
 $types = "";
 
 if ($is_admin) {
-   // Admin vê todos os pedidos
    $sql_total = "SELECT COUNT(*) as total, SUM(valor_total) as valor_total FROM pedidos WHERE 1=1";
 } else {
-   // Usuário comum vê apenas seus pedidos
    $sql_total = "SELECT COUNT(*) as total, SUM(valor_total) as valor_total FROM pedidos WHERE usuario_id = ?";
    $params[] = $usuario_id;
    $types .= "i";
 }
 
-// Adicionar filtros de data se fornecidos
 if ($filtro_data_inicio) {
    $sql_total .= " AND data_pedido >= ?";
    $params[] = $filtro_data_inicio;
@@ -98,14 +86,13 @@ if ($filtro_data_inicio) {
 
 if ($filtro_data_fim) {
    $sql_total .= " AND data_pedido <= ?";
-   $data_fim_completa = $filtro_data_fim . " 23:59:59"; // Incluir até o fim do dia
+   $data_fim_completa = $filtro_data_fim . " 23:59:59";
    $params[] = $data_fim_completa;
    $types .= "s";
 }
 
 $stmt_total = $conn->prepare($sql_total);
 
-// Bind params apenas se houver parâmetros
 if (!empty($params)) {
    $stmt_total->bind_param($types, ...$params);
 }
@@ -120,8 +107,6 @@ if ($result_total->num_rows > 0) {
 }
 $stmt_total->close();
 
-// Substitua a chamada da função getStatusCount pela versão com filtro de data
-// Obter contagem por status
 $pedidos_pendentes = getStatusCount($conn, 'Pendente', $usuario_id, $is_admin, $filtro_data_inicio, $filtro_data_fim);
 $pedidos_aprovados = getStatusCount($conn, 'Aprovado', $usuario_id, $is_admin, $filtro_data_inicio, $filtro_data_fim);
 $pedidos_alterados = getStatusCount($conn, 'Aprovado com Alteraç', $usuario_id, $is_admin, $filtro_data_inicio, $filtro_data_fim);
@@ -129,8 +114,6 @@ $pedidos_enviados = getStatusCount($conn, 'Enviado', $usuario_id, $is_admin, $fi
 $pedidos_pagos = getStatusCount($conn, 'Pago', $usuario_id, $is_admin, $filtro_data_inicio, $filtro_data_fim);
 $pedidos_pagos_parcial = getStatusCount($conn, 'Pago Parcial', $usuario_id, $is_admin, $filtro_data_inicio, $filtro_data_fim);
 
-// Substitua a consulta de pedidos recentes por esta versão com filtro de data
-// Obter pedidos recentes
 $params_recentes = [];
 $types_recentes = "";
 
@@ -150,7 +133,6 @@ if ($is_admin) {
    $types_recentes .= "i";
 }
 
-// Adicionar filtros de data se fornecidos
 if ($filtro_data_inicio) {
    $sql_recentes .= " AND p.data_pedido >= ?";
    $params_recentes[] = $filtro_data_inicio;
@@ -159,7 +141,7 @@ if ($filtro_data_inicio) {
 
 if ($filtro_data_fim) {
    $sql_recentes .= " AND p.data_pedido <= ?";
-   $data_fim_completa = $filtro_data_fim . " 23:59:59"; // Incluir até o fim do dia
+   $data_fim_completa = $filtro_data_fim . " 23:59:59";
    $params_recentes[] = $data_fim_completa;
    $types_recentes .= "s";
 }
@@ -168,7 +150,6 @@ $sql_recentes .= " ORDER BY p.data_pedido DESC LIMIT 5";
 
 $stmt_recentes = $conn->prepare($sql_recentes);
 
-// Bind params apenas se houver parâmetros
 if (!empty($params_recentes)) {
    $stmt_recentes->bind_param($types_recentes, ...$params_recentes);
 }
@@ -182,8 +163,6 @@ while ($row = $result_recentes->fetch_assoc()) {
 }
 $stmt_recentes->close();
 
-// Substitua a consulta de top vendedores por esta versão com filtro de data (apenas para admin)
-// Para admin: verificar vendedores com mais pedidos
 $top_vendedores = [];
 if ($is_admin) {
    $params_vendedores = [];
@@ -194,7 +173,6 @@ if ($is_admin) {
                       INNER JOIN usuarios u ON p.usuario_id = u.id
                       WHERE 1=1";
 
-   // Adicionar filtros de data se fornecidos
    if ($filtro_data_inicio) {
       $sql_vendedores .= " AND p.data_pedido >= ?";
       $params_vendedores[] = $filtro_data_inicio;
@@ -203,7 +181,7 @@ if ($is_admin) {
 
    if ($filtro_data_fim) {
       $sql_vendedores .= " AND p.data_pedido <= ?";
-      $data_fim_completa = $filtro_data_fim . " 23:59:59"; // Incluir até o fim do dia
+      $data_fim_completa = $filtro_data_fim . " 23:59:59";
       $params_vendedores[] = $data_fim_completa;
       $types_vendedores .= "s";
    }
@@ -214,7 +192,6 @@ if ($is_admin) {
 
    $stmt_vendedores = $conn->prepare($sql_vendedores);
 
-   // Bind params apenas se houver parâmetros
    if (!empty($params_vendedores)) {
       $stmt_vendedores->bind_param($types_vendedores, ...$params_vendedores);
    }
@@ -236,7 +213,7 @@ $conn->close();
 
 <head>
    <meta charset="UTF-8" />
-   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
    <link rel="preconnect" href="https://fonts.googleapis.com" />
    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet" />
@@ -462,7 +439,7 @@ $conn->close();
       </div>
    </div>
 
-   <script src="./Js/dashboard-filter.js"></script>
+   <script src="Js/dashboard-filter.js"></script>
 
    <script>
       document.addEventListener('DOMContentLoaded', function() {

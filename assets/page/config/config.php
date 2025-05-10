@@ -1,8 +1,8 @@
  <?php
-   $servidor = "localhost";
-   $usuario = "root";
-   $senha = "";
-   $banco = "nasam";
+   $servidor = "sql206.infinityfree.com";
+   $usuario = "if0_38802627";
+   $senha = "VJLL7H68BiiYR";
+   $banco = "if0_38802627_nasam";
 
 
    $conn = new mysqli($servidor, $usuario, $senha, $banco);

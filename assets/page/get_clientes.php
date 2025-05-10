@@ -5,19 +5,15 @@ if (!isset($_SESSION['usuario'])) {
    exit();
 }
 
-include_once(__DIR__ . '/config/config.php');
+include_once 'config/config.php';
 
-// Verificar se o usuário é administrador
 $isAdmin = isset($_SESSION['admin']) && $_SESSION['admin'] == 1;
 $usuario = $_SESSION['usuario'];
 
-// Query de seleção baseada no tipo de usuário
 if ($isAdmin) {
-   // Administradores veem todos os clientes
    $sql = "SELECT id, razao_social, telefone FROM clientes ORDER BY razao_social";
    $result = $conn->query($sql);
 } else {
-   // Usuários comuns veem apenas seus próprios clientes
    $sql = "SELECT id, razao_social, telefone FROM clientes WHERE usuario_cadastro = ? ORDER BY razao_social";
    $stmt = $conn->prepare($sql);
    $stmt->bind_param("s", $usuario);
@@ -37,6 +33,5 @@ if (isset($stmt)) {
 }
 $conn->close();
 
-// Retorna resposta em JSON
 header('Content-Type: application/json');
 echo json_encode($clientes);

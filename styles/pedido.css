@@ -14,16 +14,12 @@
    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
    padding: 10px;
 }
-
-/* Split Layout */
 .split-layout {
    display: flex;
    gap: 20px;
    height: calc(100vh - 220px);
    min-height: 500px;
 }
-
-/* Form Panel (Lado Esquerdo) */
 .form-panel {
    flex: 0 0 400px;
    overflow-y: auto;
@@ -246,8 +242,6 @@ textarea {
 .no-cliente-warning a:hover {
    text-decoration: underline;
 }
-
-/* Produtos Panel (Lado Direito) */
 .produtos-panel {
    flex: 1;
    border: 1px solid #e2e8f0;
@@ -394,8 +388,6 @@ textarea {
    color: #16a34a;
    margin-left: 5px;
 }
-
-/* Ações na tabela */
 .acoes {
    display: flex;
    gap: 10px;
@@ -422,8 +414,6 @@ textarea {
 .btn-icon:hover {
    background-color: #f1f5f9;
 }
-
-/* Modal para adicionar produto */
 .modal-overlay {
    position: fixed;
    top: 0;
@@ -494,8 +484,6 @@ textarea {
    overflow-y: auto;
    max-height: calc(90vh - 60px);
 }
-
-/* Responsividade */
 @media (max-width: 992px) {
    .split-layout {
       flex-direction: column;

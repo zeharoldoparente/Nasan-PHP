@@ -1,7 +1,7 @@
 body {
    margin: 0;
    padding: 0;
-   background-image: url("../assets/image/_0017.svg");
+   background-image: url("/assets/image/_0017.svg");
    background-position: center;
    background-size: contain;
    background-repeat: no-repeat;
@@ -109,7 +109,7 @@ body {
 
 @media (max-width: 768px) {
    body {
-      background-image: url("../assets/image/_0017.svg");
+      background-image: url("/assets/image/_0017.svg");
       background-position: center top;
       background-size: contain;
    }

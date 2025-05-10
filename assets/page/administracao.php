@@ -1,12 +1,9 @@
 <?php
-// Arquivo: assets/page/administracao.php
 
-require_once __DIR__ . '/config/config.php';
+require_once 'config/config.php';
 
 session_start();
-// Verificar se o usuário está logado e é admin
 if (!isset($_SESSION['admin']) || $_SESSION['admin'] != 1) {
-   // Redirecionar para a página inicial ou exibir erro
    header('Location: home.php');
    exit;
 }
@@ -18,7 +15,7 @@ ob_start();
 
 <head>
    <meta charset="UTF-8" />
-   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
    <link rel="preconnect" href="https://fonts.googleapis.com" />
    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
    <link
@@ -36,9 +33,9 @@ ob_start();
 </head>
 
 <body>
-   <?php include __DIR__ . '/config/navbar.php'; ?>
+   <?php include 'config/navbar.php'; ?>
    <div class="container">
-      <?php include __DIR__ . '/config/page_header.php'; ?>
+      <?php include 'config/page_header.php'; ?>
 
       <div class="admin-container">
          <div class="admin-header">
@@ -51,15 +48,11 @@ ob_start();
          </div>
 
          <div class="split-layout">
-            <!-- Lista de Usuários (Lado Esquerdo) -->
             <div class="user-list">
-               <!-- Os usuários serão carregados pelo JavaScript -->
                <div class="no-users-message" id="no-users-message" style="display: none;">
                   <p>Nenhum usuário encontrado</p>
                </div>
             </div>
-
-            <!-- Detalhes do Usuário (Lado Direito) - Visível apenas em desktop -->
             <div class="user-details">
                <div class="details-user" id="details-user">
                   <div class="details-placeholder" id="details-placeholder">
@@ -113,8 +106,6 @@ ob_start();
                            </label>
                         </div>
                      </div>
-
-                     <!-- Status do Usuário (Ativo/Inativo) -->
                      <div class="form-group">
                         <label>Status do Usuário:</label>
                         <div class="status-radio-group">
@@ -152,8 +143,6 @@ ob_start();
          </div>
       </div>
    </div>
-
-   <!-- Modal para dispositivos móveis -->
    <div id="user-modal" class="modal-overlay">
       <div class="modal-container">
          <div class="modal-header">
@@ -163,12 +152,9 @@ ob_start();
             </button>
          </div>
          <div class="modal-content" id="modal-content">
-            <!-- Conteúdo será carregado via JavaScript -->
          </div>
       </div>
    </div>
-
-   <!-- Modal de confirmação de exclusão -->
    <div id="modal-confirmar-exclusao" class="modal-overlay">
       <div class="modal-container" style="max-width: 400px;">
          <div class="modal-header">
@@ -188,8 +174,8 @@ ob_start();
       </div>
    </div>
 
-   <script src="./Js/admin.js"></script>
-   <script src="./Js/modal-custom.js"></script>
+   <script src="Js/admin.js"></script>
+   <script src="Js/modal-custom.js"></script>
 </body>
 
 </html>

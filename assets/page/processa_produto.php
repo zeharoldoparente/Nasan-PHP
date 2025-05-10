@@ -5,11 +5,9 @@ if (!isset($_SESSION['usuario'])) {
    exit();
 }
 
-include_once(__DIR__ . '/config/config.php');
+include_once 'config/config.php';
 
-// Verifica se é uma edição ou novo cadastro
 if (isset($_POST['id']) && !empty($_POST['id'])) {
-   // EDIÇÃO
    $id = $_POST['id'];
    $codigo_barras = isset($_POST['codigo-barras']) ? $_POST['codigo-barras'] : '';
    $nome = $_POST['nome-produto'];
@@ -26,7 +24,6 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
    $stmt = $conn->prepare($sql);
    $stmt->bind_param("sssdi", $codigo_barras, $nome, $unidade, $preco_venda, $id);
 } else {
-   // NOVO CADASTRO
    $codigo_barras = isset($_POST['codigo-barras']) ? $_POST['codigo-barras'] : '';
    $nome = $_POST['nome-produto'];
    $unidade = $_POST['unidade'];
@@ -38,12 +35,10 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
    $stmt = $conn->prepare($sql);
    $stmt->bind_param("sssd", $codigo_barras, $nome, $unidade, $preco_venda);
 }
-
-// Executa a query
 if ($stmt->execute()) {
    $response = ['status' => 'success', 'message' => 'Produto salvo com sucesso!'];
    if (!isset($_POST['id'])) {
-      $response['id'] = $conn->insert_id; // Retorna o ID do produto recém-inserido
+      $response['id'] = $conn->insert_id;
    } else {
       $response['id'] = $_POST['id'];
    }
@@ -54,6 +49,5 @@ if ($stmt->execute()) {
 $stmt->close();
 $conn->close();
 
-// Retorna resposta em JSON
 header('Content-Type: application/json');
 echo json_encode($response);

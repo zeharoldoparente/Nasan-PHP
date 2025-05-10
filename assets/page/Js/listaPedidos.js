@@ -1,11 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
-   // Obter o valor de isAdmin a partir de um atributo data no HTML
    const isAdmin = document.body.getAttribute("data-is-admin") === "true";
-
-   // Event listener para clicar em uma linha da tabela
    document.querySelectorAll("#tabela-pedidos tbody tr").forEach((row) => {
       row.addEventListener("click", function (e) {
-         // Ignorar cliques em elementos da dropdown de status ou botão de exclusão
          if (
             (e.target.closest(".status-dropdown") && isAdmin) ||
             e.target.closest(".btn-delete") ||
@@ -20,19 +16,14 @@ document.addEventListener("DOMContentLoaded", function () {
          }
       });
    });
-
-   // Gerenciar dropdowns de status (apenas para admin)
    if (isAdmin) {
-      // Abrir/fechar dropdown de status
       document.querySelectorAll(".status-dropdown").forEach((dropdown) => {
          const pedidoId = dropdown.getAttribute("data-pedido-id");
          const statusBadge = dropdown.querySelector(".status-badge");
          const statusOptions = dropdown.querySelector(".status-options");
 
          statusBadge.addEventListener("click", function (e) {
-            e.stopPropagation(); // Prevenir navegação para detalhes do pedido
-
-            // Fechar todos os outros dropdowns
+            e.stopPropagation();
             document
                .querySelectorAll(".status-options.active")
                .forEach((option) => {
@@ -40,19 +31,13 @@ document.addEventListener("DOMContentLoaded", function () {
                      option.classList.remove("active");
                   }
                });
-
-            // Alternar estado do dropdown atual
             statusOptions.classList.toggle("active");
          });
-
-         // Clicar fora para fechar
          document.addEventListener("click", function (e) {
             if (!dropdown.contains(e.target)) {
                statusOptions.classList.remove("active");
             }
          });
-
-         // Opções de status
          dropdown.querySelectorAll(".status-option").forEach((option) => {
             option.addEventListener("click", function (e) {
                e.stopPropagation();
@@ -62,23 +47,17 @@ document.addEventListener("DOMContentLoaded", function () {
             });
          });
       });
-
-      // Adicionar evento para botões de exclusão
       document.querySelectorAll(".btn-delete").forEach((button) => {
          button.addEventListener("click", function (e) {
-            e.stopPropagation(); // Evitar navegação para a página de detalhes
+            e.stopPropagation();
 
             const pedidoId = this.getAttribute("data-id");
-
-            // Confirmar antes de excluir
             if (confirm("Tem certeza que deseja excluir este pedido?")) {
                excluirPedido(pedidoId);
             }
          });
       });
    }
-
-   // Função para atualizar o status
    function atualizarStatus(pedidoId, novoStatus, statusBadge) {
       fetch("atualizar_status_pedido.php", {
          method: "POST",
@@ -93,10 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
          .then((response) => response.json())
          .then((data) => {
             if (data.success) {
-               // Atualizar a interface
                statusBadge.textContent = novoStatus;
-
-               // Atualizar a classe do status
                const statusClasses = [
                   "status-pendente",
                   "status-aprovado",
@@ -105,13 +81,9 @@ document.addEventListener("DOMContentLoaded", function () {
                   "status-pago",
                   "status-pago-parcial",
                ];
-
-               // Remover todas as classes anteriores
                statusClasses.forEach((cls) => {
                   statusBadge.classList.remove(cls);
                });
-
-               // Adicionar a classe correta
                let newClass = "";
                switch (novoStatus) {
                   case "Pendente":
@@ -135,8 +107,6 @@ document.addEventListener("DOMContentLoaded", function () {
                }
 
                statusBadge.classList.add(newClass);
-
-               // Mostrar mensagem de sucesso
                customModal.success("Status atualizado com sucesso!");
             } else {
                customModal.error("Erro ao atualizar status: " + data.message);
@@ -147,8 +117,6 @@ document.addEventListener("DOMContentLoaded", function () {
             customModal.error("Erro ao atualizar status. Tente novamente.");
          });
    }
-
-   // Função para excluir pedido
    function excluirPedido(pedidoId) {
       fetch("excluir_pedido.php", {
          method: "POST",
@@ -162,7 +130,6 @@ document.addEventListener("DOMContentLoaded", function () {
          .then((response) => response.json())
          .then((data) => {
             if (data.success) {
-               // Remover a linha da tabela
                document.querySelector(`tr[data-id="${pedidoId}"]`).remove();
                customModal.success("Pedido excluído com sucesso!");
             } else {
@@ -174,15 +141,11 @@ document.addEventListener("DOMContentLoaded", function () {
             customModal.error("Erro ao excluir pedido. Tente novamente.");
          });
    }
-
-   // Filtro de pedidos
    document
       .getElementById("btn-filtrar")
       .addEventListener("click", function () {
          filtrarPedidos();
       });
-
-   // Permitir pressionar Enter para filtrar
    document.querySelectorAll(".filtro-input").forEach((input) => {
       input.addEventListener("keypress", function (e) {
          if (e.key === "Enter") {
@@ -207,8 +170,6 @@ document.addEventListener("DOMContentLoaded", function () {
             vendedor = vendedorInput.value.trim();
          }
       }
-
-      // Construir objeto de filtros
       const filtros = {
          numero_pedido: numeroPedido,
          cliente: cliente,
@@ -220,8 +181,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (isAdmin) {
          filtros.vendedor = vendedor;
       }
-
-      // Enviar requisição AJAX
       fetch("filtrar_pedidos.php", {
          method: "POST",
          headers: {
@@ -232,7 +191,6 @@ document.addEventListener("DOMContentLoaded", function () {
          .then((response) => response.json())
          .then((data) => {
             if (data.success) {
-               // Atualizar tabela com os resultados
                atualizarTabelaPedidos(data.pedidos);
             } else {
                customModal.error("Erro ao filtrar pedidos: " + data.message);
@@ -258,8 +216,6 @@ document.addEventListener("DOMContentLoaded", function () {
       pedidos.forEach((pedido) => {
          const tr = document.createElement("tr");
          tr.setAttribute("data-id", pedido.id);
-
-         // Determinar a classe do status
          let statusClass = "";
          switch (pedido.status) {
             case "Pendente":
@@ -283,8 +239,6 @@ document.addEventListener("DOMContentLoaded", function () {
             default:
                statusClass = "status-pendente";
          }
-
-         // Formatar data
          const dataPedido = new Date(pedido.data_pedido);
          const dataFormatada = `${dataPedido
             .getDate()
@@ -292,16 +246,12 @@ document.addEventListener("DOMContentLoaded", function () {
             .padStart(2, "0")}/${(dataPedido.getMonth() + 1)
             .toString()
             .padStart(2, "0")}/${dataPedido.getFullYear()}`;
-
-         // Formatar valor
          const valorFormatado =
             "R$ " +
             parseFloat(pedido.valor_total).toLocaleString("pt-BR", {
                minimumFractionDigits: 2,
                maximumFractionDigits: 2,
             });
-
-         // Conteúdo das células
          tr.innerHTML = `
          <td>${pedido.id}</td>
          <td>${pedido.cliente_nome}</td>
@@ -310,9 +260,7 @@ document.addEventListener("DOMContentLoaded", function () {
          <td>${valorFormatado}</td>
          <td>${dataFormatada}</td>
       `;
-
-         // Criar célula de status (diferente para admin e usuário comum)
-         const tdStatus = document.createElement("td");
+      const tdStatus = document.createElement("td");
 
          if (isAdmin) {
             tdStatus.innerHTML = `
@@ -333,19 +281,13 @@ document.addEventListener("DOMContentLoaded", function () {
          }
 
          tr.appendChild(tdStatus);
-
-         // Adicionar coluna de ações
          const tdActions = document.createElement("td");
          tdActions.className = "actions-column";
-
-         // Adicionar botão PDF para todos os usuários
          tdActions.innerHTML = `
             <a href="gerarPDF.php?id=${pedido.id}" class="btn-pdf" title="Gerar PDF" target="_blank">
                <i class="bi bi-file-earmark-pdf"></i>
             </a>
          `;
-
-         // Adicionar botão de exclusão apenas para admin
          if (isAdmin) {
             tdActions.innerHTML += `
                <button class="btn-delete" data-id="${pedido.id}">
@@ -356,10 +298,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
          tr.appendChild(tdActions);
          tbody.appendChild(tr);
-
-         // Adicionar evento de clique à linha
          tr.addEventListener("click", function (e) {
-            // Ignorar cliques em elementos da dropdown de status ou botão de exclusão
             if (
                (e.target.closest(".status-dropdown") && isAdmin) ||
                e.target.closest(".btn-delete") ||
@@ -374,8 +313,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
          });
       });
-
-      // Adicionar os eventos do dropdown para admin novamente
       if (isAdmin) {
          document.querySelectorAll(".status-dropdown").forEach((dropdown) => {
             const pedidoId = dropdown.getAttribute("data-pedido-id");
@@ -384,8 +321,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             statusBadge.addEventListener("click", function (e) {
                e.stopPropagation();
-
-               // Fechar todos os outros dropdowns
                document
                   .querySelectorAll(".status-options.active")
                   .forEach((option) => {
@@ -393,12 +328,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         option.classList.remove("active");
                      }
                   });
-
-               // Alternar estado do dropdown atual
-               statusOptions.classList.toggle("active");
+                  statusOptions.classList.toggle("active");
             });
-
-            // Opções de status
             dropdown.querySelectorAll(".status-option").forEach((option) => {
                option.addEventListener("click", function (e) {
                   e.stopPropagation();
@@ -408,8 +339,6 @@ document.addEventListener("DOMContentLoaded", function () {
                });
             });
          });
-
-         // Adicionar eventos para botões de exclusão
          document.querySelectorAll(".btn-delete").forEach((button) => {
             button.addEventListener("click", function (e) {
                e.stopPropagation();

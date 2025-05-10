@@ -6,10 +6,8 @@ if (!isset($_SESSION['usuario'])) {
 }
 ob_start();
 
-// Incluir a conexão com o banco de dados
-include_once(__DIR__ . '/config/config.php');
+include_once 'config/config.php';
 
-// Verificar se o usuário é administrador
 $is_admin = false;
 $usuario_logado = $_SESSION['usuario'];
 $usuario_id = null;
@@ -32,7 +30,7 @@ $stmt_user->close();
 
 <head>
    <meta charset="UTF-8" />
-   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
    <link rel="preconnect" href="https://fonts.googleapis.com" />
    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
    <link
@@ -48,7 +46,6 @@ $stmt_user->close();
    <link rel="stylesheet" href="../../styles/listaPedidos.css" />
    <title>Lista de Pedidos</title>
    <style>
-      /* Estilo para o botão de PDF */
       .btn-pdf {
          background-color: #f97316;
          color: white;
@@ -70,8 +67,6 @@ $stmt_user->close();
    </style>
 </head>
 
-<!-- Adicionando o atributo data-is-admin ao body para uso no JavaScript -->
-
 <body data-is-admin="<?php echo $is_admin ? 'true' : 'false'; ?>">
    <?php include __DIR__ . '/config/navbar.php'; ?>
    <div class="container">
@@ -85,7 +80,6 @@ $stmt_user->close();
             </a>
          </div>
 
-         <!-- Filtros -->
          <div class="pedidos-filtros">
             <div class="filtro-grupo">
                <label class="filtro-label" for="filtro-pedido">Nº Pedido</label>
@@ -113,7 +107,6 @@ $stmt_user->close();
                   <option value="Pago Parcial">Pago Parcial</option>
                </select>
             </div>
-            <!-- INÍCIO: Novo filtro de data -->
             <div class="filtro-grupo">
                <label class="filtro-label" for="filtro-data-inicio">Data Início</label>
                <input type="date" id="filtro-data-inicio" class="filtro-input filtro-data">
@@ -122,13 +115,11 @@ $stmt_user->close();
                <label class="filtro-label" for="filtro-data-fim">Data Fim</label>
                <input type="date" id="filtro-data-fim" class="filtro-input filtro-data">
             </div>
-            <!-- FIM: Novo filtro de data -->
             <button id="btn-filtrar" class="btn-filtrar">
                <i class="bi bi-search"></i> Filtrar
             </button>
          </div>
 
-         <!-- Tabela de Pedidos -->
          <div class="tabela-responsive">
             <table class="tabela-pedidos" id="tabela-pedidos">
                <thead>
@@ -140,12 +131,11 @@ $stmt_user->close();
                      <th>Valor Líquido</th>
                      <th>Data</th>
                      <th>Status</th>
-                     <th>Ações</th> <!-- Coluna de ações para todos os usuários -->
+                     <th>Ações</th>
                   </tr>
                </thead>
                <tbody id="lista-pedidos">
                   <?php
-                  // Determinar a consulta SQL baseada no tipo de usuário
                   $sql_pedidos = "SELECT p.id, p.cliente_id, p.usuario_id, p.forma_pagamento, 
                                     p.valor_total, p.data_pedido, p.status,
                                     c.razao_social as cliente_nome,
@@ -154,7 +144,6 @@ $stmt_user->close();
                                 INNER JOIN clientes c ON p.cliente_id = c.id
                                 INNER JOIN usuarios u ON p.usuario_id = u.id";
 
-                  // Se não for admin, filtrar apenas os pedidos do usuário logado
                   if (!$is_admin) {
                      $sql_pedidos .= " WHERE p.usuario_id = ?";
                   }
@@ -163,7 +152,6 @@ $stmt_user->close();
 
                   $stmt_pedidos = $conn->prepare($sql_pedidos);
 
-                  // Bind param apenas se não for admin
                   if (!$is_admin) {
                      $stmt_pedidos->bind_param("i", $usuario_id);
                   }
@@ -173,7 +161,6 @@ $stmt_user->close();
 
                   if ($result_pedidos->num_rows > 0) {
                      while ($pedido = $result_pedidos->fetch_assoc()) {
-                        // Determinar a classe do status
                         $status_class = '';
                         switch ($pedido['status']) {
                            case 'Pendente':
@@ -198,10 +185,8 @@ $stmt_user->close();
                               $status_class = 'status-pendente';
                         }
 
-                        // Formatar data
                         $data_formatada = date('d/m/Y', strtotime($pedido['data_pedido']));
 
-                        // Formatar valor
                         $valor_formatado = 'R$ ' . number_format($pedido['valor_total'], 2, ',', '.');
 
                         echo "<tr data-id='{$pedido['id']}'>";
@@ -211,8 +196,6 @@ $stmt_user->close();
                         echo "<td>{$pedido['forma_pagamento']}</td>";
                         echo "<td>{$valor_formatado}</td>";
                         echo "<td>{$data_formatada}</td>";
-
-                        // Status com dropdown para admin
                         if ($is_admin) {
                            echo "<td>";
                            echo "<div class='status-dropdown' data-pedido-id='{$pedido['id']}'>";
@@ -227,8 +210,6 @@ $stmt_user->close();
                            echo "</div>";
                            echo "</div>";
                            echo "</td>";
-
-                           // Coluna de ações para administradores
                            echo "<td class='actions-column'>";
                            echo "<a href='gerarPDF.php?id={$pedido['id']}' class='btn-pdf' title='Gerar PDF' target='_blank'>";
                            echo "<i class='bi bi-file-earmark-pdf'></i>";
@@ -238,9 +219,7 @@ $stmt_user->close();
                            echo "</button>";
                            echo "</td>";
                         } else {
-                           // Somente visualização para usuários normais
                            echo "<td><span class='status-badge {$status_class}'>{$pedido['status']}</span></td>";
-                           // Adicionando botão de PDF para usuários normais
                            echo "<td class='actions-column'>";
                            echo "<a href='gerarPDF.php?id={$pedido['id']}' class='btn-pdf' title='Gerar PDF' target='_blank'>";
                            echo "<i class='bi bi-file-earmark-pdf'></i>";
@@ -259,15 +238,11 @@ $stmt_user->close();
                </tbody>
             </table>
          </div>
-
-         <!-- Paginação -->
          <div class="pagination" id="pagination">
-            <!-- A paginação será adicionada via JavaScript -->
          </div>
       </div>
    </div>
 
-   <!-- Modal para avisos -->
    <div id="modal-aviso" class="modal-overlay">
       <div class="modal-container">
          <div class="modal-header">
@@ -277,7 +252,6 @@ $stmt_user->close();
             </button>
          </div>
          <div class="modal-content" id="modal-conteudo">
-            <!-- O conteúdo será inserido via JavaScript -->
          </div>
          <div class="modal-footer">
             <button class="btn-cancel btn-close-modal">Fechar</button>
@@ -285,31 +259,25 @@ $stmt_user->close();
       </div>
    </div>
 
-   <script src="./Js/modal-custom.js"></script>
-   <script src="./Js/listaPedidos.js"></script>
+   <script src="Js/modal-custom.js"></script>
+   <script src="Js/listaPedidos.js"></script>
 
    <script>
       document.addEventListener('DOMContentLoaded', function() {
-         // Verificar se existe um filtro salvo no localStorage
          const filtroStatus = localStorage.getItem('filtro_status');
          if (filtroStatus) {
-            // Definir o valor do select
             const selectStatus = document.getElementById('filtro-status');
             if (selectStatus) {
                selectStatus.value = filtroStatus;
 
-               // Esperar um momento para garantir que o resto da página carregou
                setTimeout(function() {
-                  // Acionar o clique no botão de filtrar
                   document.getElementById('btn-filtrar').click();
                }, 100);
 
-               // Limpar o filtro do localStorage
                localStorage.removeItem('filtro_status');
             }
          }
 
-         // Receber filtro via URL (método alternativo)
          const urlParams = new URLSearchParams(window.location.search);
          const statusParam = urlParams.get('status');
          if (statusParam) {

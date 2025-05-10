@@ -1,10 +1,7 @@
-// Função para o menu móvel
 function toggleMenu() {
    const menu = document.querySelector(".mobile-menu");
    menu.classList.toggle("open");
 }
-
-// Fechar o menu móvel ao clicar fora dele
 document.addEventListener("click", function (e) {
    const menu = document.querySelector(".mobile-menu");
    const hamburgerMenu = document.querySelector(".hamburger-menu");
@@ -18,14 +15,11 @@ document.addEventListener("click", function (e) {
       menu.classList.remove("open");
    }
 });
-
-// Funções para o menu do usuário
 function toggleUserMenu() {
    console.log("toggleUserMenu chamado");
    const userMenu = document.getElementById("user-menu");
 
    if (userMenu) {
-      // Alterna a visibilidade do menu
       if (userMenu.style.display === "none" || userMenu.style.display === "") {
          userMenu.style.display = "block";
          console.log("Menu aberto");
@@ -37,8 +31,6 @@ function toggleUserMenu() {
       console.error("Elemento user-menu não encontrado");
    }
 }
-
-// Fechar o menu do usuário quando clicar fora dele
 document.addEventListener("click", function (e) {
    const userMenu = document.getElementById("user-menu");
    const avatar = document.querySelector(".avatar");
@@ -52,8 +44,6 @@ document.addEventListener("click", function (e) {
       userMenu.style.display = "none";
    }
 });
-
-// Funções para o modal de editar perfil
 function openEditModal() {
    console.log("openEditModal chamado");
    const modal = document.getElementById("edit-modal");
@@ -61,8 +51,6 @@ function openEditModal() {
    if (modal) {
       modal.style.display = "flex";
       console.log("Modal aberto");
-
-      // Fechar o menu do usuário quando abrir o modal
       const userMenu = document.getElementById("user-menu");
       if (userMenu) {
          userMenu.style.display = "none";
@@ -81,8 +69,6 @@ function closeEditModal() {
       console.log("Modal fechado");
    }
 }
-
-// Fechar o modal quando clicar fora dele
 document.addEventListener("click", function (e) {
    const modal = document.getElementById("edit-modal");
    const modalContent = modal ? modal.querySelector(".modal-content") : null;
@@ -96,8 +82,6 @@ document.addEventListener("click", function (e) {
       modal.style.display = "none";
    }
 });
-
-// Submeter o formulário de edição
 document.addEventListener("DOMContentLoaded", function () {
    console.log("DOMContentLoaded - Inicializando scripts");
 
@@ -114,8 +98,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
          const nome = document.getElementById("edit-name").value;
          console.log("Nome a ser atualizado:", nome);
-
-         // Enviar o formulário via XMLHttpRequest para melhor compatibilidade
          const xhr = new XMLHttpRequest();
          const formData = new FormData(editForm);
 
@@ -131,18 +113,13 @@ document.addEventListener("DOMContentLoaded", function () {
                      console.log("Dados parseados:", data);
 
                      if (data.success) {
-                        // Atualizar o nome na interface
                         const userNameElement =
                            document.getElementById("user-name");
                         if (userNameElement) {
                            userNameElement.textContent = nome;
                            console.log("Nome atualizado na interface");
                         }
-
-                        // Fechar o modal
                         closeEditModal();
-
-                        // Mostrar mensagem de sucesso
                         alert("Nome atualizado com sucesso!");
                      } else {
                         console.error(

@@ -1,9 +1,4 @@
 <?php
-// Arquivo: gerarPDF.php
-// Importante: Não pode haver nenhuma saída antes de gerar o PDF
-// Remover espaços, quebras de linha, etc. antes da tag <?php
-
-// Iniciar buffer de saída para capturar qualquer saída indesejada
 ob_start();
 
 session_start();
@@ -12,17 +7,14 @@ if (!isset($_SESSION['usuario'])) {
    exit();
 }
 
-// Verificar se foi passado um ID
 if (!isset($_GET['id']) || empty($_GET['id'])) {
    die("ID do pedido não fornecido");
 }
 
 $pedido_id = intval($_GET['id']);
 
-// Incluir a conexão com o banco de dados
-include_once(__DIR__ . '/config/config.php');
+include_once 'config/config.php';
 
-// Verificar permissões do usuário
 $is_admin = false;
 $usuario_id = null;
 $usuario_logado = $_SESSION['usuario'];
@@ -40,7 +32,6 @@ if ($result_user->num_rows > 0) {
 }
 $stmt_user->close();
 
-// Buscar dados do pedido
 $sql_pedido = "SELECT p.*, c.razao_social as cliente_nome, c.cpf_cnpj as cliente_cnpj, 
                 c.telefone as cliente_telefone, c.cidade as cliente_cidade, c.estado as cliente_estado,
                 u.nome as vendedor_nome
@@ -61,12 +52,10 @@ if ($result_pedido->num_rows === 0) {
 $pedido = $result_pedido->fetch_assoc();
 $stmt_pedido->close();
 
-// Verificar se o usuário não-admin tem permissão para ver este pedido
 if (!$is_admin && $pedido['usuario_id'] != $usuario_id) {
    die("Você não tem permissão para visualizar este pedido");
 }
 
-// Buscar itens do pedido
 $sql_itens = "SELECT ip.*, p.nome as produto_nome, p.codigo_barras as produto_codigo
               FROM itens_pedido ip
               INNER JOIN produtos p ON ip.produto_id = p.id
@@ -83,7 +72,6 @@ while ($item = $result_itens->fetch_assoc()) {
 }
 $stmt_itens->close();
 
-// Calcular totais
 $total_itens = 0;
 $valor_total_bruto = 0;
 $valor_total_desconto = 0;
@@ -97,63 +85,45 @@ foreach ($itens as $item) {
 
 $valor_total_liquido = $valor_total_bruto - $valor_total_desconto;
 
-// Limpar qualquer saída anterior
 ob_end_clean();
 
-// Incluir biblioteca FPDF
 require('fpdf/fpdf.php');
-
-// Estender a classe FPDF para incluir cabeçalho e rodapé personalizados
 class PDF extends FPDF
 {
-   // Variáveis para armazenar dados do pedido
    public $numero_pedido = '';
    public $data_pedido = '';
 
-   // Cabeçalho
    function Header()
    {
-      // Logo (você precisa ter o arquivo logo.png na pasta certa)
       if (file_exists('logo.png')) {
-         $this->Image('logo.png', 90, 10, 30); // Centralizar logo (ajuste conforme tamanho do logo)
+         $this->Image('logo.png', 90, 10, 30);
       }
-      $this->Ln(35); // Espaço suficiente após o logo para não sobrepor
-
-      // Título do documento com número do pedido - Garantindo que o número apareça
+      $this->Ln(35);
       $this->SetFont('Arial', 'B', 16);
       $this->Cell(0, 10, utf8_decode('PEDIDO Nº ' . $this->numero_pedido), 0, 1, 'C');
-
-      // Data do pedido
       $this->SetFont('Arial', '', 10);
       if (!empty($this->data_pedido) && $this->data_pedido != '0000-00-00 00:00:00') {
          $data_formatada = date('d/m/Y', strtotime($this->data_pedido));
       } else {
-         $data_formatada = date('d/m/Y'); // Data atual se não houver data válida
+         $data_formatada = date('d/m/Y');
       }
       $this->Cell(0, 5, utf8_decode('Data de emissão: ' . $data_formatada), 0, 1, 'C');
 
-      $this->Ln(10); // Espaço antes dos dados do pedido
+      $this->Ln(10);
    }
-
-   // Rodapé
    function Footer()
    {
-      $this->SetY(-15); // 15 mm do final
+      $this->SetY(-15);
       $this->SetFont('Arial', 'I', 8);
       $this->Cell(0, 10, utf8_decode('Página ' . $this->PageNo() . ' de {nb}'), 0, 0, 'C');
    }
-
-   // Função para definir os dados do pedido
    function SetPedidoInfo($numero, $data)
    {
       $this->numero_pedido = $numero;
       $this->data_pedido = $data;
    }
-
-   // Função para adicionar dados do cliente e vendedor
    function AddClientInfo($pedido)
    {
-      // Dados do cliente
       $this->SetFont('Arial', 'B', 12);
       $this->Cell(0, 8, utf8_decode('Dados do Cliente'), 0, 1, 'L');
 
@@ -173,8 +143,6 @@ class PDF extends FPDF
       $this->Cell(90, 6, utf8_decode('Cidade/UF: ' . $cidade_uf), 0, 1, 'L');
 
       $this->Ln(5);
-
-      // Dados do pedido
       $this->SetFont('Arial', 'B', 12);
       $this->Cell(0, 8, utf8_decode('Dados do Pedido'), 0, 1, 'L');
 
@@ -201,35 +169,24 @@ class PDF extends FPDF
 
       $this->Ln(5);
    }
-
-   // Função para adicionar a tabela de produtos modernizada
    function AddProductsTable($itens)
    {
-      // Definir cores modernas
-      $header_fill_color = [240, 240, 240]; // Cinza claro para cabeçalho
-      $alt_row_color = [248, 248, 248]; // Cinza muito claro para linhas alternadas
-
-      // Cabeçalho da tabela com estilo moderno
+      $header_fill_color = [240, 240, 240];
+      $alt_row_color = [248, 248, 248];
       $this->SetFillColor($header_fill_color[0], $header_fill_color[1], $header_fill_color[2]);
       $this->SetFont('Arial', 'B', 10);
-      $this->SetDrawColor(200, 200, 200); // Cinza para as linhas da tabela
+      $this->SetDrawColor(200, 200, 200);
 
-      // Larguras das colunas
       $w = [20, 85, 25, 18, 20, 25];
 
-      // Cabeçalhos
       $headers = ['Código', 'Nome', 'Valor Unitário', 'Qtd', 'Desconto', 'Valor Total'];
-
-      // Desenhar cabeçalhos
       for ($i = 0; $i < count($headers); $i++) {
-         $align = ($i > 1) ? 'C' : 'L'; // Alinhar à direita valores numéricos
-         if ($i == 0) $align = 'C'; // Código centralizado
-         if ($i >= 2) $align = 'R'; // Valores monetários à direita
+         $align = ($i > 1) ? 'C' : 'L';
+         if ($i == 0) $align = 'C';
+         if ($i >= 2) $align = 'R';
          $this->Cell($w[$i], 10, utf8_decode($headers[$i]), 1, 0, $align, true);
       }
       $this->Ln();
-
-      // Dados da tabela
       $this->SetFont('Arial', '', 9);
       $this->SetFillColor($alt_row_color[0], $alt_row_color[1], $alt_row_color[2]);
 
@@ -239,36 +196,29 @@ class PDF extends FPDF
       $valor_total_desconto = 0;
 
       foreach ($itens as $k => $item) {
-         // Código do produto
          $codigo = isset($item['produto_codigo']) && !empty($item['produto_codigo']) ? $item['produto_codigo'] : '';
          if (empty($codigo) && isset($item['produto_id'])) {
             $codigo = $item['produto_id'];
          }
 
-         // Nome do produto
          $nome_produto = isset($item['produto_nome']) ? $item['produto_nome'] : 'Produto sem nome';
          if (strlen($nome_produto) > 40) {
             $nome_produto = substr($nome_produto, 0, 37) . '...';
          }
 
-         // Valor unitário
          $valor_unitario = isset($item['preco_unitario']) ?
             'R$ ' . number_format($item['preco_unitario'], 2, ',', '.') : 'R$ 0,00';
 
-         // Quantidade
          $quantidade = isset($item['quantidade']) ? $item['quantidade'] : 0;
 
-         // Desconto
          $desconto_percentual = isset($item['desconto_percentual']) ?
             number_format($item['desconto_percentual'], 2, ',', '.') . '%' : '0,00%';
 
-         // Subtotal
          $subtotal_bruto = $item['preco_unitario'] * $quantidade;
          $valor_desconto = isset($item['valor_desconto']) ? $item['valor_desconto'] : 0;
          $subtotal_liquido = $subtotal_bruto - $valor_desconto;
          $subtotal_formatado = 'R$ ' . number_format($subtotal_liquido, 2, ',', '.');
 
-         // Imprimir linha
          $this->Cell($w[0], 8, $codigo, 'LR', 0, 'C', $fill);
          $this->Cell($w[1], 8, utf8_decode($nome_produto), 'LR', 0, 'L', $fill);
          $this->Cell($w[2], 8, $valor_unitario, 'LR', 0, 'R', $fill);
@@ -277,59 +227,46 @@ class PDF extends FPDF
          $this->Cell($w[5], 8, $subtotal_formatado, 'LR', 0, 'R', $fill);
          $this->Ln();
 
-         // Alternar cores de fundo
          $fill = !$fill;
 
-         // Somar aos totais
          $total_itens += $quantidade;
          $valor_total_bruto += $subtotal_bruto;
          $valor_total_desconto += $valor_desconto;
       }
 
-      // Linha de fechamento
       $this->Cell(array_sum($w), 0, '', 'T');
       $this->Ln(5);
 
-      // Valor total líquido
       $valor_total_liquido = $valor_total_bruto - $valor_total_desconto;
 
-      // Resumo do pedido
       $this->SetFont('Arial', 'B', 11);
       $this->Cell(0, 8, utf8_decode('Resumo do Pedido'), 0, 1, 'L');
       $this->Ln(2);
 
-      // Quantidade de itens
       $this->SetFont('Arial', '', 10);
       $this->Cell(100, 7, utf8_decode('Quantidade de Itens: ' . $total_itens), 0, 1, 'L');
 
-      // Total Bruto
       $this->Cell(100, 7, utf8_decode('Total Bruto: R$ ' . number_format($valor_total_bruto, 2, ',', '.')), 0, 1, 'L');
 
-      // Valor do Desconto
-      $this->SetTextColor(255, 0, 0); // Vermelho para desconto
+      $this->SetTextColor(255, 0, 0);
       $this->Cell(100, 7, utf8_decode('Valor do Desconto: R$ ' . number_format($valor_total_desconto, 2, ',', '.')), 0, 1, 'L');
 
-      // Total Líquido
-      $this->SetTextColor(0, 128, 0); // Verde para o total
+      $this->SetTextColor(0, 128, 0);
       $this->SetFont('Arial', 'B', 11);
       $this->Cell(100, 8, utf8_decode('Total Líquido: R$ ' . number_format($valor_total_liquido, 2, ',', '.')), 0, 1, 'L');
 
-      // Resetar cor
       $this->SetTextColor(0, 0, 0);
    }
 }
 
-// Criar instância do PDF
 $pdf = new PDF();
 
-// Definir informações do pedido ANTES de adicionar a página
 $pdf->SetPedidoInfo($pedido_id, isset($pedido['data_pedido']) ? $pedido['data_pedido'] : '');
 
-$pdf->AliasNbPages(); // Para mostrar total de páginas
+$pdf->AliasNbPages();
 $pdf->AddPage();
 $pdf->AddClientInfo($pedido);
 $pdf->AddProductsTable($itens);
 
-// Saída do PDF
-$pdf->Output('Pedido_' . $pedido_id . '.pdf', 'D'); // 'I' exibe no navegador, 'D' força download
+$pdf->Output('Pedido_' . $pedido_id . '.pdf', 'D');
 $conn->close();

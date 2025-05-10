@@ -5,7 +5,7 @@ if (!isset($_SESSION['usuario'])) {
    exit();
 }
 
-include_once(__DIR__ . '/config/config.php');
+include_once 'config/config.php';
 
 if (isset($_POST['id']) && !empty($_POST['id'])) {
    $id = $_POST['id'];
@@ -27,6 +27,5 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
 
 $conn->close();
 
-// Retorna resposta em JSON
 header('Content-Type: application/json');
 echo json_encode($response);

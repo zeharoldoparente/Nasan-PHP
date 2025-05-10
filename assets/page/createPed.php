@@ -6,10 +6,7 @@ if (!isset($_SESSION['usuario'])) {
 }
 ob_start();
 
-// Incluir a conexão com o banco de dados
-include_once(__DIR__ . '/config/config.php');
-
-// Verificar se o usuário é administrador
+include_once 'config/config.php';
 $is_admin = false;
 $usuario_logado = $_SESSION['usuario'];
 $usuario_id = null;
@@ -26,14 +23,11 @@ if ($result_user->num_rows > 0) {
    $usuario_id = $user_data['id'];
 }
 $stmt_user->close();
-
-// Verificar se um ID foi passado para carregar os dados do pedido
 $pedido_id = isset($_GET['id']) ? intval($_GET['id']) : null;
 $pedido = null;
 $itens_pedido = [];
 
 if ($pedido_id) {
-   // Consulta para obter dados básicos do pedido
    $sql_pedido = "SELECT p.*, c.razao_social as cliente_nome, c.id as cliente_id, 
    c.cpf_cnpj as cliente_cnpj, c.telefone as cliente_telefone,
    CONCAT(c.cidade, '/', c.estado) as cliente_cidade
@@ -48,15 +42,11 @@ WHERE p.id = ?";
 
    if ($result_pedido->num_rows > 0) {
       $pedido = $result_pedido->fetch_assoc();
-
-      // Verificar permissão - usuários normais só podem ver seus próprios pedidos
       if (!$is_admin && $pedido['usuario_id'] != $usuario_id) {
-         // Redirecionar ou mostrar erro
          header("Location: listPed.php");
          exit();
       }
 
-      // Buscar os itens do pedido
       $sql_itens = "SELECT ip.*, p.nome as produto_nome, p.codigo_barras as produto_codigo
                        FROM itens_pedido ip
                        INNER JOIN produtos p ON ip.produto_id = p.id
@@ -81,7 +71,7 @@ WHERE p.id = ?";
 
 <head>
    <meta charset="UTF-8" />
-   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
    <link rel="preconnect" href="https://fonts.googleapis.com" />
    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
    <link
@@ -97,7 +87,6 @@ WHERE p.id = ?";
    <link rel="stylesheet" href="../../styles/pedido.css" />
    <title><?php echo $pedido_id ? 'Editar Pedido #' . $pedido_id : 'Criar Pedido'; ?></title>
    <style>
-      /* Estilos para os campos de desconto */
       input:disabled {
          background-color: #f8fafc;
          color: #64748b;
@@ -114,7 +103,6 @@ WHERE p.id = ?";
          font-weight: 600;
       }
 
-      /* Estilos para os totais do pedido */
       .pedido-totais-detalhados {
          display: flex;
          flex-direction: column;
@@ -151,7 +139,6 @@ WHERE p.id = ?";
          color: #16a34a;
       }
 
-      /* Estilo para o botão de exclusão (para administradores) */
       .btn-delete-pedido {
          background-color: #f87171;
          color: white;
@@ -171,14 +158,13 @@ WHERE p.id = ?";
 </head>
 
 <body data-is-admin="<?php echo $is_admin ? 'true' : 'false'; ?>">
-   <?php include __DIR__ . '/config/navbar.php'; ?>
+   <?php include 'config/navbar.php'; ?>
    <div class="container">
-      <?php include __DIR__ . '/config/page_header.php'; ?>
+      <?php include 'config/page_header.php'; ?>
 
       <div class="pedido-container">
          <div class="pedido-content">
             <div class="split-layout">
-               <!-- Formulário de Pedido (Lado Esquerdo) -->
                <div class="form-panel">
                   <form id="pedidoForm" class="pedido-form">
                      <?php if ($pedido_id): ?>
@@ -279,8 +265,6 @@ WHERE p.id = ?";
                      </div>
                   </form>
                </div>
-
-               <!-- Tabela de Produtos (Lado Direito) -->
                <div class="produtos-panel">
                   <div class="produtos-header">
                      <h3>Produtos do Pedido</h3>
@@ -313,7 +297,6 @@ WHERE p.id = ?";
                            </tr>
                         </thead>
                         <tbody id="produtos-lista">
-                           <!-- Os produtos serão adicionados aqui pelo JavaScript -->
                         </tbody>
                      </table>
 
@@ -348,8 +331,6 @@ WHERE p.id = ?";
          </div>
       </div>
    </div>
-
-   <!-- Modal para adicionar produto (Simplificado) -->
    <div id="modal-produto" class="modal-overlay">
       <div class="modal-container">
          <div class="modal-header">
@@ -364,7 +345,6 @@ WHERE p.id = ?";
                   <label for="modal-produto-id">Produto</label>
                   <select id="modal-produto-id" required>
                      <option value="">Selecione um produto</option>
-                     <!-- Opções serão carregadas via JavaScript -->
                   </select>
                </div>
                <div class="form-row">
@@ -393,8 +373,6 @@ WHERE p.id = ?";
          </div>
       </div>
    </div>
-
-   <!-- Modal para mobile quando necessário -->
    <div id="form-modal" class="modal-overlay">
       <div class="modal-container">
          <div class="modal-header">
@@ -404,12 +382,10 @@ WHERE p.id = ?";
             </button>
          </div>
          <div class="modal-content" id="modal-content">
-            <!-- Conteúdo será adicionado via JavaScript -->
          </div>
       </div>
    </div>
 
-   <!-- Modal de confirmação de exclusão -->
    <div id="modal-confirmar-exclusao" class="modal-overlay">
       <div class="modal-container" style="max-width: 400px;">
          <div class="modal-header">
@@ -429,25 +405,21 @@ WHERE p.id = ?";
       </div>
    </div>
 
-   <script src="./Js/pedido.js"></script>
-   <script src="./Js/modal-custom.js"></script>
+   <script src="Js/pedido.js"></script>
+   <script src="Js/modal-custom.js"></script>
 
    <?php if (!empty($itens_pedido)): ?>
       <script>
          document.addEventListener('DOMContentLoaded', function() {
-            // Limpar a lista de produtos existente
             produtosPedido = [];
 
-            // Carregar os produtos do pedido
             const produtosCarregados = <?php echo json_encode($itens_pedido); ?>;
 
             produtosCarregados.forEach(item => {
-               // Calcular valores
                const subtotalBruto = parseFloat(item.preco_unitario) * parseInt(item.quantidade);
                const valorDesconto = parseFloat(item.valor_desconto);
                const subtotalLiquido = subtotalBruto - valorDesconto;
 
-               // Adicionar produto ao array global
                produtosPedido.push({
                   id: item.produto_id,
                   codigo: item.produto_codigo || "Sem código",
@@ -461,7 +433,6 @@ WHERE p.id = ?";
                });
             });
 
-            // Atualizar a tabela de produtos
             atualizarTabelaProdutos();
          });
       </script>

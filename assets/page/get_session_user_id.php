@@ -6,13 +6,10 @@ if (!isset($_SESSION['usuario'])) {
    exit;
 }
 
-// Conexão com o banco de dados
-include_once(__DIR__ . '/config/config.php');
+include_once 'config/config.php';
 
-// Obter o nome de usuário da sessão
 $usuarioLogado = $_SESSION['usuario'];
 
-// Buscar o ID do usuário no banco de dados
 $sql = "SELECT id FROM usuarios WHERE usuario = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $usuarioLogado);

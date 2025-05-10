@@ -1,15 +1,14 @@
-/* Estilo para o corpo e container principal */
 body.sobre-page {
-   overflow: hidden; /* Evita rolagem */
-   height: 100vh; /* Altura total da viewport */
+   overflow: hidden;
+   height: 100vh;
    margin: 0;
    padding: 0;
-   background-color: #ffffff; /* Fundo branco */
+   background-color: #ffffff;
 }
 
 .container.sobre-container {
    background-color: #ffffff;
-   min-height: 100vh; /* Garantir que ocupe toda a altura */
+   min-height: 100vh;
    margin: 0;
    padding: 0;
    display: flex;
@@ -17,21 +16,18 @@ body.sobre-page {
    align-items: center;
    width: 100%;
    position: relative;
-}
-
-/* Modificamos o nome da classe .modal para .sobre-modal para evitar conflitos */
-.sobre-modal {
+}.sobre-modal {
    background-color: #ffffff;
    border-radius: 20px;
    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
    width: 80%;
    max-width: 800px;
-   max-height: 90vh; /* Um pouco maior para dispositivos menores */
+   max-height: 90vh;
    overflow: hidden;
    position: absolute;
-   top: 50%; /* Posicionamento vertical */
-   left: 50%; /* Posicionamento horizontal */
-   transform: translate(-50%, -50%); /* Centralização perfeita */
+   top: 50%;
+   left: 50%;
+   transform: translate(-50%, -50%);
    display: flex;
    justify-content: center;
    align-items: center;
@@ -45,15 +41,15 @@ body.sobre-page {
    justify-content: center;
    padding: 3rem 2rem;
    height: 100%;
-   width: 100%; /* Garantir largura total */
+   width: 100%;
 }
 
 .sobre-content h2 {
    font-weight: 600;
    color: #2d3748;
    position: relative;
-   margin-bottom: 30px; /* Espaço para o sublinhado */
-   text-align: center; /* Centralizar título */
+   margin-bottom: 30px;
+   text-align: center;
 }
 
 .sobre-content h2::after {
@@ -71,8 +67,8 @@ body.sobre-page {
 .sobre-content p {
    font-size: 1.2rem;
    color: #4a5568;
-   margin-top: 0; /* Removido o espaço superior */
-   text-align: center; /* Centralizar texto */
+   margin-top: 0;
+   text-align: center;
 }
 
 .contact {
@@ -98,7 +94,7 @@ body.sobre-page {
    align-items: center;
    justify-content: center;
    margin-bottom: 10px;
-   gap: 10px; /* Espaço entre o ícone e o texto */
+   gap: 10px;
 }
 
 .contact p:before {
@@ -108,11 +104,11 @@ body.sobre-page {
 }
 
 .contact p:first-of-type:before {
-   content: "\F4E7"; /* Ícone de telefone */
+   content: "\F4E7";
 }
 
 .contact p:last-of-type:before {
-   content: "\F32F"; /* Ícone de email */
+   content: "\F32F";
 }
 
 .logo-container {
@@ -120,8 +116,8 @@ body.sobre-page {
    justify-content: center;
    align-items: center;
    overflow: hidden;
-   margin-top: -15px; /* Margem negativa para aproximar do título */
-   margin-bottom: -15px; /* Margem negativa para aproximar do texto */
+   margin-top: -15px;
+   margin-bottom: -15px;
 }
 
 .logo-container img {
@@ -129,8 +125,8 @@ body.sobre-page {
    max-height: 100%;
    object-fit: contain;
    transition: transform 0.3s ease;
-   margin-top: -40px; /* Margem negativa no topo da imagem */
-   margin-bottom: -40px; /* Margem negativa na base da imagem */
+   margin-top: -40px;
+   margin-bottom: -40px;
 }
 
 .logo-container img:hover {
@@ -146,7 +142,6 @@ body.sobre-page {
    text-align: center;
    max-height: 100px;
    background-color: #f8fafc;
-   /* padding: 1rem; */
    border-radius: 12px;
    width: 100%;
    max-width: 750px;
@@ -187,8 +182,6 @@ body.sobre-page {
    color: #6366f1;
    font-size: 0.75rem;
 }
-
-/* Responsividade */
 @media (max-width: 768px) {
    #top {
       margin-top: 110px;

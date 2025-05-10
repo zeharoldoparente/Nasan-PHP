@@ -1,4 +1,3 @@
-// Sistema de modais personalizados
 if (typeof ModalCustom === "undefined") {
    class ModalCustom {
       constructor() {
@@ -6,81 +5,48 @@ if (typeof ModalCustom === "undefined") {
       }
 
       init() {
-         // Criar elementos do modal
          this.createModalElements();
-
-         // Adicionar event listeners
          this.setupEventListeners();
       }
 
       createModalElements() {
-         // Criar o overlay do modal
          this.overlay = document.createElement("div");
          this.overlay.className = "modal-custom-overlay";
-
-         // Criar o container do modal
          this.container = document.createElement("div");
          this.container.className = "modal-custom-container";
-
-         // Criar o cabeçalho do modal
          this.header = document.createElement("div");
          this.header.className = "modal-custom-header";
-
-         // Criar o título
          this.title = document.createElement("h3");
          this.title.textContent = "Aviso";
-
-         // Criar o botão de fechar
          this.closeButton = document.createElement("button");
          this.closeButton.className = "btn-close-modal-custom";
          this.closeButton.innerHTML = '<i class="bi bi-x-lg"></i>';
-
-         // Montar o cabeçalho
          this.header.appendChild(this.title);
          this.header.appendChild(this.closeButton);
-
-         // Criar o conteúdo do modal
          this.content = document.createElement("div");
          this.content.className = "modal-custom-content";
-
-         // Criar o ícone
          this.icon = document.createElement("div");
          this.icon.className = "modal-custom-icon";
-
-         // Criar a mensagem
          this.message = document.createElement("div");
          this.message.className = "modal-custom-message";
-
-         // Criar a área de botões
          this.actions = document.createElement("div");
          this.actions.className = "modal-custom-actions";
-
-         // Montar o conteúdo
          this.content.appendChild(this.icon);
          this.content.appendChild(this.message);
          this.content.appendChild(this.actions);
-
-         // Montar o modal
          this.container.appendChild(this.header);
          this.container.appendChild(this.content);
          this.overlay.appendChild(this.container);
-
-         // Adicionar ao body
          document.body.appendChild(this.overlay);
       }
 
       setupEventListeners() {
-         // Fechar ao clicar no X
          this.closeButton.addEventListener("click", () => this.close());
-
-         // Fechar ao clicar no overlay (fora do modal)
          this.overlay.addEventListener("click", (e) => {
             if (e.target === this.overlay) {
                this.close();
             }
          });
-
-         // Fechar com a tecla ESC
          document.addEventListener("keydown", (e) => {
             if (
                e.key === "Escape" &&
@@ -90,21 +56,12 @@ if (typeof ModalCustom === "undefined") {
             }
          });
       }
-
-      // Métodos públicos
       alert(message, title = "Aviso", type = "info") {
          return new Promise((resolve) => {
-            // Configurar o modal
             this.title.textContent = title;
             this.message.textContent = message;
-
-            // Limpar ações anteriores
             this.actions.innerHTML = "";
-
-            // Configurar o ícone
             this.setIcon(type);
-
-            // Adicionar botão de OK
             const okButton = document.createElement("button");
             okButton.className = "btn-modal-custom btn-modal-confirm";
             okButton.textContent = "OK";
@@ -114,28 +71,17 @@ if (typeof ModalCustom === "undefined") {
             });
 
             this.actions.appendChild(okButton);
-
-            // Abrir o modal
             this.open();
-
-            // Focar no botão OK
             setTimeout(() => okButton.focus(), 100);
          });
       }
 
       confirm(message, title = "Confirmação", type = "warning") {
          return new Promise((resolve) => {
-            // Configurar o modal
             this.title.textContent = title;
             this.message.textContent = message;
-
-            // Limpar ações anteriores
             this.actions.innerHTML = "";
-
-            // Configurar o ícone
             this.setIcon(type);
-
-            // Adicionar botão de Não
             const noButton = document.createElement("button");
             noButton.className = "btn-modal-custom btn-modal-cancel";
             noButton.textContent = "Não";
@@ -143,8 +89,6 @@ if (typeof ModalCustom === "undefined") {
                this.close();
                resolve(false);
             });
-
-            // Adicionar botão de Sim
             const yesButton = document.createElement("button");
             yesButton.className = "btn-modal-custom btn-modal-danger";
             yesButton.textContent = "Sim";
@@ -155,11 +99,7 @@ if (typeof ModalCustom === "undefined") {
 
             this.actions.appendChild(noButton);
             this.actions.appendChild(yesButton);
-
-            // Abrir o modal
             this.open();
-
-            // Focar no botão Não por segurança
             setTimeout(() => noButton.focus(), 100);
          });
       }
@@ -195,20 +135,16 @@ if (typeof ModalCustom === "undefined") {
 
       open() {
          this.overlay.classList.add("active");
-         document.body.style.overflow = "hidden"; // Bloquear scroll
+         document.body.style.overflow = "hidden";
       }
 
       close() {
          this.overlay.classList.remove("active");
-         document.body.style.overflow = ""; // Restaurar scroll
+         document.body.style.overflow = "";
       }
    }
-
-   // Inicializar o sistema de modais
    window.customModal = new ModalCustom();
 }
-
-// Sobrescrever os métodos nativos alert e confirm
 window.originalAlert = window.alert;
 window.originalConfirm = window.confirm;
 
@@ -221,57 +157,70 @@ window.confirm = function (message) {
 };
 
 document.addEventListener("DOMContentLoaded", function () {
-   // ===== TAB SWITCHING =====
    const tabButtons = document.querySelectorAll(".tab-button");
    const tabContents = document.querySelectorAll(".tab-content");
 
    tabButtons.forEach((button) => {
       button.addEventListener("click", () => {
-         // Remove active class from all buttons and contents
          tabButtons.forEach((btn) => btn.classList.remove("active"));
          tabContents.forEach((content) => content.classList.remove("active"));
-
-         // Add active class to current button and corresponding content
          button.classList.add("active");
          const tabId = button.getAttribute("data-tab");
          document.getElementById(`${tabId}-tab`).classList.add("active");
       });
    });
 
-   // ===== CLIENTE FUNCTIONS =====
+   addPaginationStyles();
    loadClientes();
    setupClienteListeners();
-
-   // ===== PRODUTO FUNCTIONS =====
-   // Apenas carregar produtos se o usuário for administrador
    if (typeof isAdmin !== "undefined" && isAdmin) {
-      loadProdutos();
+      loadProdutos(1, 20);
       setupProdutoListeners();
    }
-
-   // ===== MODAL HANDLING FOR MOBILE =====
    setupModalHandlers();
 });
-
-// ===== CLIENTE FUNCTIONS =====
-
 function loadClientes() {
-   // Adicionar um indicador de carregamento
    const listaClientes = document.getElementById("lista-clientes");
+   if (!listaClientes) {
+      console.error("Elemento lista-clientes não encontrado");
+      return;
+   }
+
    listaClientes.innerHTML =
       '<div class="loading-indicator">Carregando clientes...</div>';
 
    fetch("get_clientes.php")
       .then((response) => {
          if (!response.ok) {
-            throw new Error("Erro na resposta da rede ao carregar clientes");
+            throw new Error(
+               "Erro na resposta da rede ao carregar clientes: " +
+               response.status
+            );
          }
-         return response.json();
+         return response.text().then((text) => {
+            try {
+               if (!text.trim()) {
+                  console.warn("A resposta de get_clientes.php está vazia");
+                  return [];
+               }
+               return JSON.parse(text);
+            } catch (e) {
+               console.error(
+                  "Erro ao fazer parse do JSON:",
+                  e,
+                  "Resposta:",
+                  text
+               );
+               throw new Error(
+                  "Erro ao processar dados do servidor: " + e.message
+               );
+            }
+         });
       })
       .then((clientes) => {
          listaClientes.innerHTML = "";
 
-         if (clientes.length === 0) {
+         if (!clientes || clientes.length === 0) {
             listaClientes.innerHTML =
                '<div class="empty-list">Nenhum cliente encontrado</div>';
             return;
@@ -289,22 +238,28 @@ function loadClientes() {
            `;
             listaClientes.appendChild(clienteItem);
          });
-
-         // Adiciona event listeners aos novos itens
          attachClienteItemListeners();
       })
       .catch((error) => {
          console.error("Erro ao carregar clientes:", error);
          listaClientes.innerHTML =
-            '<div class="error-message">Erro ao carregar clientes. Tente novamente.</div>';
-         customModal.error(
-            "Erro ao carregar a lista de clientes. Verifique a conexão com o banco de dados."
-         );
+            '<div class="error-message">Erro ao carregar clientes. Tente novamente.<br>Detalhes: ' +
+            error.message +
+            "</div>";
+
+         if (typeof customModal !== "undefined") {
+            customModal.error(
+               "Erro ao carregar a lista de clientes. Verifique a conexão com o banco de dados."
+            );
+         } else {
+            alert(
+               "Erro ao carregar a lista de clientes. Verifique a conexão com o banco de dados."
+            );
+         }
       });
 }
 
 function setupClienteListeners() {
-   // Event listener para busca de clientes
    const buscaCliente = document.getElementById("busca-cliente");
    buscaCliente.addEventListener("input", () => {
       const searchTerm = buscaCliente.value.toLowerCase();
@@ -319,26 +274,17 @@ function setupClienteListeners() {
          }
       });
    });
-
-   // Event listener para adicionar novo cliente
    const addClienteBtn = document.getElementById("add-cliente");
    addClienteBtn.addEventListener("click", () => {
       resetClienteForm();
       document.getElementById("cliente-id").textContent = "Automático";
-
-      // Esconder o botão de excluir
       if (document.getElementById("btn-delete-cliente")) {
          document.getElementById("btn-delete-cliente").style.display = "none";
       }
-
-      // Para mobile, abre o modal
       if (window.innerWidth <= 768) {
-         // Para novo cadastro, não precisa esperar dados, abre o modal diretamente
          openFormModal("cliente", true);
       }
    });
-
-   // Event listener para botão CEP
    const buscarCepBtn = document.getElementById("buscar-cep");
    buscarCepBtn.addEventListener("click", () => {
       const cep = document.getElementById("cep").value.replace(/\D/g, "");
@@ -367,8 +313,6 @@ function setupClienteListeners() {
             });
       }
    });
-
-   // Event listeners para formulário de cliente
    const clienteForm = document.getElementById("clienteForm");
    if (clienteForm) {
       clienteForm.addEventListener("submit", function (e) {
@@ -395,20 +339,13 @@ function setupClienteListeners() {
             })
             .then((data) => {
                if (data.status === "success") {
-                  // Atualiza a lista de clientes
                   loadClientes();
-
-                  // Se for um novo cliente, limpa o formulário
                   if (clienteId === "Automático") {
                      resetClienteForm();
                   }
-
-                  // Fecha o modal em dispositivos móveis
                   if (window.innerWidth <= 768) {
                      closeFormModal();
                   }
-
-                  // Mostra mensagem de sucesso
                   customModal.success(data.message);
                } else {
                   customModal.error(data.message);
@@ -420,8 +357,6 @@ function setupClienteListeners() {
             });
       });
    }
-
-   // Botão cancelar/limpar
    const cancelarBtns = document.querySelectorAll("#clienteForm .btn-cancel");
    cancelarBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -431,8 +366,6 @@ function setupClienteListeners() {
          }
       });
    });
-
-   // Event listener para botão excluir cliente (apenas para administradores)
    const deleteClienteBtn = document.getElementById("btn-delete-cliente");
    if (deleteClienteBtn) {
       deleteClienteBtn.addEventListener("click", function () {
@@ -445,27 +378,19 @@ function setupClienteListeners() {
 }
 
 function attachClienteItemListeners() {
-   // Click em um cliente da lista
    const clienteItems = document.querySelectorAll(".cliente-item");
    clienteItems.forEach((item) => {
       item.addEventListener("click", function () {
          const clienteId = this.getAttribute("data-id");
-
-         // Para mobile, carrega os dados ANTES de abrir o modal
          if (window.innerWidth <= 768) {
-            // Primeiro carrega os dados, depois abre o modal quando estiver pronto
             loadClienteDetailsForMobile(clienteId);
          } else {
-            // Em desktop, carrega normalmente
             loadClienteDetails(clienteId);
          }
       });
    });
 }
-
-// Função específica para carregar dados de cliente no mobile
 function loadClienteDetailsForMobile(clienteId) {
-   // Mostra um indicador de carregamento
    const modalOverlay = document.getElementById("form-modal");
    const modalContent = document.getElementById("modal-content");
    modalContent.innerHTML =
@@ -482,8 +407,6 @@ function loadClienteDetailsForMobile(clienteId) {
       .then((data) => {
          if (data.status === "success") {
             const cliente = data.data;
-
-            // Primeiro atualiza o formulário principal com os dados
             document.getElementById("cliente-id").textContent = cliente.id;
             document.getElementById("empresa").value = cliente.razao_social;
             document.getElementById("cnpj").value = cliente.cpf_cnpj;
@@ -498,14 +421,10 @@ function loadClienteDetailsForMobile(clienteId) {
             document.getElementById("cidade").value = cliente.cidade;
             document.getElementById("estado").value = cliente.estado;
             document.getElementById("observacoes").value = cliente.observacoes;
-
-            // Mostra o botão de excluir apenas para administradores
             const deleteBtn = document.getElementById("btn-delete-cliente");
             if (deleteBtn && isAdmin) {
                deleteBtn.style.display = "block";
             }
-
-            // Só abre o modal depois que os dados forem carregados
             openFormModal("cliente", true);
          } else {
             closeFormModal();
@@ -532,8 +451,6 @@ function loadClienteDetails(clienteId) {
       .then((data) => {
          if (data.status === "success") {
             const cliente = data.data;
-
-            // Preenche o formulário com os dados do cliente
             document.getElementById("cliente-id").textContent = cliente.id;
             document.getElementById("empresa").value = cliente.razao_social;
             document.getElementById("cnpj").value = cliente.cpf_cnpj;
@@ -549,7 +466,6 @@ function loadClienteDetails(clienteId) {
             document.getElementById("estado").value = cliente.estado;
             document.getElementById("observacoes").value = cliente.observacoes;
 
-            // Mostra o botão de excluir apenas para administradores
             const deleteBtn = document.getElementById("btn-delete-cliente");
             if (deleteBtn && isAdmin) {
                deleteBtn.style.display = "block";
@@ -567,7 +483,6 @@ function loadClienteDetails(clienteId) {
       });
 }
 
-// Função de exclusão de cliente - verificará se é admin no backend
 function deleteCliente(clienteId) {
    customModal
       .confirm(
@@ -594,18 +509,14 @@ function deleteCliente(clienteId) {
                })
                .then((data) => {
                   if (data.status === "success") {
-                     // Atualiza a lista de clientes
                      loadClientes();
 
-                     // Reseta o formulário pois o cliente foi excluído
                      resetClienteForm();
 
-                     // Fecha o modal em dispositivos móveis
                      if (window.innerWidth <= 768) {
                         closeFormModal();
                      }
 
-                     // Mostra mensagem de sucesso
                      customModal.success("Cliente excluído com sucesso!");
                   } else {
                      customModal.error(
@@ -631,86 +542,255 @@ function resetClienteForm() {
    document.getElementById("status-cliente").innerHTML = "";
    document.getElementById("status-cliente").className = "status-message";
 
-   // Esconde o botão de excluir
    const deleteBtn = document.getElementById("btn-delete-cliente");
    if (deleteBtn) {
       deleteBtn.style.display = "none";
    }
 }
+let currentPage = 1;
+let isLoadingProdutos = false;
+let totalPages = 1;
+let totalProdutos = 0;
 
-// ===== PRODUTO FUNCTIONS =====
-// Estas funções só serão chamadas para administradores
+function loadProdutos(page = 1, limit = 50, forceReload = false) {
+   if (isLoadingProdutos && !forceReload) return;
 
-function loadProdutos() {
-   // Adicionar um indicador de carregamento
+   isLoadingProdutos = true;
    const listaProdutos = document.getElementById("lista-produtos");
-   if (!listaProdutos) return; // Sair se o elemento não existir (não-admin)
+   if (!listaProdutos) {
+      console.error("Elemento lista-produtos não encontrado");
+      isLoadingProdutos = false;
+      return;
+   }
 
    listaProdutos.innerHTML =
       '<div class="loading-indicator">Carregando produtos...</div>';
 
-   fetch("get_produtos.php")
+   const timestamp = new Date().getTime();
+
+   console.log(`Carregando página ${page} de produtos...`);
+
+   fetch(`get_produtos.php?page=${page}&limit=${limit}&t=${timestamp}`, {
+      headers: {
+         "Cache-Control": "no-cache",
+         Pragma: "no-cache",
+      },
+   })
       .then((response) => {
          if (!response.ok) {
-            throw new Error("Erro na resposta da rede ao carregar produtos");
+            throw new Error(`Erro HTTP: ${response.status}`);
          }
          return response.json();
       })
-      .then((produtos) => {
-         listaProdutos.innerHTML = "";
+      .then((data) => {
+         console.log(
+            `Recebidos ${data.produtos ? data.produtos.length : 0
+            } produtos da página ${page}`
+         );
 
-         if (produtos.length === 0) {
-            listaProdutos.innerHTML =
-               '<div class="empty-list">Nenhum produto encontrado</div>';
-            return;
-         }
+         currentPage = parseInt(data.pagination.page);
+         totalPages = parseInt(data.pagination.totalPages);
+         totalProdutos = parseInt(data.pagination.total);
 
-         produtos.forEach((produto) => {
-            const produtoItem = document.createElement("div");
-            produtoItem.className = "list-item produto-item";
-            produtoItem.setAttribute("data-id", produto.id);
-
-            // Formatação do preço
-            const preco = parseFloat(produto.preco_venda).toLocaleString(
-               "pt-BR",
-               {
-                  style: "currency",
-                  currency: "BRL",
-               }
-            );
-
-            // Mostrar código de barras e nome do produto
-            const codigoBarras = produto.codigo_barras || "Sem código";
-
-            produtoItem.innerHTML = `
-               <div class="list-item-content">
-                   <h4>${codigoBarras} - ${produto.nome}</h4>
-                   <p>${preco}</p>
-               </div>
-           `;
-            listaProdutos.appendChild(produtoItem);
-         });
-
-         // Adiciona event listeners aos novos itens
-         attachProdutoItemListeners();
+         renderProdutosPage(data.produtos, listaProdutos, data.pagination);
+         isLoadingProdutos = false;
       })
       .catch((error) => {
-         console.error("Erro ao carregar produtos:", error);
-         if (listaProdutos) {
-            listaProdutos.innerHTML =
-               '<div class="error-message">Erro ao carregar produtos. Tente novamente.</div>';
-            customModal.error(
-               "Erro ao carregar a lista de produtos. Verifique a conexão com o banco de dados."
+         console.error(`Erro ao carregar produtos:`, error);
+         listaProdutos.innerHTML = `
+           <div class="error-message">
+               Erro ao carregar produtos. <br>
+               <button class="btn-retry">Tentar novamente</button>
+           </div>
+       `;
+
+         const btnRetry = listaProdutos.querySelector(".btn-retry");
+         if (btnRetry) {
+            btnRetry.addEventListener("click", () =>
+               loadProdutos(currentPage, limit, true)
             );
          }
+
+         isLoadingProdutos = false;
       });
+}
+function renderProdutosPage(produtos, container, pagination) {
+   container.innerHTML = "";
+
+   if (!produtos || produtos.length === 0) {
+      container.innerHTML =
+         '<div class="empty-list">Nenhum produto encontrado</div>';
+      return;
+   }
+
+   const listElement = document.createElement("div");
+   listElement.className = "produtos-list";
+
+   produtos.forEach((produto) => {
+      const produtoItem = document.createElement("div");
+      produtoItem.className = "list-item produto-item";
+      produtoItem.setAttribute("data-id", produto.id);
+
+      let preco;
+      try {
+         preco = parseFloat(produto.preco_venda).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+         });
+      } catch (e) {
+         console.error("Erro ao formatar preço:", e);
+         preco = produto.preco_venda || "0,00";
+      }
+
+      const codigoBarras = produto.codigo_barras || "Sem código";
+
+      produtoItem.innerHTML = `
+           <div class="list-item-content">
+               <h4>${codigoBarras} - ${produto.nome}</h4>
+               <p>${preco}</p>
+           </div>
+       `;
+      listElement.appendChild(produtoItem);
+   });
+
+   container.appendChild(listElement);
+
+   const pagerElement = document.createElement("div");
+   pagerElement.className = "pagination-controls";
+
+   const currentPage = parseInt(pagination.page);
+   const totalPages = parseInt(pagination.totalPages);
+   const totalItems = parseInt(pagination.total);
+
+   pagerElement.innerHTML = `
+   <div class="pagination-info">
+       Página ${currentPage} de ${totalPages} - (${totalItems} produtos)
+   </div>
+   <div class="pagination-buttons">
+        <button class="btn-page" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""}>
+            &#8592;
+        </button>
+        <button class="btn-page" data-page="${currentPage + 1}" ${currentPage === totalPages ? "disabled" : ""}>
+            &#8594;
+        </button>
+   </div>
+`;
+
+
+   container.appendChild(pagerElement);
+
+   const pageButtons = pagerElement.querySelectorAll(".btn-page");
+   pageButtons.forEach((button) => {
+      if (!button.disabled) {
+         button.addEventListener("click", () => {
+            const targetPage = parseInt(button.getAttribute("data-page"));
+            loadProdutos(targetPage, pagination.limit);
+         });
+      }
+   });
+
+   attachProdutoItemListeners();
+}
+
+function addPaginationStyles() {
+   const style = document.createElement("style");
+   style.textContent = `
+       .pagination-controls {
+           margin-top: 20px;
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           gap: 10px;
+       }
+       
+       .pagination-info {
+           font-size: 14px;
+           color: #6b7280;
+       }
+       
+       .pagination-buttons {
+           display: flex;
+           gap: 5px;
+       }
+       
+       .btn-page {
+           padding: 6px 12px;
+           border: 1px solid #d1d5db;
+           border-radius: 4px;
+           background-color: #f9fafb;
+           color: #374151;
+           cursor: pointer;
+           transition: all 0.2s;
+       }
+       
+       .btn-page:hover:not([disabled]) {
+           background-color: #e5e7eb;
+       }
+       
+       .btn-page[disabled] {
+           opacity: 0.5;
+           cursor: not-allowed;
+       }
+       
+       .btn-retry {
+           padding: 8px 16px;
+           background-color: #3b82f6;
+           color: white;
+           border: none;
+           border-radius: 4px;
+           cursor: pointer;
+           margin-top: 10px;
+       }
+       
+       .btn-retry:hover {
+           background-color: #2563eb;
+       }
+   `;
+   document.head.appendChild(style);
+}
+
+function renderProdutosList(produtos, container) {
+   container.innerHTML = "";
+
+   if (!produtos || produtos.length === 0) {
+      container.innerHTML =
+         '<div class="empty-list">Nenhum produto encontrado</div>';
+      return;
+   }
+
+   produtos.forEach((produto) => {
+      const produtoItem = document.createElement("div");
+      produtoItem.className = "list-item produto-item";
+      produtoItem.setAttribute("data-id", produto.id);
+
+      let preco;
+      try {
+         preco = parseFloat(produto.preco_venda).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+         });
+      } catch (e) {
+         console.error("Erro ao formatar preço:", e);
+         preco = produto.preco_venda || "0,00";
+      }
+
+      const codigoBarras = produto.codigo_barras || "Sem código";
+
+      produtoItem.innerHTML = `
+            <div class="list-item-content">
+                <h4>${codigoBarras} - ${produto.nome}</h4>
+                <p>${preco}</p>
+            </div>
+        `;
+      container.appendChild(produtoItem);
+   });
+
+   attachProdutoItemListeners();
 }
 
 function setupProdutoListeners() {
-   // Pular se não for administrador
    if (!isAdmin) return;
 
-   // Event listener para busca de produtos
    const buscaProduto = document.getElementById("busca-produto");
    if (!buscaProduto) return; // Sair se o elemento não existir
 
@@ -728,25 +808,18 @@ function setupProdutoListeners() {
       });
    });
 
-   // Event listener para adicionar novo produto
    const addProdutoBtn = document.getElementById("add-produto");
    if (addProdutoBtn) {
       addProdutoBtn.addEventListener("click", () => {
          resetProdutoForm();
          document.getElementById("produto-id").textContent = "Automático";
 
-         // Esconder o botão de excluir
          document.getElementById("btn-delete-produto").style.display = "none";
-
-         // Para mobile, abre o modal
          if (window.innerWidth <= 768) {
-            // Para novo cadastro, não precisa esperar dados, abre o modal diretamente
             openFormModal("produto", true);
          }
       });
    }
-
-   // Event listeners para formulário de produto
    const produtoForm = document.getElementById("produtoForm");
    if (produtoForm) {
       produtoForm.addEventListener("submit", function (e) {
@@ -773,20 +846,14 @@ function setupProdutoListeners() {
             })
             .then((data) => {
                if (data.status === "success") {
-                  // Atualiza a lista de produtos
+                  currentPage = 1;
                   loadProdutos();
-
-                  // Se for um novo produto, limpa o formulário
                   if (produtoId === "Automático") {
                      resetProdutoForm();
                   }
-
-                  // Fecha o modal em dispositivos móveis
                   if (window.innerWidth <= 768) {
                      closeFormModal();
                   }
-
-                  // Mostra mensagem de sucesso
                   customModal.success(data.message);
                } else {
                   customModal.error(data.message);
@@ -799,7 +866,6 @@ function setupProdutoListeners() {
       });
    }
 
-   // Botão cancelar/limpar
    const cancelarBtns = document.querySelectorAll("#produtoForm .btn-cancel");
    if (cancelarBtns) {
       cancelarBtns.forEach((btn) => {
@@ -812,7 +878,6 @@ function setupProdutoListeners() {
       });
    }
 
-   // Event listener para botão excluir produto
    const deleteProdutoBtn = document.getElementById("btn-delete-produto");
    if (deleteProdutoBtn) {
       deleteProdutoBtn.addEventListener("click", function () {
@@ -824,16 +889,12 @@ function setupProdutoListeners() {
    }
 }
 
-// ===== MODAL HANDLING FOR MOBILE =====
-
 function setupModalHandlers() {
    const modalOverlay = document.getElementById("form-modal");
    const closeModalBtn = document.querySelector(".btn-close-modal");
 
-   // Fecha o modal quando clica no X
    closeModalBtn.addEventListener("click", closeFormModal);
 
-   // Fecha o modal quando clica fora dele
    modalOverlay.addEventListener("click", function (e) {
       if (e.target === modalOverlay) {
          closeFormModal();
@@ -846,26 +907,21 @@ function openFormModal(type, skipDataLoading = false) {
    const modalContent = document.getElementById("modal-content");
    const modalTitle = document.getElementById("modal-title");
 
-   // Define o título do modal
    modalTitle.textContent =
       type === "cliente" ? "Detalhes do Cliente" : "Detalhes do Produto";
 
-   // Se skipDataLoading for false, não faça nada (isso significa que esse modal já está mostrando um indicador de carregamento)
    if (!skipDataLoading) {
       return;
    }
 
-   // Clona o formulário para o modal
    const form =
       type === "cliente"
          ? document.getElementById("clienteForm").cloneNode(true)
          : document.getElementById("produtoForm").cloneNode(true);
 
-   // Limpa o conteúdo atual do modal e adiciona o formulário
    modalContent.innerHTML = "";
    modalContent.appendChild(form);
 
-   // Adiciona o ID atual ao formulário do modal
    const currentId =
       type === "cliente"
          ? document.getElementById("cliente-id").textContent
@@ -876,7 +932,6 @@ function openFormModal(type, skipDataLoading = false) {
       modalIdElement.textContent = currentId;
    }
 
-   // Preenche os valores do formulário
    if (type === "cliente") {
       form.querySelector("#empresa").value =
          document.getElementById("empresa").value;
@@ -900,8 +955,6 @@ function openFormModal(type, skipDataLoading = false) {
          document.getElementById("estado").value;
       form.querySelector("#observacoes").value =
          document.getElementById("observacoes").value;
-
-      // Adicionar event listener para o botão de busca CEP no formulário clonado
       const buscarCepBtn = form.querySelector("#buscar-cep");
       if (buscarCepBtn) {
          buscarCepBtn.addEventListener("click", () => {
@@ -942,7 +995,6 @@ function openFormModal(type, skipDataLoading = false) {
          });
       }
    } else if (isAdmin) {
-      // Apenas para administradores
       form.querySelector("#codigo-barras").value =
          document.getElementById("codigo-barras").value;
       form.querySelector("#nome-produto").value =
@@ -953,21 +1005,18 @@ function openFormModal(type, skipDataLoading = false) {
          document.getElementById("preco-venda").value;
    }
 
-   // Mostra ou esconde o botão de excluir no modal com base no ID e permissões
    const deleteBtn =
       type === "cliente"
          ? form.querySelector("#btn-delete-cliente")
          : form.querySelector("#btn-delete-produto");
 
    if (deleteBtn) {
-      // Mostra o botão de excluir apenas para administradores
       if (isAdmin && currentId !== "Automático") {
          deleteBtn.style.display = "block";
       } else {
          deleteBtn.style.display = "none";
       }
 
-      // Adiciona event listener para o botão excluir no modal
       deleteBtn.addEventListener("click", function () {
          if (currentId !== "Automático") {
             if (type === "cliente") {
@@ -979,7 +1028,6 @@ function openFormModal(type, skipDataLoading = false) {
       });
    }
 
-   // Adiciona os event listeners ao formulário clonado
    if (type === "cliente") {
       form.addEventListener("submit", function (e) {
          e.preventDefault();
@@ -1009,7 +1057,6 @@ function openFormModal(type, skipDataLoading = false) {
             });
       });
    } else if (isAdmin) {
-      // Apenas para administradores
       form.addEventListener("submit", function (e) {
          e.preventDefault();
 
@@ -1025,6 +1072,7 @@ function openFormModal(type, skipDataLoading = false) {
             .then((response) => response.json())
             .then((data) => {
                if (data.status === "success") {
+                  currentPage = 1;
                   loadProdutos();
                   closeFormModal();
                   customModal.success(data.message);
@@ -1039,13 +1087,11 @@ function openFormModal(type, skipDataLoading = false) {
       });
    }
 
-   // Adiciona event listener para o botão cancelar
    const cancelBtn = form.querySelector(".btn-cancel");
    if (cancelBtn) {
       cancelBtn.addEventListener("click", closeFormModal);
    }
 
-   // Mostra o modal
    modalOverlay.classList.add("active");
 }
 
@@ -1054,33 +1100,26 @@ function closeFormModal() {
    modalOverlay.classList.remove("active");
 }
 
-// Funções de produtos restantes - apenas para administradores
 function attachProdutoItemListeners() {
    if (!isAdmin) return;
 
-   // Click em um produto da lista
    const produtoItems = document.querySelectorAll(".produto-item");
    produtoItems.forEach((item) => {
       item.addEventListener("click", function () {
          const produtoId = this.getAttribute("data-id");
 
-         // Para mobile, carrega os dados ANTES de abrir o modal
          if (window.innerWidth <= 768) {
-            // Primeiro carrega os dados, depois abre o modal quando estiver pronto
             loadProdutoDetailsForMobile(produtoId);
          } else {
-            // Em desktop, carrega normalmente
             loadProdutoDetails(produtoId);
          }
       });
    });
 }
 
-// Função específica para carregar dados de produto no mobile
 function loadProdutoDetailsForMobile(produtoId) {
    if (!isAdmin) return;
 
-   // Mostra um indicador de carregamento
    const modalOverlay = document.getElementById("form-modal");
    const modalContent = document.getElementById("modal-content");
    modalContent.innerHTML =
@@ -1098,7 +1137,6 @@ function loadProdutoDetailsForMobile(produtoId) {
          if (data.status === "success") {
             const produto = data.data;
 
-            // Primeiro atualiza o formulário principal com os dados
             document.getElementById("produto-id").textContent = produto.id;
             document.getElementById("codigo-barras").value =
                produto.codigo_barras;
@@ -1106,11 +1144,9 @@ function loadProdutoDetailsForMobile(produtoId) {
             document.getElementById("unidade").value = produto.unidade;
             document.getElementById("preco-venda").value = produto.preco_venda;
 
-            // Mostra o botão de excluir
             document.getElementById("btn-delete-produto").style.display =
                "block";
 
-            // Só abre o modal depois que os dados forem carregados
             openFormModal("produto", true);
          } else {
             closeFormModal();
@@ -1140,7 +1176,6 @@ function loadProdutoDetails(produtoId) {
          if (data.status === "success") {
             const produto = data.data;
 
-            // Preenche o formulário com os dados do produto
             document.getElementById("produto-id").textContent = produto.id;
             document.getElementById("codigo-barras").value =
                produto.codigo_barras;
@@ -1148,7 +1183,6 @@ function loadProdutoDetails(produtoId) {
             document.getElementById("unidade").value = produto.unidade;
             document.getElementById("preco-venda").value = produto.preco_venda;
 
-            // Mostra o botão de excluir
             document.getElementById("btn-delete-produto").style.display =
                "block";
          } else {
@@ -1192,18 +1226,14 @@ function deleteProduto(produtoId) {
                })
                .then((data) => {
                   if (data.status === "success") {
-                     // Atualiza a lista de produtos
+                     currentPage = 1;
                      loadProdutos();
-
-                     // Reseta o formulário pois o produto foi excluído
                      resetProdutoForm();
 
-                     // Fecha o modal em dispositivos móveis
                      if (window.innerWidth <= 768) {
                         closeFormModal();
                      }
 
-                     // Mostra mensagem de sucesso
                      customModal.success("Produto excluído com sucesso!");
                   } else {
                      customModal.error(
@@ -1228,11 +1258,9 @@ function resetProdutoForm() {
    document.getElementById("produto-id").textContent = "Automático";
    document.getElementById("status-produto").innerHTML = "";
    document.getElementById("status-produto").className = "status-message";
-   // Esconde o botão de excluir
    document.getElementById("btn-delete-produto").style.display = "none";
 }
 
-// Adiciona estilo para o indicador de carregamento e mensagens de status
 const style = document.createElement("style");
 style.textContent = `
 .loading-indicator {
@@ -1243,6 +1271,23 @@ style.textContent = `
   font-size: 16px;
   color: #24265d;
   text-align: center;
+  flex-direction: column;
+}
+
+.loading-indicator::after {
+  content: "";
+  width: 40px;
+  height: 40px;
+  margin-top: 10px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #24265d;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .empty-list {

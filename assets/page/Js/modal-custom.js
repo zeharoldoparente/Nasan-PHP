@@ -1,106 +1,63 @@
-// Sistema de modais personalizados que não interfere com o código existente
 class ModalCustom {
    constructor() {
       this.init();
    }
 
    init() {
-      // Criar elementos do modal
       this.createModalElements();
-
-      // Adicionar event listeners
       this.setupEventListeners();
    }
 
    createModalElements() {
-      // Criar o overlay do modal
       this.overlay = document.createElement("div");
       this.overlay.className = "modal-custom-overlay";
-
-      // Criar o container do modal
       this.container = document.createElement("div");
       this.container.className = "modal-custom-container";
-
-      // Criar o cabeçalho do modal
       this.header = document.createElement("div");
       this.header.className = "modal-custom-header";
-
-      // Criar o título
       this.title = document.createElement("h3");
       this.title.textContent = "Aviso";
-
-      // Criar o botão de fechar
       this.closeButton = document.createElement("button");
       this.closeButton.className = "btn-close-modal-custom";
       this.closeButton.innerHTML = '<i class="bi bi-x-lg"></i>';
-
-      // Montar o cabeçalho
       this.header.appendChild(this.title);
       this.header.appendChild(this.closeButton);
-
-      // Criar o conteúdo do modal
       this.content = document.createElement("div");
       this.content.className = "modal-custom-content";
-
-      // Criar o ícone
       this.icon = document.createElement("div");
       this.icon.className = "modal-custom-icon";
-
-      // Criar a mensagem
       this.message = document.createElement("div");
       this.message.className = "modal-custom-message";
-
-      // Criar a área de botões
       this.actions = document.createElement("div");
       this.actions.className = "modal-custom-actions";
-
-      // Montar o conteúdo
       this.content.appendChild(this.icon);
       this.content.appendChild(this.message);
       this.content.appendChild(this.actions);
-
-      // Montar o modal
       this.container.appendChild(this.header);
       this.container.appendChild(this.content);
       this.overlay.appendChild(this.container);
-
-      // Adicionar ao body
       document.body.appendChild(this.overlay);
    }
 
    setupEventListeners() {
-      // Fechar ao clicar no X
       this.closeButton.addEventListener("click", () => this.close());
-
-      // Fechar ao clicar no overlay (fora do modal)
       this.overlay.addEventListener("click", (e) => {
          if (e.target === this.overlay) {
             this.close();
          }
       });
-
-      // Fechar com a tecla ESC
       document.addEventListener("keydown", (e) => {
          if (e.key === "Escape" && this.overlay.classList.contains("active")) {
             this.close();
          }
       });
    }
-
-   // Métodos públicos
    alert(message, title = "Aviso", type = "info") {
       return new Promise((resolve) => {
-         // Configurar o modal
          this.title.textContent = title;
          this.message.textContent = message;
-
-         // Limpar ações anteriores
          this.actions.innerHTML = "";
-
-         // Configurar o ícone
          this.setIcon(type);
-
-         // Adicionar botão de OK
          const okButton = document.createElement("button");
          okButton.className = "btn-modal-custom btn-modal-confirm";
          okButton.textContent = "OK";
@@ -110,28 +67,17 @@ class ModalCustom {
          });
 
          this.actions.appendChild(okButton);
-
-         // Abrir o modal
          this.open();
-
-         // Focar no botão OK
          setTimeout(() => okButton.focus(), 100);
       });
    }
 
    confirm(message, title = "Confirmação", type = "warning") {
       return new Promise((resolve) => {
-         // Configurar o modal
          this.title.textContent = title;
          this.message.textContent = message;
-
-         // Limpar ações anteriores
          this.actions.innerHTML = "";
-
-         // Configurar o ícone
          this.setIcon(type);
-
-         // Adicionar botão de Não
          const noButton = document.createElement("button");
          noButton.className = "btn-modal-custom btn-modal-cancel";
          noButton.textContent = "Não";
@@ -139,8 +85,6 @@ class ModalCustom {
             this.close();
             resolve(false);
          });
-
-         // Adicionar botão de Sim
          const yesButton = document.createElement("button");
          yesButton.className = "btn-modal-custom btn-modal-danger";
          yesButton.textContent = "Sim";
@@ -151,11 +95,7 @@ class ModalCustom {
 
          this.actions.appendChild(noButton);
          this.actions.appendChild(yesButton);
-
-         // Abrir o modal
          this.open();
-
-         // Focar no botão Não por segurança
          setTimeout(() => noButton.focus(), 100);
       });
    }
@@ -191,31 +131,24 @@ class ModalCustom {
 
    open() {
       this.overlay.classList.add("active");
-      document.body.style.overflow = "hidden"; // Bloquear scroll
+      document.body.style.overflow = "hidden";
    }
 
    close() {
       this.overlay.classList.remove("active");
-      document.body.style.overflow = ""; // Restaurar scroll
+      document.body.style.overflow = "";
    }
 }
-
-// Inicializar o sistema de modais
 const customModal = new ModalCustom();
-
-// Event listeners para botões de exclusão apenas - NÃO MODIFICAR O COMPORTAMENTO DOS FORMULÁRIOS
 document.addEventListener("DOMContentLoaded", function () {
-   // Cliente Delete Button
    const deleteClienteBtn = document.getElementById("btn-delete-cliente");
    if (deleteClienteBtn) {
       deleteClienteBtn.addEventListener("click", function (e) {
-         // Impedir o comportamento padrão
          e.preventDefault();
          e.stopPropagation();
 
          const clienteId = document.getElementById("cliente-id").textContent;
          if (clienteId !== "Automático") {
-            // Usar o modal personalizado em vez do confirm padrão
             customModal
                .confirm(
                   "Tem certeza que deseja excluir este cliente?",
@@ -224,7 +157,6 @@ document.addEventListener("DOMContentLoaded", function () {
                )
                .then((confirmed) => {
                   if (confirmed) {
-                     // Chamar a função original
                      const formData = new FormData();
                      formData.append("id", clienteId);
 
@@ -235,11 +167,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         .then((response) => response.json())
                         .then((data) => {
                            if (data.status === "success") {
-                              // Recarregar a lista de clientes
                               if (typeof loadClientes === "function")
                                  loadClientes();
-
-                              // Limpar formulário
                               document.getElementById("clienteForm").reset();
                               document.getElementById(
                                  "cliente-id"
@@ -247,16 +176,12 @@ document.addEventListener("DOMContentLoaded", function () {
                               document.getElementById(
                                  "btn-delete-cliente"
                               ).style.display = "none";
-
-                              // Fechar o modal em dispositivos móveis
                               if (
                                  window.innerWidth <= 768 &&
                                  typeof closeFormModal === "function"
                               ) {
                                  closeFormModal();
                               }
-
-                              // Mostrar modal de sucesso
                               customModal.success(
                                  "Cliente excluído com sucesso!"
                               );
@@ -277,18 +202,14 @@ document.addEventListener("DOMContentLoaded", function () {
          }
       });
    }
-
-   // Produto Delete Button
    const deleteProdutoBtn = document.getElementById("btn-delete-produto");
    if (deleteProdutoBtn) {
       deleteProdutoBtn.addEventListener("click", function (e) {
-         // Impedir o comportamento padrão
          e.preventDefault();
          e.stopPropagation();
 
          const produtoId = document.getElementById("produto-id").textContent;
          if (produtoId !== "Automático") {
-            // Usar o modal personalizado em vez do confirm padrão
             customModal
                .confirm(
                   "Tem certeza que deseja excluir este produto?",
@@ -297,7 +218,6 @@ document.addEventListener("DOMContentLoaded", function () {
                )
                .then((confirmed) => {
                   if (confirmed) {
-                     // Chamar a função original
                      const formData = new FormData();
                      formData.append("id", produtoId);
 
@@ -308,11 +228,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         .then((response) => response.json())
                         .then((data) => {
                            if (data.status === "success") {
-                              // Recarregar a lista de produtos
                               if (typeof loadProdutos === "function")
                                  loadProdutos();
-
-                              // Limpar formulário
                               document.getElementById("produtoForm").reset();
                               document.getElementById(
                                  "produto-id"
@@ -320,16 +237,12 @@ document.addEventListener("DOMContentLoaded", function () {
                               document.getElementById(
                                  "btn-delete-produto"
                               ).style.display = "none";
-
-                              // Fechar o modal em dispositivos móveis
                               if (
                                  window.innerWidth <= 768 &&
                                  typeof closeFormModal === "function"
                               ) {
                                  closeFormModal();
                               }
-
-                              // Mostrar modal de sucesso
                               customModal.success(
                                  "Produto excluído com sucesso!"
                               );
@@ -350,8 +263,6 @@ document.addEventListener("DOMContentLoaded", function () {
          }
       });
    }
-
-   // Adicionar estilos para os modais
    const style = document.createElement("style");
    style.textContent = `
    /* Estilo base para o modal overlay */

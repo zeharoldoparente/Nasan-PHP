@@ -2,10 +2,8 @@
 session_start();
 
 if (isset($_POST["submit"]) && !empty($_POST["usuario"]) && !empty($_POST["senha"])) {
-   // Usar caminho absoluto para garantir que encontre o arquivo
    require_once __DIR__ . "/config.php";
 
-   // Verificar se a conexão foi estabelecida corretamente
    if (!$conn) {
       error_log("Falha na conexão com o banco de dados");
       header('Location: ../../../index.php?erro=3');
@@ -15,10 +13,8 @@ if (isset($_POST["submit"]) && !empty($_POST["usuario"]) && !empty($_POST["senha
    $usuario = $_POST['usuario'];
    $senha = $_POST['senha'];
 
-   // Adicionar log para debug
    error_log("Tentativa de login para usuário: " . $usuario);
 
-   // Buscar o usuário no banco
    $sql = "SELECT * FROM usuarios WHERE usuario = ?";
    $stmt = $conn->prepare($sql);
 
@@ -35,12 +31,10 @@ if (isset($_POST["submit"]) && !empty($_POST["usuario"]) && !empty($_POST["senha
    if ($result->num_rows > 0) {
       $user = $result->fetch_assoc();
 
-      // Verificar a senha usando password_verify
       if (password_verify($senha, $user['senha'])) {
-         // Verificar se o usuário está ativo
          if ($user['ativo'] == 0) {
             $stmt->close();
-            header('Location: ../../../index.php?erro=2');
+            header(header: 'Location: ../../../index.php?erro=2');
             exit();
          }
 

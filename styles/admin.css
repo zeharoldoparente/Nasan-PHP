@@ -19,8 +19,6 @@
    font-weight: 600;
    color: #24265d;
 }
-
-/* Ações administrativas */
 .admin-actions {
    display: flex;
    justify-content: flex-end;
@@ -48,15 +46,11 @@
 .btn-novo:hover {
    background-color: #1e2050;
 }
-
-/* Split Layout */
 .split-layout {
    display: flex;
    gap: 20px;
    min-height: 500px;
 }
-
-/* Lista de usuários */
 .user-list {
    flex: 0 0 40%;
    border: 1px solid #e2e8f0;
@@ -66,16 +60,12 @@
    background-color: white;
    padding: 15px;
 }
-
-/* Mensagem quando não há usuários */
 .no-users-message {
    text-align: center;
    padding: 30px;
    color: #64748b;
    font-style: italic;
 }
-
-/* Painel de detalhes */
 .user-details {
    flex: 1;
    border: 1px solid #e2e8f0;
@@ -181,8 +171,6 @@
    gap: 15px;
    width: 100%;
 }
-
-/* Grupos de formulário */
 .form-group {
    margin-bottom: 20px;
    width: 100%;
@@ -231,8 +219,6 @@
    border-color: #a7b3c7;
    box-shadow: 0 0 0 1px rgba(36, 38, 93, 0.1);
 }
-
-/* Ações do formulário */
 .form-actions {
    display: flex;
    justify-content: flex-end;
@@ -265,8 +251,6 @@
 #btn-salvar-modal:hover {
    background-color: #1e2050;
 }
-
-/* Botão cancelar */
 .btn-cancel {
    background-color: #f1f5f9;
    color: #64748b;
@@ -276,8 +260,6 @@
 .btn-cancel:hover {
    background-color: #e2e8f0;
 }
-
-/* Botão excluir */
 .btn-delete {
    background-color: #ef4444;
    color: white;
@@ -291,8 +273,6 @@
 .hidden {
    display: none;
 }
-
-/* Radio buttons estilizados */
 .admin-radio-group,
 .status-radio-group {
    display: flex;
@@ -335,8 +315,6 @@
    margin-right: 6px;
    font-size: 16px;
 }
-
-/* Estilos para o status de usuário */
 .user-status {
    font-size: 12px;
    margin: 4px 0 0;
@@ -352,8 +330,6 @@
 .user-status-icons i {
    font-size: 14px;
 }
-
-/* Status badge */
 .status-badge {
    display: inline-block;
    padding: 4px 8px;
@@ -373,15 +349,11 @@
    background-color: #fecaca;
    color: #991b1b;
 }
-
-/* Estilo para usuários inativos na lista */
 .user-inactive {
    opacity: 0.7;
    background-color: #f8f8f8;
    border-left: 3px solid #ef4444;
 }
-
-/* Título do formulário */
 #form-title {
    margin-top: 0;
    margin-bottom: 20px;
@@ -389,8 +361,6 @@
    font-size: 18px;
    font-weight: 600;
 }
-
-/* Modal para dispositivos móveis */
 .modal-overlay {
    position: fixed;
    top: 0;
@@ -447,8 +417,6 @@
    overflow-y: auto;
    max-height: calc(90vh - 60px);
 }
-
-/* Modal de confirmação */
 .confirm-modal-content {
    text-align: center;
    max-width: 400px;
@@ -528,8 +496,6 @@
    overflow-y: auto;
    max-height: calc(90vh - 120px);
 }
-
-/* Modal de confirmação específico */
 .confirm-modal-content {
    text-align: center;
    padding: 20px 16px;
@@ -556,8 +522,6 @@
    cursor: pointer;
    transition: all 0.2s;
 }
-
-/* Botão Excluir no modal */
 .confirm-actions .btn-delete {
    background-color: #ef4444;
    color: white;
@@ -567,8 +531,6 @@
 .confirm-actions .btn-delete:hover {
    background-color: #dc2626;
 }
-
-/* Botão Cancelar no modal */
 .confirm-actions .btn-cancel {
    background-color: #f1f5f9;
    color: #64748b;
@@ -578,16 +540,12 @@
 .confirm-actions .btn-cancel:hover {
    background-color: #e2e8f0;
 }
-
-/* Ícone de erro no modal */
 .modal-error-icon {
    color: #ef4444;
    font-size: 48px;
    margin: 10px auto;
    display: block;
 }
-
-/* Media query para dispositivos móveis */
 @media screen and (max-width: 768px) {
    .modal-container {
       width: 95%;

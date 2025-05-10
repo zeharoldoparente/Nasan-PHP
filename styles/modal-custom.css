@@ -1,4 +1,3 @@
-/* Estilo base para o modal overlay */
 .modal-custom-overlay {
    position: fixed;
    top: 0;
@@ -19,8 +18,6 @@
    opacity: 1;
    visibility: visible;
 }
-
-/* Container principal do modal */
 .modal-custom-container {
    width: 90%;
    max-width: 400px;
@@ -37,8 +34,6 @@
 .modal-custom-overlay.active .modal-custom-container {
    transform: translateY(0);
 }
-
-/* Cabeçalho do modal */
 .modal-custom-header {
    display: flex;
    justify-content: space-between;
@@ -66,8 +61,6 @@
    justify-content: center;
    padding: 4px;
 }
-
-/* Conteúdo do modal */
 .modal-custom-content {
    padding: 20px 16px;
    text-align: center;
@@ -79,8 +72,6 @@
    margin-bottom: 20px;
    line-height: 1.5;
 }
-
-/* Ícones nos modais */
 .modal-custom-icon {
    font-size: 48px;
    margin-bottom: 15px;
@@ -101,8 +92,6 @@
 .modal-custom-icon.info {
    color: #3b82f6;
 }
-
-/* Botões de ação do modal */
 .modal-custom-actions {
    display: flex;
    justify-content: center;
@@ -160,8 +149,6 @@
 .btn-modal-success:hover {
    background-color: #15803d;
 }
-
-/* Animações */
 @keyframes fadeInUp {
    from {
       opacity: 0;
@@ -172,12 +159,9 @@
       transform: translate3d(0, 0, 0);
    }
 }
-
 .modal-custom-container {
    animation: fadeInUp 0.3s ease-out;
 }
-
-/* Responsividade */
 @media (max-width: 576px) {
    .modal-custom-container {
       width: 95%;

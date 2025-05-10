@@ -1,10 +1,8 @@
-// Variáveis globais
 let usuarios = [];
 let modoEdicao = false;
 let usuarioIdParaExcluir = null;
-const DEV_USER_ID = 3; // ID do usuário desenvolvedor que deve ficar oculto
+const DEV_USER_ID = 3;
 
-// Seletores do DOM
 const userList = document.querySelector(".user-list");
 const placeholder = document.getElementById("details-placeholder");
 const userForm = document.getElementById("user-form");
@@ -14,24 +12,19 @@ const modalContent = document.getElementById("modal-content");
 const btnNovoUsuario = document.getElementById("btn-novo-usuario");
 const btnCancelar = document.getElementById("btn-cancelar");
 
-// Eventos para os elementos da página
 document.addEventListener("DOMContentLoaded", function () {
-   // Inicializar a lista de usuários
    carregarUsuarios();
 
-   // Evento para o botão de novo usuário
    btnNovoUsuario.addEventListener("click", () => {
       mostrarFormulario("novo");
    });
 
-   // Evento para o botão de cancelar
    btnCancelar.addEventListener("click", () => {
       limparFormulario();
       userForm.classList.add("hidden");
       placeholder.classList.remove("hidden");
    });
 
-   // Evento de submit do formulário
    userForm.addEventListener("submit", async function (e) {
       e.preventDefault();
 
@@ -51,7 +44,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
    });
 
-   // Fechar os modais quando clica no X
    const btnCloseModalElements = document.querySelectorAll(".btn-close-modal");
    btnCloseModalElements.forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -59,14 +51,12 @@ document.addEventListener("DOMContentLoaded", function () {
       });
    });
 
-   // Fecha o modal quando clica fora do conteúdo
    window.addEventListener("click", (e) => {
       if (e.target === userModal) {
          userModal.style.display = "none";
       }
    });
 
-   // Manipula o redimensionamento da janela
    window.addEventListener("resize", () => {
       if (!isMobile()) {
          userModal.style.display = "none";
@@ -74,7 +64,6 @@ document.addEventListener("DOMContentLoaded", function () {
    });
 });
 
-// Carregar usuários do servidor
 async function carregarUsuarios() {
    try {
       const resposta = await fetch("api_usuarios.php?acao=listar_usuarios");
@@ -85,7 +74,6 @@ async function carregarUsuarios() {
 
       const todosUsuarios = await resposta.json();
 
-      // Filtrar o usuário desenvolvedor (ID 3) da lista exibida
       usuarios = todosUsuarios.filter(
          (user) => parseInt(user.id) !== DEV_USER_ID
       );
@@ -99,20 +87,16 @@ async function carregarUsuarios() {
    }
 }
 
-// Função para verificar se é um dispositivo móvel
 function isMobile() {
    return window.innerWidth <= 768;
 }
 
-// Função para limpar o formulário
 function limparFormulario() {
    userForm.reset();
    document.getElementById("id").value = "";
 }
 
-// Função para mostrar o formulário de edição ou criação
 function mostrarFormulario(modo, userData = null) {
-   // Proteção adicional: não permitir edição do usuário desenvolvedor
    if (userData && parseInt(userData.id) === DEV_USER_ID) {
       customModal.error("Este usuário não pode ser editado.");
       return;
@@ -120,48 +104,39 @@ function mostrarFormulario(modo, userData = null) {
 
    modoEdicao = modo === "edicao";
 
-   // Garantir que os valores de admin e ativo sejam números
    if (modoEdicao && userData) {
-      // Converter para inteiros se forem string
       userData.admin = parseInt(userData.admin);
       userData.ativo = parseInt(userData.ativo);
    }
 
-   // Atualizar o título do formulário
    formTitle.textContent = modoEdicao ? "Editar Usuário" : "Novo Usuário";
 
-   // Limpar o formulário primeiro
    limparFormulario();
 
-   // Se for edição, preencher com os dados existentes
    if (modoEdicao && userData) {
       document.getElementById("id").value = userData.id;
       document.getElementById("usuario").value = userData.usuario;
       document.getElementById("nome").value = userData.nome;
       document.getElementById("senha").value = ""; // Não preenchemos a senha por segurança
 
-      // Selecionar o radio button correto para admin
       const radioSelector = `input[name="admin"][value="${userData.admin}"]`;
       const radioButton = document.querySelector(radioSelector);
       if (radioButton) {
          radioButton.checked = true;
       }
 
-      // Selecionar o radio button correto para status (ativo/inativo)
       const statusSelector = `input[name="ativo"][value="${userData.ativo}"]`;
       const statusButton = document.querySelector(statusSelector);
       if (statusButton) {
          statusButton.checked = true;
       }
    } else {
-      // Valores padrão para novos usuários
       document.getElementById("admin-nao").checked = true;
-      document.getElementById("ativo-sim").checked = true; // Novo usuário vem ativo por padrão
+      document.getElementById("ativo-sim").checked = true;
    }
 
    if (isMobile()) {
-      // Em dispositivos móveis, exibe o modal
-      modalContent.innerHTML = ""; // Limpa o conteúdo anterior
+      modalContent.innerHTML = "";
 
       const formModalHTML = `
          <form id="user-form-modal" class="user-form">
@@ -269,15 +244,12 @@ function mostrarFormulario(modo, userData = null) {
 
       modalContent.innerHTML = formModalHTML;
 
-      // Exibe o modal
       userModal.style.display = "flex";
 
-      // Adiciona evento de submit ao formulário do modal
       const formModal = document.getElementById("user-form-modal");
       formModal.addEventListener("submit", async function (e) {
          e.preventDefault();
 
-         // Corrigindo para selecionar os radio buttons dentro do modal
          const adminChecked = formModal.querySelector(
             'input[name="admin"]:checked'
          );
@@ -310,23 +282,19 @@ function mostrarFormulario(modo, userData = null) {
          userModal.style.display = "none";
       });
 
-      // Adiciona evento ao botão cancelar do modal
       document
          .getElementById("btn-cancelar-modal")
          .addEventListener("click", () => {
             userModal.style.display = "none";
          });
    } else {
-      // Em desktop, exibe no painel lateral
       placeholder.classList.add("hidden");
       userForm.classList.remove("hidden");
    }
 }
 
-// Função para exibir os detalhes do usuário
 async function exibirDetalhesUsuario(userId) {
    try {
-      // Proteção adicional: não exibir detalhes do usuário desenvolvedor
       if (parseInt(userId) === DEV_USER_ID) {
          customModal.error("Detalhes deste usuário não estão disponíveis.");
          return;
@@ -353,7 +321,6 @@ async function exibirDetalhesUsuario(userId) {
    }
 }
 
-// Função para criar um novo usuário
 async function criarUsuario(formData) {
    try {
       const resposta = await fetch("api_usuarios.php?acao=criar_usuario", {
@@ -365,7 +332,6 @@ async function criarUsuario(formData) {
          body: JSON.stringify(formData),
       });
 
-      // Verificar se a resposta é JSON válido
       const contentType = resposta.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
          const text = await resposta.text();
@@ -384,10 +350,9 @@ async function criarUsuario(formData) {
       }
 
       customModal.success(resultado.mensagem || "Usuário criado com sucesso!");
-      await carregarUsuarios(); // Recarregar a lista
+      await carregarUsuarios();
       limparFormulario();
 
-      // Esconder o formulário e mostrar o placeholder
       userForm.classList.add("hidden");
       placeholder.classList.remove("hidden");
    } catch (erro) {
@@ -396,19 +361,15 @@ async function criarUsuario(formData) {
    }
 }
 
-// Função para atualizar um usuário existente
 async function atualizarUsuario(formData) {
    try {
-      // Proteção adicional: bloquear qualquer tentativa de atualizar o usuário desenvolvedor
       if (parseInt(formData.id) === DEV_USER_ID) {
          throw new Error("Este usuário não pode ser modificado.");
       }
 
-      // Garantir que admin e ativo sejam números inteiros
       formData.admin = parseInt(formData.admin);
       formData.ativo = parseInt(formData.ativo);
 
-      // Verificar se os valores são válidos antes de enviar
       if (isNaN(formData.admin) || isNaN(formData.ativo)) {
          throw new Error(
             "Os valores de admin ou ativo não são números válidos."
@@ -424,7 +385,6 @@ async function atualizarUsuario(formData) {
          body: JSON.stringify(formData),
       });
 
-      // Verificar se a resposta é JSON válido
       const contentType = resposta.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
          const text = await resposta.text();
@@ -445,10 +405,9 @@ async function atualizarUsuario(formData) {
       customModal.success(
          resultado.mensagem || "Usuário atualizado com sucesso!"
       );
-      await carregarUsuarios(); // Recarregar a lista
+      await carregarUsuarios();
       limparFormulario();
 
-      // Esconder o formulário e mostrar o placeholder
       userForm.classList.add("hidden");
       placeholder.classList.remove("hidden");
    } catch (erro) {
@@ -457,15 +416,12 @@ async function atualizarUsuario(formData) {
    }
 }
 
-// Função para confirmar exclusão de usuário
 function confirmarExclusao(userId) {
-   // Proteção adicional: impedir confirmação de exclusão do usuário desenvolvedor
    if (parseInt(userId) === DEV_USER_ID) {
       customModal.error("Este usuário não pode ser excluído.");
       return;
    }
 
-   // Usar o customModal.confirm em vez do modal-confirmar-exclusao
    customModal
       .confirm(
          "Tem certeza que deseja excluir este usuário? Se ele tiver pedidos associados, será inativado em vez de excluído.",
@@ -479,15 +435,12 @@ function confirmarExclusao(userId) {
       });
 }
 
-// Função para excluir um usuário
 async function excluirUsuario(userId) {
    try {
-      // Proteção adicional: impedir exclusão do usuário desenvolvedor
       if (parseInt(userId) === DEV_USER_ID) {
          throw new Error("Este usuário não pode ser excluído.");
       }
 
-      // Fazer a requisição explicitamente como JSON
       const resposta = await fetch(
          `api_usuarios.php?acao=excluir_usuario&id=${userId}`,
          {
@@ -499,10 +452,8 @@ async function excluirUsuario(userId) {
          }
       );
 
-      // Verificar se a resposta é JSON válido antes de processá-la
       const contentType = resposta.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-         // Se não for JSON, obter o texto para debugging
          const text = await resposta.text();
          console.error("Resposta não-JSON recebida:", text);
          throw new Error("Formato de resposta inválido do servidor");
@@ -518,15 +469,12 @@ async function excluirUsuario(userId) {
          throw new Error(resultado.erro);
       }
 
-      // Mostrar mensagem de sucesso
       customModal.success(
          resultado.mensagem || "Usuário excluído com sucesso!"
       );
 
-      // Recarregar a lista de usuários
       await carregarUsuarios();
 
-      // Esconder o formulário e mostrar o placeholder se estiver em modo desktop
       if (!isMobile()) {
          userForm.classList.add("hidden");
          placeholder.classList.remove("hidden");
@@ -534,17 +482,14 @@ async function excluirUsuario(userId) {
    } catch (erro) {
       console.error("Erro ao excluir usuário:", erro);
 
-      // Mostrar erro em um modal customizado
       customModal.error(erro.message || "Erro ao excluir usuário.");
    }
 }
 
-// Função para renderizar ícones com base no estado do usuário
 function getUserStatusIcons(user) {
    let adminIcon = "";
    let statusIcon = "";
 
-   // Ícone de administrador
    if (user.admin == 1) {
       adminIcon =
          '<i class="bi bi-person-fill-gear" style="color: blue;" title="Administrador"></i>';
@@ -552,7 +497,6 @@ function getUserStatusIcons(user) {
       adminIcon = '<i class="bi bi-person-fill" title="Usuário comum"></i>';
    }
 
-   // Ícone de status
    if (user.ativo == 1) {
       statusIcon =
          '<i class="bi bi-person-check" style="color: green;" title="Ativo"></i>';
@@ -564,9 +508,8 @@ function getUserStatusIcons(user) {
    return { adminIcon, statusIcon };
 }
 
-// Função para criar e exibir os cards de usuários
 function renderUserCards() {
-   userList.innerHTML = ""; // Limpa a lista antes de renderizar
+   userList.innerHTML = "";
 
    if (usuarios.length === 0) {
       const mensagem = document.createElement("div");
@@ -580,12 +523,10 @@ function renderUserCards() {
       const card = document.createElement("div");
       card.classList.add("user-card");
 
-      // Adicionar classe para usuários inativos
       if (user.ativo == 0) {
          card.classList.add("user-inactive");
       }
 
-      // Obter ícones baseados no estado do usuário
       const { adminIcon, statusIcon } = getUserStatusIcons(user);
 
       card.innerHTML = `
@@ -604,9 +545,7 @@ function renderUserCards() {
             </div>
         `;
 
-      // Evento ao clicar no card para exibir detalhes
       card.addEventListener("click", (e) => {
-         // Evitar acionamento múltiplo se clicar nos ícones
          if (
             !e.target.classList.contains("user-edit") &&
             !e.target.classList.contains("user-delete")
@@ -615,16 +554,15 @@ function renderUserCards() {
          }
       });
 
-      // Eventos específicos para os botões de ação
       const btnEdit = card.querySelector(".user-edit");
       btnEdit.addEventListener("click", (e) => {
-         e.stopPropagation(); // Impedir a propagação para o card
+         e.stopPropagation();
          exibirDetalhesUsuario(user.id);
       });
 
       const btnDelete = card.querySelector(".user-delete");
       btnDelete.addEventListener("click", (e) => {
-         e.stopPropagation(); // Impedir a propagação para o card
+         e.stopPropagation();
          confirmarExclusao(user.id);
       });
 

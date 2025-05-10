@@ -5,17 +5,15 @@ if (!isset($_SESSION['usuario'])) {
    exit();
 }
 
-include_once(__DIR__ . '/config/config.php');
+include_once 'config/config.php';
 
 header('Content-Type: application/json');
 
-// Verificar se a consulta SQL foi fornecida
 if (!isset($_GET['sql']) || empty($_GET['sql'])) {
    echo json_encode(['status' => 'error', 'message' => 'Consulta SQL não fornecida']);
    exit;
 }
 
-// Obter a consulta SQL
 $sql = urldecode($_GET['sql']);
 
 if (!preg_match('/^SELECT.*FROM\s+(clientes|produtos)\s+WHERE/i', $sql)) {
@@ -23,7 +21,6 @@ if (!preg_match('/^SELECT.*FROM\s+(clientes|produtos)\s+WHERE/i', $sql)) {
    exit;
 }
 
-// Executar a consulta
 $result = $conn->query($sql);
 
 if (!$result) {
@@ -31,14 +28,11 @@ if (!$result) {
    exit;
 }
 
-// Obter os resultados
 $data = [];
 while ($row = $result->fetch_assoc()) {
    $data[] = $row;
 }
 
-// Fechar conexão
 $conn->close();
 
-// Retornar resultados
 echo json_encode(['status' => 'success', 'data' => $data]);
